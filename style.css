@@ -852,7 +852,7 @@ h2 em{
   transition:transform .45s cubic-bezier(.25,.8,.25,1);
   will-change:transform;
 }
-.testi-track .tc{flex:0 0 calc((100% - 2.5rem) / 3);min-width:0}
+.testi-track .tc{flex:0 0 calc((100% - 1.25rem * (var(--tc-cols,3) - 1)) / var(--tc-cols,3));min-width:0}
 
 .testi-nav{
   position:absolute;top:50%;transform:translateY(-50%);

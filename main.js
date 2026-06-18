@@ -700,6 +700,7 @@ document.querySelectorAll('.c-form input[required]').forEach(input => {
   let cloneCount = 0; // how many clones are prepended
   function buildTrack() {
     perPage = Math.min(getPerPage(), origCards.length || 1);
+    track.style.setProperty('--tc-cols', perPage);
 
     // Wipe and re-insert originals fresh so rebuild is idempotent
     track.innerHTML = '';
