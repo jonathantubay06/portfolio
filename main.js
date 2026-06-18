@@ -699,7 +699,7 @@ document.querySelectorAll('.c-form input[required]').forEach(input => {
   // current starts at perPage so index 0 = first real card.
   let cloneCount = 0; // how many clones are prepended
   function buildTrack() {
-    perPage = getPerPage();
+    perPage = Math.min(getPerPage(), origCards.length || 1);
 
     // Wipe and re-insert originals fresh so rebuild is idempotent
     track.innerHTML = '';
