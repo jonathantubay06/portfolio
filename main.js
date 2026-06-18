@@ -825,6 +825,7 @@ document.querySelectorAll('.c-form input[required]').forEach(input => {
     origTotal = origCards.length;
     stopAutoplay();
     init(0);
+    track.querySelectorAll('.r').forEach(el => el.classList.add('on'));
     startAutoplay();
   }
   document.querySelectorAll('.testi-filter-btn').forEach(btn =>
@@ -882,6 +883,7 @@ document.querySelectorAll('.c-form input[required]').forEach(input => {
       // Remember which real card was leftmost before rebuild
       const realIdx = ((current - cloneCount) % origTotal + origTotal) % origTotal;
       init(realIdx);
+      track.querySelectorAll('.r').forEach(el => el.classList.add('on'));
     }, 120);
   });
 })();
