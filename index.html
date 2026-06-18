@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="description" content="Jonathan Tubay — Shopify Developer & eCommerce Automation Specialist in Las Piñas City, Philippines. I build Shopify stores, WordPress sites, and automate business workflows with Zapier, Airtable & n8n. Available for remote freelance projects worldwide."/>
+
+<!-- Open Graph -->
+<meta property="og:title" content="Jonathan Tubay — eCommerce & Automation Specialist"/>
+<meta property="og:description" content="Shopify Developer & eCommerce Automation Specialist based in the Philippines. I build stores, apps & automations — from zero to live."/>
+<meta property="og:type" content="website"/>
+<meta property="og:locale" content="en_US"/>
+<meta property="og:url" content="https://jonathantubay.com/"/>
+<meta property="og:image" content="https://jonathantubay.com/og-preview.png"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Jonathan Tubay — eCommerce & Automation Specialist"/>
+<meta name="twitter:description" content="Shopify Developer & eCommerce Automation Specialist based in the Philippines. I build stores, apps & automations — from zero to live."/>
+<meta name="twitter:image" content="https://jonathantubay.com/og-preview.png"/>
+
+<!-- Theme color for mobile browsers -->
+<meta name="theme-color" content="#060e1a"/>
+<meta name="color-scheme" content="dark"/>
+
+<!-- Favicon -->
+<link rel="icon" type="image/png" href="./favicon.png" sizes="32x32"/>
+<link rel="apple-touch-icon" href="./favicon.png"/>
+<title>Jonathan Tubay — Shopify Developer & eCommerce Automation Specialist | Philippines</title>
+
+<!-- DNS + TCP warmup before any request fires -->
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="dns-prefetch" href="https://fonts.googleapis.com"/>
+<link rel="dns-prefetch" href="https://fonts.gstatic.com"/>
+<!-- Marquee brand icons served from Simple Icons CDN -->
+<link rel="preconnect" href="https://cdn.simpleicons.org"/>
+<link rel="dns-prefetch" href="https://cdn.simpleicons.org"/>
+
+<!-- Non-blocking font load: media trick loads async, then swaps to all -->
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      media="print" onload="this.media='all'"/>
+<!-- Fallback for no-JS -->
+<noscript>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"/>
+</noscript>
+
+<!-- Preload Orbitron 900 — used for hero name above the fold; preloading eliminates
+     the flash of unstyled text (FOUT) that would otherwise occur while the font loads -->
+<link rel="preload" as="font" href="https://fonts.gstatic.com/s/orbitron/v31/yMJMMIlzdpvBhQQL_SC3X9yhF25-T1nyGy6xpmIyXjU1pg.woff2" type="font/woff2" crossorigin/>
+
+<!-- Preload hero background — largest above-the-fold image, critical for LCP -->
+<link rel="preload" as="image" href="./hero-bg.webp" type="image/webp"/>
+
+<!-- Inline critical CSS: renders the hero skeleton instantly before style.css downloads.
+     Only above-the-fold essentials — full styles are in style.css below. -->
+<style>
+/* Critical: body base so there's no white flash */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#060e1a;--cyan:#00d4ff;--text:#e8f4ff;--font-head:'Orbitron','Arial Black',sans-serif;--font-body:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,system-ui,sans-serif}
+html{overflow-x:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);opacity:0;animation:page-fadein .5s ease .05s forwards}
+@keyframes page-fadein{to{opacity:1}}
+/* Critical nav — visible immediately on load */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:.9rem 2rem;background:transparent}
+/* Critical hero skeleton */
+.hero{min-height:100svh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:6rem 1.5rem 3rem;position:relative;overflow:hidden}
+h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;color:#fff;line-height:1.08}
+.glow{color:var(--cyan)}
+</style>
+
+<!-- Full stylesheet — loads after the critical inline above -->
+<link rel="stylesheet" href="./style.css"/>
+
+<!-- Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Jonathan Tubay",
+  "jobTitle": "eCommerce & Automation Specialist",
+  "description": "I launch Shopify stores, WordPress sites, and Softr apps — then automate everything with Zapier, Airtable, and n8n.",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Las Piñas City",
+    "addressRegion": "Metro Manila",
+    "addressCountry": "PH"
+  },
+  "email": "jonatsbuilds@gmail.com",
+  "telephone": "+639175291657",
+  "sameAs": [
+    "https://www.linkedin.com/in/jonathantubay/"
+  ],
+  "url": "https://jonathantubay.com",
+  "knowsAbout": ["Shopify", "Shopify Plus", "WordPress", "WooCommerce", "Softr", "Airtable", "Zapier", "n8n", "eCommerce", "Workflow Automation", "Web Development", "Philippines Freelancer", "eCommerce Developer Philippines", "Shopify Developer Philippines"]
+}
+</script>
+
+<!-- Styles moved to style.css -->
+</head>
+<body>
+<!-- ═══════════════════════════════════════════════════════════════
+     index.html — Jonathan Tubay Portfolio
+     ─────────────────────────────────────────────────────────────
+     PAGE STRUCTURE (in DOM order)
+       #scroll-bar     Fixed 3px cyan progress bar (top of viewport)
+       .noise-overlay  Full-page SVG grain texture (z-index 1, 2.8%)
+       <nav>           Fixed top bar — logo, links, theme toggle, CTA
+       .nav-drawer     Mobile slide-down menu (hidden by default)
+       .hero  #main    Full-viewport intro section
+       .built-wrap     Scrolling tech-stack marquee (aria-hidden)
+       #services       Services 2-col grid + process steps
+       #work           Portfolio: accomplishments, filter tabs, 5 cards
+       .testi-bg       Testimonial carousel (3-up, draggable)
+       .tools-bg       Skills / tools chip grid
+       #experience     Timeline + grouped cert badges
+       #contact        2-stage contact: cards → collapsible form
+       <footer>        Copyright + nav links
+       .proj-modal ×5  Project detail modals (hidden until opened)
+       #egg-overlay    Easter egg terminal (triggered by typing "jt")
+       #avail-pill     "Available" status pill (fixed bottom-right)
+       #back-to-top    Scroll-to-top button with SVG progress ring
+       main.js         Critical JS (theme, nav, modals, carousel…)
+       effects.js      Deferred visual FX (cursor, spotlight, clock…)
+     ─────────────────────────────────────────────────────────────
+     SCRIPTS: main.js runs immediately; effects.js uses `defer`
+     so it never blocks parsing or first paint.
+═══════════════════════════════════════════════════════════════ -->
+<a href="#main" class="skip-link">Skip to main content</a>
+<div id="scroll-bar" aria-hidden="true"></div><!-- width driven by JS scroll handler -->
+<div class="noise-overlay" aria-hidden="true"></div><!-- SVG grain at 2.8% opacity -->
+
+<!-- ══ NAV ══ -->
+<nav>
+  <div class="nav-brand">
+    <a href="#" class="nav-logo"><span class="logo-dot"></span>Jonathan Tubay</a>
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle light/dark mode"></button>
+  </div>
+
+  <ul class="nav-links">
+    <li><a href="#work">Work</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#testimonials">Reviews</a></li>
+    <li><a href="#experience">Experience</a></li>
+  </ul>
+
+  <button class="nav-toggle" id="navToggle" aria-label="Menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+
+  <a href="#contact" class="nav-cta" id="navCta">📡 Contact Me</a>
+</nav>
+
+<!-- Mobile drawer -->
+<nav class="nav-drawer" id="navDrawer" aria-hidden="true">
+  <a href="#work">Work</a>
+  <a href="#services">Services</a>
+  <a href="#testimonials">Reviews</a>
+  <a href="#experience">Experience</a>
+  <a href="#contact">Contact Me</a>
+</nav>
+
+<!-- ══ HERO ══ -->
+<!-- Full-viewport intro. Layer order (z-index low→high):
+     0: .hero-bg-img  (blurred anime background image)
+     1: .hero-overlay (dark gradient fade — keeps text readable)
+     1: .hero-canvas  (particle network drawn by main.js)
+     1: .hero::before (dot grid — CSS radial-gradient pattern)
+     2: .hero-spotlight  (mouse-follow glow — injected by effects.js)
+     2: .hero-code-float (floating code tokens — injected by effects.js)
+     3: all other hero content (eyebrow, h1, cta, stat strip…) -->
+<section id="main" class="hero" aria-label="Introduction">
+  <!-- Aurora ambient blobs — softly drifting colour glows behind the hero.
+       Pure CSS animation, pointer-events:none, heavily blurred so they're
+       atmospheric rather than distracting. Hidden on ≤600px to save battery. -->
+  <div class="aurora" aria-hidden="true">
+    <div class="aurora-blob aurora-1"></div><!-- cyan — drifts top-left -->
+    <div class="aurora-blob aurora-2"></div><!-- indigo — drifts bottom-right -->
+    <div class="aurora-blob aurora-3"></div><!-- blue-purple — drifts centre -->
+  </div>
+  <canvas id="heroCanvas" class="hero-canvas" aria-hidden="true"></canvas><!-- particle network canvas -->
+  <div class="hero-bg-img" aria-hidden="true"></div><!-- blurred bg image -->
+  <div class="hero-overlay" aria-hidden="true"></div><!-- dark gradient overlay for readability -->
+  <div class="orbit orbit-1" aria-hidden="true"></div><!-- decorative spinning ring 1 (parallax) -->
+  <div class="orbit orbit-2" aria-hidden="true"></div><!-- decorative spinning ring 2 (opposite direction) -->
+
+  <div class="hero-eyebrow">
+    <span class="avail-dot" aria-hidden="true"></span><!-- pulsing green availability dot -->
+    Available for Freelance Projects
+  </div>
+
+  <!-- .glitch-name triggers CSS glitch keyframe on hover and every 3s via main.js -->
+  <!-- "Jonathan" is in a <span> so the cyan glow colour is preserved during the text scramble -->
+  <h1 class="glitch-name"><span class="glow">Jonathan</span> Tubay</h1>
+  <!-- #typingRole text is filled by the typing animation loop in main.js -->
+  <p class="hero-sub"><span id="typingRole"></span><span class="typing-cursor" aria-hidden="true">|</span></p>
+  <p class="hero-desc">
+    Based in the Philippines, I build Shopify stores, WordPress sites, and Softr apps — then automate everything
+    with Zapier, Airtable, and n8n. From zero to live, from chaos to streamlined.
+  </p>
+
+  <div class="platforms" role="list" aria-label="Platforms">
+    <span class="pbadge" role="listitem">🛒 Shopify</span>
+    <span class="pbadge" role="listitem">🌐 WordPress</span>
+    <span class="pbadge" role="listitem">🧩 Softr</span>
+    <span class="pbadge" role="listitem">📊 Airtable</span>
+    <span class="pbadge" role="listitem">🔗 Zapier</span>
+    <span class="pbadge" role="listitem">⚡ n8n</span>
+  </div>
+
+  <div class="hero-cta">
+    <a href="#work" class="btn btn-p">View My Work →</a>
+    <a href="#contact" class="btn btn-g">Get In Touch</a>
+  </div>
+
+  <!-- Stat strip: first 3 nums count up from 0 via main.js on scroll-in.
+       4th stat (#tz-time / #tz-label) is the world clock — updated by
+       effects.js every 7s cycling through PH, NY, London, LA, Sydney, Dubai, Vietnam -->
+  <div class="stat-strip" role="list" aria-label="Key stats">
+    <div class="stat-item" role="listitem"><div class="stat-num">12+</div><div class="stat-lbl">Yrs Experience</div></div>
+    <div class="stat-item" role="listitem"><div class="stat-num">10+</div><div class="stat-lbl">Live Projects</div></div>
+    <div class="stat-item" role="listitem"><div class="stat-num">8+</div><div class="stat-lbl">LI Reviews</div></div>
+    <div class="stat-item" role="listitem"><div class="stat-num" id="tz-time">--:--</div><div class="stat-lbl" id="tz-label">🇵🇭 PH Time</div></div>
+  </div>
+
+  <!-- Scroll hint -->
+  <div class="scroll-hint" aria-hidden="true">
+    <span class="sh-bubble">Scroll to explore</span>
+  </div>
+</section>
+
+<!-- ══ TECH STACK MARQUEE ══ -->
+<!-- No .divider here — .built-wrap has its own ::before glow line at top -->
+<div class="built-wrap" aria-hidden="true">
+  <div class="built-label">// TECH STACK</div>
+  <div class="built-marquee">
+    <div class="built-track">
+      <div class="built-item"><img src="https://cdn.simpleicons.org/shopify/96bf48" alt="" class="built-icon"><span>Shopify</span></div>
+      <div class="built-item"><img src="https://cdn.simpleicons.org/wordpress/21759b" alt="" class="built-icon"><span>WordPress</span></div>
+      <div class="built-item"><img src="https://cdn.simpleicons.org/airtable/18bfff" alt="" class="built-icon"><span>Airtable</span></div>
+      <div class="built-item"><img src="https://cdn.simpleicons.org/zapier/ff4a00" alt="" class="built-icon"><span>Zapier</span></div>
+      <div class="built-item"><img src="https://cdn.simpleicons.org/n8n/ea4b71" alt="" class="built-icon"><span>n8n</span></div>
+      <div class="built-item"><span class="built-letter" style="background:rgba(46,173,51,.15);color:#2ead33">▶</span><span>Playwright</span></div>
+      <div class="built-item"><img src="https://cdn.simpleicons.org/googlesheets/34a853" alt="" class="built-icon"><span>Google Sheets</span></div>
+      <div class="built-item"><img src="https://cdn.simpleicons.org/github/c0cdd8" alt="" class="built-icon"><span>GitHub</span></div>
+      <div class="built-item"><img src="https://cdn.simpleicons.org/netlify/00c7b7" alt="" class="built-icon"><span>Netlify</span></div>
+      <div class="built-item"><img src="https://cdn.simpleicons.org/javascript/f7df1e" alt="" class="built-icon"><span>JavaScript</span></div>
+      <div class="built-item"><img src="https://cdn.simpleicons.org/python/3776ab" alt="" class="built-icon"><span>Python</span></div>
+      <div class="built-item"><span class="built-letter" style="background:rgba(124,58,237,.15);color:#7c3aed">S</span><span>Softr</span></div>
+      <!-- duplicate for seamless loop -->
+      <div class="built-item"><img src="https://cdn.simpleicons.org/shopify/96bf48" alt="" class="built-icon"><span>Shopify</span></div>
+      <div class="built-item"><img src="https://cdn.simpleicons.org/wordpress/21759b" alt="" class="built-icon"><span>WordPress</span></div>
+      <div class="built-item"><img src="https://cdn.simpleicons.org/airtable/18bfff" alt="" class="built-icon"><span>Airtable</span></div>
+      <div class="built-item"><img src="https://cdn.simpleicons.org/zapier/ff4a00" alt="" class="built-icon"><span>Zapier</span></div>
+      <div class="built-item"><img src="https://cdn.simpleicons.org/n8n/ea4b71" alt="" class="built-icon"><span>n8n</span></div>
+      <div class="built-item"><span class="built-letter" style="background:rgba(46,173,51,.15);color:#2ead33">▶</span><span>Playwright</span></div>
+      <div class="built-item"><img src="https://cdn.simpleicons.org/googlesheets/34a853" alt="" class="built-icon"><span>Google Sheets</span></div>
+      <div class="built-item"><img src="https://cdn.simpleicons.org/github/c0cdd8" alt="" class="built-icon"><span>GitHub</span></div>
+      <div class="built-item"><img src="https://cdn.simpleicons.org/netlify/00c7b7" alt="" class="built-icon"><span>Netlify</span></div>
+      <div class="built-item"><img src="https://cdn.simpleicons.org/javascript/f7df1e" alt="" class="built-icon"><span>JavaScript</span></div>
+      <div class="built-item"><img src="https://cdn.simpleicons.org/python/3776ab" alt="" class="built-icon"><span>Python</span></div>
+      <div class="built-item"><span class="built-letter" style="background:rgba(124,58,237,.15);color:#7c3aed">S</span><span>Softr</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SERVICES ══ -->
+<section class="sec" id="services">
+  <div class="sec-label">What I Do</div>
+  <h2>My <em>Services</em></h2>
+  <p class="sec-sub">From storefront to backend — I handle the full launch cycle.</p>
+  <div class="svc-compact">
+    <div class="svc-row r"><span class="svc-ico-sm">🛒</span><div><div class="svc-title-sm">Shopify Development</div><p class="svc-desc-sm">Full Shopify & Plus builds for Philippine and international brands — theme, apps, catalog, payments, and post-launch support.</p><ul class="svc-bullets"><li>Custom theme dev &amp; app integrations</li><li>Catalog setup, payments &amp; checkout</li><li>Post-launch support &amp; optimisation</li></ul></div></div>
+    <div class="svc-row r"><span class="svc-ico-sm">🌐</span><div><div class="svc-title-sm">WordPress / WooCommerce</div><p class="svc-desc-sm">Custom sites and stores for local and global clients — from scratch or migration. Fast, mobile-ready, built to convert.</p><ul class="svc-bullets"><li>New builds or full CMS migrations</li><li>Mobile-first, SEO-ready from day one</li><li>WooCommerce store &amp; product setup</li></ul></div></div>
+    <div class="svc-row r"><span class="svc-ico-sm">🧩</span><div><div class="svc-title-sm">Softr App Development</div><p class="svc-desc-sm">Airtable data → client portals, internal tools, and web apps with Softr.</p><ul class="svc-bullets"><li>Client portals &amp; internal dashboards</li><li>Airtable data modelling &amp; views</li><li>Role-based access &amp; user management</li></ul></div></div>
+    <div class="svc-row r"><span class="svc-ico-sm">⚡</span><div><div class="svc-title-sm">Workflow Automation</div><p class="svc-desc-sm">Zapier, n8n, and Airtable automations for SMEs and growing eCommerce brands — eliminating manual work, saving hours weekly.</p><ul class="svc-bullets"><li>Zapier, n8n &amp; Airtable flows</li><li>Multi-step triggers &amp; error handling</li><li>Saves 5–15 hrs/week on average</li></ul></div></div>
+    <div class="svc-row r"><span class="svc-ico-sm">📋</span><div><div class="svc-title-sm">Project Management</div><p class="svc-desc-sm">Agile delivery with Jira, Notion, Confluence — sprints, stakeholders, and teams on track.</p><ul class="svc-bullets"><li>Sprint planning &amp; backlog grooming</li><li>Jira, Notion &amp; Confluence setup</li><li>Stakeholder reporting &amp; risk management</li></ul></div></div>
+    <div class="svc-row r"><span class="svc-ico-sm">🤝</span><div><div class="svc-title-sm">Client Delivery Lead</div><p class="svc-desc-sm">Your technical point person — translating needs into action, managing timelines end-to-end.</p><ul class="svc-bullets"><li>Single point of contact for all delivery</li><li>Translates business needs into specs</li><li>Clear updates at every milestone</li></ul></div></div>
+  </div>
+
+  <!-- Inline process -->
+  <div class="process-inline r">
+    <div class="pi-step"><span class="pi-num">01</span><span class="pi-title">Discover</span></div>
+    <span class="pi-arrow">→</span>
+    <div class="pi-step"><span class="pi-num">02</span><span class="pi-title">Plan</span></div>
+    <span class="pi-arrow">→</span>
+    <div class="pi-step"><span class="pi-num">03</span><span class="pi-title">Build</span></div>
+    <span class="pi-arrow">→</span>
+    <div class="pi-step"><span class="pi-num">04</span><span class="pi-title">Support</span></div>
+  </div>
+
+  <!-- Quick-pick CTA — lets visitors jump straight to the contact form
+       with the right service pre-selected. JS in effects.js handles
+       the scroll + dropdown pre-fill. -->
+  <div class="qp-wrap r" aria-label="Quick start">
+    <p class="qp-label">What do you need?</p>
+    <div class="qp-btns">
+      <button class="qp-btn" data-service="Shopify Store Setup / Build">🛒 Shopify Store</button>
+      <button class="qp-btn" data-service="WordPress / WooCommerce Site">🌐 WordPress Site</button>
+      <button class="qp-btn" data-service="Workflow Automation (Zapier / n8n / Airtable)">⚡ Automation</button>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ══ PORTFOLIO ══ -->
+<section class="sec" id="work">
+  <div class="sec-label">Portfolio</div>
+  <h2>Live <em>Projects</em> & Internal <em>Tools</em></h2>
+  <p class="sec-sub">Client stores delivered end-to-end, plus ops tools I built to keep everything running.</p>
+
+  <!-- Accomplishments highlight -->
+  <div class="acc-strip r">
+    <div class="acc-item"><span class="acc-num">12+</span><span class="acc-lbl">Years delivering eCommerce, automation & ops solutions</span></div>
+    <div class="acc-item"><span class="acc-num">5</span><span class="acc-lbl">Live production sites actively maintained right now</span></div>
+    <div class="acc-item"><span class="acc-num">3</span><span class="acc-lbl">Shopify Plus & enterprise-scale builds completed</span></div>
+  </div>
+
+  <!-- Filter tabs — data-filter must match data-category on each .proj-card.
+       JS in main.js toggles .hidden on non-matching cards. -->
+  <div class="pf-filters" role="group" aria-label="Filter projects">
+    <button class="pf-btn active" data-filter="all">All</button>
+    <button class="pf-btn" data-filter="shopify">Shopify</button>
+    <button class="pf-btn" data-filter="wordpress">WordPress</button>
+    <button class="pf-btn" data-filter="tools">Internal Tools</button>
+  </div>
+
+  <div class="grid-portfolio">
+
+    <article class="proj-card r" data-category="wordpress" data-modal="modal-moev">
+      <div class="proj-thumb thumb-ss">
+        <img src="img/preview-moev.png" alt="MOEV Solutions" class="ss-img" loading="lazy" decoding="async">
+        <span class="card-live-badge" aria-label="Live site">● LIVE</span>
+        <div class="t-urlbar" aria-hidden="true">
+          <div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div>
+          <span class="t-url">moev.ph</span>
+        </div>
+        <div class="t-overlay">
+          <div class="t-overlay-actions">
+            <button class="btn-modal-open" data-modal="modal-moev"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Details</button>
+            <a href="https://moev.ph/" target="_blank" rel="noopener noreferrer" class="btn-modal-site"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Live Site</a>
+          </div>
+        </div>
+      </div>
+      <div class="proj-body">
+        <div class="ptags"><span class="ptag ptag-feat">Featured</span><span class="ptag ptag-c">WordPress</span><span class="ptag">EV / Clean Tech</span><span class="ptag">Philippines</span></div>
+        <div class="proj-name">MOEV Solutions</div>
+        <p class="proj-desc">Full WordPress build for a Filipino EV charging startup — solo, end-to-end in 3 weeks.</p>
+      </div>
+    </article>
+
+    <!-- Deirdre P. Malcolm — Squarespace takeover + store + print-on-demand -->
+    <article class="proj-card r" data-category="wordpress" data-modal="modal-dpm">
+      <div class="proj-thumb thumb-ss">
+        <img src="img/preview-Deirdre.png" alt="Deirdre P. Malcolm Art" class="ss-img" loading="lazy" decoding="async">
+        <span class="card-live-badge" aria-label="Live site">● LIVE</span>
+        <div class="t-urlbar" aria-hidden="true">
+          <div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div>
+          <span class="t-url">deirdre-p-malcolm-art.com</span>
+        </div>
+        <div class="t-overlay">
+          <div class="t-overlay-actions">
+            <button class="btn-modal-open" data-modal="modal-dpm"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Details</button>
+            <a href="https://www.deirdre-p-malcolm-art.com/" target="_blank" rel="noopener noreferrer" class="btn-modal-site"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Live Site</a>
+          </div>
+        </div>
+      </div>
+      <div class="proj-body">
+        <div class="ptags"><span class="ptag ptag-c">Squarespace</span><span class="ptag">eCommerce</span><span class="ptag">Print-on-Demand</span></div>
+        <div class="proj-name">Deirdre P. Malcolm</div>
+        <p class="proj-desc">Squarespace takeover + eCommerce + Prodigi print-on-demand for a UK artist.</p>
+      </div>
+    </article>
+
+    <article class="proj-card r" data-category="tools" data-modal="modal-portfolio">
+      <div class="proj-thumb thumb-ss">
+        <img src="img/preview-portfolio.png" alt="This Portfolio" class="ss-img" loading="lazy" decoding="async">
+        <span class="card-live-badge" aria-label="Live site">● LIVE</span>
+        <div class="t-urlbar" aria-hidden="true">
+          <div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div>
+          <span class="t-url">jonathantubay.com</span>
+        </div>
+        <div class="t-overlay">
+          <div class="t-overlay-actions">
+            <button class="btn-modal-open" data-modal="modal-portfolio"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Details</button>
+            <a href="https://jonathantubay.com/" target="_blank" rel="noopener noreferrer" class="btn-modal-site"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Live Site</a>
+          </div>
+        </div>
+      </div>
+      <div class="proj-body">
+        <div class="ptags"><span class="ptag ptag-feat">Personal</span><span class="ptag">HTML/CSS/JS</span><span class="ptag">Netlify</span></div>
+        <div class="proj-name">This Portfolio</div>
+        <p class="proj-desc">Hand-coded from scratch — zero frameworks, particle FX, full dark/light theme.</p>
+      </div>
+    </article>
+
+    <article class="proj-card r" data-category="shopify" data-modal="modal-toolmart">
+      <div class="proj-thumb thumb-ss">
+        <img src="img/preview-toolmart.png" alt="Toolmart Houston" class="ss-img" loading="lazy" decoding="async">
+        <span class="card-live-badge" aria-label="Live site">● LIVE</span>
+        <div class="t-urlbar" aria-hidden="true">
+          <div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div>
+          <span class="t-url">toolmarthou.com</span>
+        </div>
+        <div class="t-overlay">
+          <div class="t-overlay-actions">
+            <button class="btn-modal-open" data-modal="modal-toolmart"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Details</button>
+            <a href="https://www.toolmarthou.com/" target="_blank" rel="noopener noreferrer" class="btn-modal-site"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Live Site</a>
+          </div>
+        </div>
+      </div>
+      <div class="proj-body">
+        <div class="ptags"><span class="ptag ptag-c">Shopify</span><span class="ptag">Wholesale</span><span class="ptag">B2B</span></div>
+        <div class="proj-name">Toolmart Houston</div>
+        <p class="proj-desc">B2B Shopify store with Zapier & Airtable automation for a Houston hardware retailer.</p>
+      </div>
+    </article>
+
+    <article class="proj-card r" data-category="shopify" data-modal="modal-kdl">
+      <div class="proj-thumb thumb-ss">
+        <img src="img/preview-kdl.png" alt="Kingdomland Kids" class="ss-img" loading="lazy" decoding="async">
+        <div class="t-urlbar" aria-hidden="true">
+          <div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div>
+          <span class="t-url">kingdomlandkids.com</span>
+        </div>
+        <div class="t-overlay">
+          <div class="t-overlay-actions">
+            <button class="btn-modal-open" data-modal="modal-kdl"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Details</button>
+            <a href="https://kingdomlandkids.com/" target="_blank" rel="noopener noreferrer" class="btn-modal-site"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Live Site</a>
+          </div>
+        </div>
+      </div>
+      <div class="proj-body">
+        <div class="ptags"><span class="ptag ptag-c">Shopify Plus</span><span class="ptag">Ongoing</span></div>
+        <div class="proj-name">Kingdomland Kids</div>
+        <p class="proj-desc">Conversion-focused Shopify Plus storefront for a children's media brand — ongoing.</p>
+      </div>
+    </article>
+
+    <article class="proj-card r" data-category="tools" data-modal="modal-kdl-checker">
+      <div class="proj-thumb thumb-ss">
+        <img src="img/preview-kdl-checker.png" alt="KDL Video Health Checker" class="ss-img" loading="lazy" decoding="async">
+        <div class="t-urlbar" aria-hidden="true">
+          <div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div>
+          <span class="t-url">kdlvideohealthchecker.netlify.app</span>
+        </div>
+        <div class="t-overlay">
+          <div class="t-overlay-actions">
+            <button class="btn-modal-open" data-modal="modal-kdl-checker"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Details</button>
+            <a href="https://kdlvideohealthchecker.netlify.app/" target="_blank" rel="noopener noreferrer" class="btn-modal-site"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Live Site</a>
+          </div>
+        </div>
+      </div>
+      <div class="proj-body">
+        <div class="ptags"><span class="ptag ptag-int">Internal Tool</span><span class="ptag">Playwright</span><span class="ptag">Automation</span></div>
+        <div class="proj-name">KDL Video Health Checker</div>
+        <p class="proj-desc">Playwright automation monitoring 132+ videos with a real-time dashboard and push alerts.</p>
+      </div>
+    </article>
+
+    <article class="proj-card r" data-category="tools" data-modal="modal-service-health">
+      <div class="proj-thumb thumb-ss">
+        <img src="img/preview-service-health.png" alt="Service Health Dashboard" class="ss-img" loading="lazy" decoding="async">
+        <div class="t-urlbar" aria-hidden="true">
+          <div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div>
+          <span class="t-url">servicehealth-internal.netlify.app</span>
+        </div>
+        <div class="t-overlay">
+          <div class="t-overlay-actions">
+            <button class="btn-modal-open" data-modal="modal-service-health"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Details</button>
+            <a href="https://servicehealth-internal.netlify.app/" target="_blank" rel="noopener noreferrer" class="btn-modal-site"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Live Site</a>
+          </div>
+        </div>
+      </div>
+      <div class="proj-body">
+        <div class="ptags"><span class="ptag ptag-int">Internal Tool</span><span class="ptag">Monitoring</span></div>
+        <div class="proj-name">Service Health Dashboard</div>
+        <p class="proj-desc">Real-time uptime monitor for 11 services with instant Slack degradation alerts.</p>
+      </div>
+    </article>
+
+    <article class="proj-card r" data-category="tools" data-modal="modal-project-health">
+      <div class="proj-thumb thumb-ss">
+        <img src="img/preview-project-health.png" alt="Project Health Monitor" class="ss-img" loading="lazy" decoding="async">
+        <div class="t-urlbar" aria-hidden="true">
+          <div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div>
+          <span class="t-url">projecthealthmonitoring.netlify.app</span>
+        </div>
+        <div class="t-overlay">
+          <div class="t-overlay-actions">
+            <button class="btn-modal-open" data-modal="modal-project-health"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Details</button>
+            <a href="https://projecthealthmonitoring.netlify.app/" target="_blank" rel="noopener noreferrer" class="btn-modal-site"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Live Site</a>
+          </div>
+        </div>
+      </div>
+      <div class="proj-body">
+        <div class="ptags"><span class="ptag ptag-int">Internal Tool</span><span class="ptag">Playwright</span><span class="ptag">GitHub Actions</span></div>
+        <div class="proj-name">Project Health Monitor</div>
+        <p class="proj-desc">Playwright checks on GitHub Actions schedule — logs to Airtable, alerts via Slack & email.</p>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<!-- ══ TESTIMONIALS ══ -->
+<!-- No .divider here — .testi-bg has its own ::before glow line at top -->
+<section class="testi-bg" id="testimonials" aria-label="Testimonials">
+  <div class="testi-inner">
+    <div class="sec-label">Social Proof</div>
+    <h2>What People <em>Say</em></h2>
+    <p class="sec-sub">Real feedback from clients and LinkedIn recommendations from colleagues and managers.</p>
+
+    <div class="testi-filters" role="group" aria-label="Filter testimonials">
+      <button class="testi-filter-btn active" data-filter="all">All</button>
+      <button class="testi-filter-btn" data-filter="client">Clients</button>
+      <button class="testi-filter-btn" data-filter="colleague">Colleagues</button>
+    </div>
+
+    <div class="testi-carousel">
+      <button class="testi-nav testi-prev" id="testiPrev" aria-label="Previous">&#8592;</button>
+      <button class="testi-nav testi-next" id="testiNext" aria-label="Next">&#8594;</button>
+
+      <!-- Thin progress bar depletes over 6s matching autoplay interval.
+           Reset by JS on every navigation (next/prev/dot click). -->
+      <div class="testi-timer" id="testiTimer" aria-hidden="true"></div>
+      <div class="testi-track-wrap" id="testiWrap" role="region" aria-label="Testimonials">
+        <div class="testi-track" id="testiTrack">
+
+          <!-- ★ FEATURED — most recent client testimonial, pinned first -->
+          <div class="tc tc-featured r" data-type="client">
+            <div class="tc-featured-tag">✦ Recent Client</div>
+            <div class="tc-stars">★★★★★</div>
+            <p class="tc-quote">"I had the pleasure of working with Jonathan during the process of setting up my website and eCommerce section for my paintings. He has been more than helpful throughout my journey, friendly and pleasant, a man of total integrity and entirely trustworthy. No question I posed was left unanswered and no changes or amendments were a problem. I would highly recommend Jonathan — the speed, efficiency and quality of his work, his constant feedback and pride in his job was clear. I am proud to have had him involved in my website development."</p>
+            <div class="tc-author"><div class="tc-av">DM</div><div><div class="tc-name">Deirdre Mcaree</div><div class="tc-role">Client · Deirdre P. Malcolm Art</div><div class="client-badge">✓ Direct Client</div></div></div>
+          </div>
+
+          <div class="tc tc-featured r" data-type="client">
+            <div class="tc-featured-tag">✦ Recent Client</div>
+            <div class="tc-stars">★★★★★</div>
+            <p class="tc-quote">"Working with Jonathan on our website was an excellent experience from start to finish. He was consistently professional, proactive in his approach, and always delivered on time. Throughout the process, he communicated clearly and made sure our needs were understood and met. The final website he presented exceeded our expectations — not only in design but also in functionality and overall user experience. Since launching, we've received great feedback and positive reviews from our clients and partners. We highly recommend Jonathan to anyone looking for a reliable and talented web developer."</p>
+            <div class="tc-author"><div class="tc-av">MO</div><div><div class="tc-name">Manuel Olondriz</div><div class="tc-role">Client · MOEV Solutions</div><div class="client-badge">✓ Direct Client</div></div></div>
+          </div>
+
+          <div class="tc r" data-type="colleague">
+            <div class="tc-stars">★★★★★</div>
+            <p class="tc-quote">"Jonathan is a great person to have in your team. He has the right attitude, is reliable and truly treats his teammates as family. He's highly regarded — please don't hesitate to contact me if you're after a referral."</p>
+            <div class="tc-author"><div class="tc-av">RF</div><div><div class="tc-name">Rodney Frost</div><div class="tc-role">Group CEO · Jonathan's mentor</div><div class="li-badge">in LinkedIn</div></div></div>
+          </div>
+
+          <div class="tc r" data-type="colleague">
+            <div class="tc-stars">★★★★★</div>
+            <p class="tc-quote">"I worked with Jonathan for a year and a half and found him to be a very eager and enjoyable person to work with. Always willing to learn and always up for a challenge."</p>
+            <div class="tc-author"><div class="tc-av">JC</div><div><div class="tc-name">Josh Cooper</div><div class="tc-role">IT Manager · Solution Delivery · Agile Master</div><div class="li-badge">in LinkedIn</div></div></div>
+          </div>
+
+          <div class="tc r" data-type="colleague">
+            <div class="tc-stars">★★★★★</div>
+            <p class="tc-quote">"Jonathan is a hardworking and dedicated developer. His communication and commitment are fantastic. He has a great nature and is very keen to help where he can. He is an asset."</p>
+            <div class="tc-author"><div class="tc-av">PM</div><div><div class="tc-name">Peter Miller</div><div class="tc-role">Senior ERP Implementation Lead · Microsoft Dynamics 365</div><div class="li-badge">in LinkedIn</div></div></div>
+          </div>
+
+          <div class="tc r" data-type="colleague">
+            <div class="tc-stars">★★★★★</div>
+            <p class="tc-quote">"Jonathan is an excellent person to work with. He was quick to take charge of his team when the opportunity presented itself. Always willing to help a helping hand and very adaptable."</p>
+            <div class="tc-author"><div class="tc-av">EC</div><div><div class="tc-name">Edlene Cervantes</div><div class="tc-role">Lead Project Manager · PMP®, CLSSGB</div><div class="li-badge">in LinkedIn</div></div></div>
+          </div>
+
+          <div class="tc r" data-type="colleague">
+            <div class="tc-stars">★★★★★</div>
+            <p class="tc-quote">"I was very impressed by how quickly Jonathan was able to add value — understanding the product almost immediately and suggesting improvements within the first few days. Always friendly, professional and easy to work with."</p>
+            <div class="tc-author"><div class="tc-av">KB</div><div><div class="tc-name">Katie Boland</div><div class="tc-role">Chief Engineer · CBA x15 Ventures · Client</div><div class="li-badge">in LinkedIn</div></div></div>
+          </div>
+
+          <div class="tc r" data-type="colleague">
+            <div class="tc-stars">★★★★★</div>
+            <p class="tc-quote">"Jonathan is a very competent and diligent engineer. A good team player who always takes the initiative to lead. Has a fun and easy going attitude and is a pleasure to work with. I highly recommend him."</p>
+            <div class="tc-author"><div class="tc-av">DB</div><div><div class="tc-name">Dinusha Bodhinayake</div><div class="tc-role">Senior Software Engineer · NodeJS / TypeScript</div><div class="li-badge">in LinkedIn</div></div></div>
+          </div>
+
+          <div class="tc r" data-type="colleague">
+            <div class="tc-stars">★★★★★</div>
+            <p class="tc-quote">"Jonathan has solid work ethic. He consistently demonstrated his passion for problem solving. I have no doubts in his technical skills."</p>
+            <div class="tc-author"><div class="tc-av">CJ</div><div><div class="tc-name">Carmela Joyce Tolentino</div><div class="tc-role">Training Manager · Groworx Philippines</div><div class="li-badge">in LinkedIn</div></div></div>
+          </div>
+
+          <div class="tc r" data-type="colleague">
+            <div class="tc-stars">★★★★★</div>
+            <p class="tc-quote">"Jojo is a ray of sunshine in the team. His positivity is contagious. He is focused and result-oriented, always ready to roll up his sleeves and blow everyone away with his amazing work."</p>
+            <div class="tc-author"><div class="tc-av">ML</div><div><div class="tc-name">Mikie Lim</div><div class="tc-role">Online Retail · Marketplaces · Managed Jonathan directly</div><div class="li-badge">in LinkedIn</div></div></div>
+          </div>
+
+          <div class="tc r" data-type="colleague">
+            <div class="tc-stars">★★★★★</div>
+            <p class="tc-quote">"It was a pleasure to work with Jonathan, who led the offshore support team for our product! He brought great energy and leadership to the role every single day."</p>
+            <div class="tc-author"><div class="tc-av">TT</div><div><div class="tc-name">Trish Talob</div><div class="tc-role">Strategic Designer · Same team</div><div class="li-badge">in LinkedIn</div></div></div>
+          </div>
+
+        </div><!-- /testi-track -->
+      </div><!-- /testi-track-wrap -->
+
+      <div class="testi-dots" id="testiDots"></div>
+      <div class="sr-only" id="testi-status" aria-live="polite" aria-atomic="true"></div>
+    </div><!-- /testi-carousel -->
+  </div>
+</section>
+
+<!-- ══ EXPERIENCE ══ -->
+<section class="sec" id="experience">
+  <div class="sec-label">Career</div>
+  <h2>Work <em>Experience</em></h2>
+  <p class="sec-sub">12+ years across operations, project leadership, and technical delivery.</p>
+  <div class="timeline">
+    <!-- Each .tl-content is clickable — effects.js toggles .tl-open to slide
+         the .tl-expand highlights list. Keyboard-accessible via Enter/Space. -->
+    <div class="tl-item r">
+      <div class="tl-marker cur-marker"></div>
+      <div class="tl-content" tabindex="0" role="button" aria-expanded="false">
+        <div class="tl-head"><span class="tl-co">SentryX</span><span class="tl-date">Feb 2025 – Present</span></div>
+        <div class="tl-role">Technology Lead</div>
+        <div class="tl-highlight">Shopify, WordPress, Softr · Zapier & n8n automations · Full project lifecycle</div>
+        <ul class="tl-expand" aria-hidden="true">
+          <li>Built Shopify, WordPress &amp; Softr stack from scratch</li>
+          <li>Architected n8n &amp; Zapier flows — saving 10+ hrs/week</li>
+          <li>Sole technical lead across all sprints &amp; releases</li>
+        </ul>
+        <span class="tl-expand-hint">↓ Show more</span>
+      </div>
+    </div>
+    <div class="tl-item r">
+      <div class="tl-marker"></div>
+      <div class="tl-content" tabindex="0" role="button" aria-expanded="false">
+        <div class="tl-head"><span class="tl-co">FPT Software</span><span class="tl-date">Jun 2022 – Aug 2024</span></div>
+        <div class="tl-role">Technical Lead</div>
+        <div class="tl-highlight">US multichannel video distributor · Streaming infra · L2 team lead</div>
+        <ul class="tl-expand" aria-hidden="true">
+          <li>Led L2 support for US multichannel video distributor</li>
+          <li>Managed streaming infra across 3 broadcast platforms</li>
+          <li>Mentored 4-member team through complex SLA delivery</li>
+        </ul>
+        <span class="tl-expand-hint">↓ Show more</span>
+      </div>
+    </div>
+    <div class="tl-item r">
+      <div class="tl-marker"></div>
+      <div class="tl-content" tabindex="0" role="button" aria-expanded="false">
+        <div class="tl-head"><span class="tl-co">Groworx Philippines</span><span class="tl-date">Sep 2020 – Jun 2022</span></div>
+        <div class="tl-role">Full Stack Dev → OIC Team Lead</div>
+        <div class="tl-highlight">AWS contact center · HubSpot→WordPress migration · Governance lead</div>
+        <ul class="tl-expand" aria-hidden="true">
+          <li>Migrated HubSpot CMS → WordPress with zero downtime</li>
+          <li>Deployed AWS Connect contact centre solution</li>
+          <li>Stepped up as OIC Team Lead during org restructure</li>
+        </ul>
+        <span class="tl-expand-hint">↓ Show more</span>
+      </div>
+    </div>
+    <div class="tl-item r">
+      <div class="tl-marker"></div>
+      <div class="tl-content" tabindex="0" role="button" aria-expanded="false">
+        <div class="tl-head"><span class="tl-co">Integrated Office Solutions</span><span class="tl-date">Jan 2015 – Apr 2018</span></div>
+        <div class="tl-role">PHP / Web Developer</div>
+        <ul class="tl-expand" aria-hidden="true">
+          <li>Developed and maintained PHP web applications for enterprise clients</li>
+          <li>Collaborated with design and QA on feature delivery and testing</li>
+          <li>Built and managed SQL databases and server-side integrations</li>
+        </ul>
+        <span class="tl-expand-hint">↓ Show more</span>
+      </div>
+    </div>
+    <div class="tl-item r">
+      <div class="tl-marker"></div>
+      <div class="tl-content" tabindex="0" role="button" aria-expanded="false">
+        <div class="tl-head"><span class="tl-co">LifeData Systems Inc.</span><span class="tl-date">Jul 2012 – Aug 2013</span></div>
+        <div class="tl-role">Junior QA / PHP Developer</div>
+        <ul class="tl-expand" aria-hidden="true">
+          <li>Conducted manual and regression QA testing on data management software</li>
+          <li>Contributed PHP bug fixes and feature enhancements</li>
+          <li>Documented test cases and tracked issues in the internal defect system</li>
+        </ul>
+        <span class="tl-expand-hint">↓ Show more</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Certs inline -->
+  <div class="certs-inline r">
+    <div class="certs-inline-label">Certifications</div>
+    <div class="certs-groups">
+
+      <!-- Workato -->
+      <div class="cert-group r">
+        <div class="cert-group-header">
+          <span class="cert-group-logo-letter" style="background:rgba(0,212,255,.15);color:#00d4ff">W</span>
+          <span class="cert-group-name">Workato</span>
+          <span class="cert-group-count">5</span>
+        </div>
+        <div class="certs-badges">
+          <a href="https://verify.skilljar.com/c/882pmkk39fxj" target="_blank" rel="noopener noreferrer" class="cbadge">Automation Pro I<span class="cbadge-year">2021</span><span class="cbadge-view">View →</span></a>
+          <a href="https://verify.skilljar.com/c/dz3cx4unwxci" target="_blank" rel="noopener noreferrer" class="cbadge">Automation Pro II<span class="cbadge-year">2021</span><span class="cbadge-view">View →</span></a>
+          <a href="https://verify.skilljar.com/c/rdjsqoyrzz3f" target="_blank" rel="noopener noreferrer" class="cbadge">SDK Connectors<span class="cbadge-year">2021</span><span class="cbadge-view">View →</span></a>
+          <a href="https://verify.skilljar.com/c/ue9f6kvytnqk" target="_blank" rel="noopener noreferrer" class="cbadge">Workbot for Slack<span class="cbadge-year">2021</span><span class="cbadge-view">View →</span></a>
+          <a href="https://verify.skilljar.com/c/axa22ge25xxm" target="_blank" rel="noopener noreferrer" class="cbadge">Collection Badge<span class="cbadge-year">2021</span><span class="cbadge-view">View →</span></a>
+        </div>
+      </div>
+
+      <!-- AWS -->
+      <div class="cert-group">
+        <div class="cert-group-header">
+          <span class="cert-group-logo-letter" style="background:rgba(255,153,0,.15);color:#FF9900">⚡</span>
+          <span class="cert-group-name">Amazon Web Services</span>
+          <span class="cert-group-count">1</span>
+        </div>
+        <div class="certs-badges">
+          <a href="https://www.credly.com/badges/dd861d54-ea6f-4b10-8bc1-74570c276b87" target="_blank" rel="noopener noreferrer" class="cbadge">Partner Accreditation (Technical)<span class="cbadge-year">2021</span><span class="cbadge-view">View →</span></a>
+        </div>
+      </div>
+
+      <!-- Google Cloud -->
+      <div class="cert-group">
+        <div class="cert-group-header">
+          <img src="https://cdn.simpleicons.org/googlecloud/4285F4" alt="Google Cloud" class="cert-group-logo" loading="lazy" decoding="async" onerror="this.style.display='none'">
+          <span class="cert-group-name">Google Cloud / Coursera</span>
+          <span class="cert-group-count">4</span>
+        </div>
+        <div class="certs-badges">
+          <a href="https://www.coursera.org/account/accomplishments/specialization/UGZ24ZBSDND7" target="_blank" rel="noopener noreferrer" class="cbadge">Apigee API Platform Specialization<span class="cbadge-year">2019</span><span class="cbadge-view">View →</span></a>
+          <a href="https://www.coursera.org/account/accomplishments/verify/XJZXY5DB83TB" target="_blank" rel="noopener noreferrer" class="cbadge honors">API Security on Apigee <span class="honors-tag">with Honors</span><span class="cbadge-year">2019</span><span class="cbadge-view">View →</span></a>
+          <a href="https://www.coursera.org/account/accomplishments/verify/MXXF4FLX5ZBE" target="_blank" rel="noopener noreferrer" class="cbadge honors">API Development on Apigee <span class="honors-tag">with Honors</span><span class="cbadge-year">2019</span><span class="cbadge-view">View →</span></a>
+          <a href="https://www.coursera.org/account/accomplishments/verify/S678D987XU5A" target="_blank" rel="noopener noreferrer" class="cbadge honors">API Design & Fundamentals on Apigee <span class="honors-tag">with Honors</span><span class="cbadge-year">2019</span><span class="cbadge-view">View →</span></a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══ SPECIAL THANKS ══ -->
+<div class="divider"></div>
+<section class="thanks-section r" aria-label="Special Thanks">
+  <div class="sec-label" style="justify-content:center">Special Thanks</div>
+  <h2 class="thanks-heading">The Spark Behind the Work</h2>
+  <p class="thanks-sub">Sometimes the right leader changes everything.</p>
+
+  <div class="thanks-card r">
+    <div class="thanks-body">
+
+      <div class="thanks-subject">
+        <div class="thanks-subject-inner">
+          <div class="thanks-name">Nick Le</div>
+          <div class="thanks-role">Director · <a href="https://www.sentryxp.com/" target="_blank" rel="noopener noreferrer" class="thanks-link">SentryX</a></div>
+        </div>
+        <div class="thanks-actions">
+          <a href="https://www.linkedin.com/in/nickle/" target="_blank" rel="noopener noreferrer" class="thanks-btn">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+            LinkedIn
+          </a>
+          <a href="https://www.sentryxp.com/" target="_blank" rel="noopener noreferrer" class="thanks-btn thanks-btn-ghost">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            SentryX
+          </a>
+        </div>
+      </div>
+
+      <div class="thanks-divider"></div>
+
+      <blockquote class="thanks-quote">
+        "Before Nick, I was going through the motions. He gave me real ownership — Shopify
+        builds, automation pipelines, critical releases — and never once questioned whether
+        I could handle it. That environment made me <em>want</em>&#32;to go further. I started
+        building tools on my own initiative, just because I finally felt like my work
+        mattered. That's what a great leader does — not push you forward, but make you
+        want to move yourself."
+      </blockquote>
+      <div class="thanks-attribution">— Jonathan Tubay</div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══ CONTACT — STAGE 1 ══ -->
+<section id="contact" aria-label="Contact">
+  <div class="contact-stage1">
+    <div>
+      <div class="sec-label" style="justify-content:center">Contact Me</div>
+      <h2 style="font-size:clamp(1.8rem,5vw,3.2rem)">Let's Build Something <em>Great</em></h2>
+    </div>
+    <p class="c1-tagline">
+      Based in Las Piñas City, Philippines and open to remote projects worldwide. Need a Shopify store, WordPress site, or workflow automation?
+      Reach out directly or hit the button below to send me a message.
+    </p>
+
+    <div class="c-options">
+      <a href="mailto:jonatsbuilds@gmail.com" class="c-opt">
+        <span class="c-opt-ico">📧</span>
+        <div><div class="c-opt-lbl">Email</div><div class="c-opt-val">jonatsbuilds@gmail.com</div></div>
+      </a>
+      <div class="c-opt" style="cursor:default;">
+        <span class="c-opt-ico">📱</span>
+        <div>
+          <div class="c-opt-lbl">Phone / WhatsApp</div>
+          <div class="c-opt-val">+63 917 529 1657</div>
+          <div class="c-opt-actions">
+            <a href="tel:+639175291657" class="c-opt-action c-opt-action-call">📞 Call</a>
+            <a href="https://api.whatsapp.com/send?phone=639175291657" target="_blank" rel="noopener noreferrer" class="c-opt-action c-opt-action-wa">💬 WhatsApp</a>
+          </div>
+        </div>
+      </div>
+      <a href="https://www.linkedin.com/in/jonathantubay/" target="_blank" rel="noopener noreferrer" class="c-opt">
+        <span class="c-opt-ico">💼</span>
+        <div><div class="c-opt-lbl">LinkedIn</div><div class="c-opt-val">linkedin.com/in/jonathantubay</div></div>
+      </a>
+    </div>
+
+    <button class="start-btn open" id="startBtn" aria-controls="stage2" aria-expanded="true">
+      Hide form <span class="arr" aria-hidden="true">↑</span>
+    </button>
+  </div>
+
+  <!-- STAGE 2 — slides down -->
+  <div class="stage2-wrap open" id="stage2" aria-live="polite">
+    <div class="stage2">
+      <div class="stage2-head">
+        <div class="stage2-line"></div>
+        <div class="stage2-lbl">// Let's Connect</div>
+        <div class="stage2-line"></div>
+      </div>
+
+      <div class="c-layout">
+        <form class="c-form" name="contact" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
+          <!-- Netlify hidden fields -->
+          <input type="hidden" name="form-name" value="contact"/>
+          <p style="display:none"><input name="bot-field"/></p>
+
+          <div class="fg"><label for="f-name">Your Name</label><input id="f-name" name="name" type="text" placeholder="Jane Smith" required autocomplete="name"/></div>
+          <div class="fg"><label for="f-email">Email Address</label><input id="f-email" name="email" type="email" placeholder="jane@company.com" required autocomplete="email"/></div>
+          <div class="fg">
+            <label for="f-need">What do you need?</label>
+            <select id="f-need" name="service">
+              <option>Shopify Store Setup / Build</option>
+              <option>WordPress / WooCommerce Site</option>
+              <option>Softr App Development</option>
+              <option>Workflow Automation (Zapier / n8n / Airtable)</option>
+              <option>Project Management Support</option>
+              <option>Ops / Technical Team Lead</option>
+              <option>Something else</option>
+            </select>
+          </div>
+          <div class="fg"><label for="f-msg">Tell Me More</label><textarea id="f-msg" name="message" placeholder="Brief description of your project, timeline, and budget..." autocomplete="off"></textarea></div>
+          <div class="form-submit-row">
+            <button type="submit" class="btn btn-p" style="width:fit-content">Launch Project →</button>
+            <span class="form-response-note">⚡ Usually replies within 24h</span>
+          </div>
+        </form>
+
+        <!-- Contact Info — styled like screenshot -->
+        <div class="c-info">
+          <p class="c-info-intro">I respond quickly and keep communication clear throughout every project. Fill in the form and I'll be in touch within 24 hours.</p>
+          <div class="ci-row">
+            <div class="ci-ico">📧</div>
+            <div><div class="ci-lbl">Email</div><div class="ci-val"><a href="mailto:jonatsbuilds@gmail.com">jonatsbuilds@gmail.com</a></div></div>
+          </div>
+          <div class="ci-row">
+            <div class="ci-ico">📱</div>
+            <div>
+              <div class="ci-lbl">Phone / WhatsApp</div>
+              <!-- id="phone-val" targeted by effects.js copy-phone button -->
+              <div class="ci-val" id="phone-val">+63 917 529 1657</div>
+              <div class="c-opt-actions" style="margin-top:.35rem">
+                <a href="tel:+639175291657" class="c-opt-action c-opt-action-call">📞 Call</a>
+                <a href="https://api.whatsapp.com/send?phone=639175291657" target="_blank" rel="noopener noreferrer" class="c-opt-action c-opt-action-wa">💬 WhatsApp</a>
+              </div>
+            </div>
+          </div>
+          <div class="ci-row">
+            <div class="ci-ico">💼</div>
+            <div><div class="ci-lbl">LinkedIn</div><div class="ci-val"><a href="https://www.linkedin.com/in/jonathantubay/" target="_blank" rel="noopener noreferrer">linkedin.com/in/jonathantubay</a></div></div>
+          </div>
+          <div class="ci-row">
+            <div class="ci-ico">📍</div>
+            <div>
+              <div class="ci-lbl">Location</div>
+              <div class="ci-val">Las Piñas City, Metro Manila <strong>🇵🇭</strong></div>
+              <div class="ci-sub">Open to remote work globally</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PROJECT MODALS ══ -->
+
+<div class="proj-modal" id="modal-moev" role="dialog" aria-modal="true" aria-label="MOEV Solutions details">
+  <div class="modal-backdrop"></div>
+  <div class="modal-inner">
+    <button class="modal-close" aria-label="Close">✕</button>
+    <div class="modal-screenshot"><img src="img/preview-moev.png" alt="MOEV Solutions" loading="lazy" decoding="async"></div>
+    <div class="modal-content">
+      <div class="ptags"><span class="ptag ptag-feat">Featured</span><span class="ptag ptag-c">WordPress</span><span class="ptag">EV / Clean Tech</span><span class="ptag">Philippines</span></div>
+      <h3 class="modal-title">MOEV Solutions</h3>
+      <div class="modal-meta">
+        <span class="modal-badge badge-role">Solo Build</span>
+        <span class="modal-badge badge-status">🟢 Live</span>
+      </div>
+      <div class="modal-impact">
+        <div class="modal-problem"><span class="modal-label">Problem</span>EV startup needed a full web presence fast — no in-house dev team, tight timeline.</div>
+        <div class="modal-result"><span class="modal-label">Result</span>Launched in 3 weeks, solo. Full design-to-deployment ownership.</div>
+      </div>
+      <p class="modal-desc">Full WordPress build — designed, developed, and launched solo for a Filipino EV charging startup covering supply, installation, maintenance, and consultation nationwide.</p>
+      <div class="modal-stack-label">Tech Stack</div>
+      <div class="modal-stack"><span>WordPress</span><span>PHP</span><span>Custom Theme</span><span>SQLite</span><span>Netlify</span><span>ACF</span></div>
+      <a href="https://moev.ph/" target="_blank" rel="noopener noreferrer" class="btn btn-p modal-cta">View Live Site →</a>
+    </div>
+  </div>
+</div>
+
+<div class="proj-modal" id="modal-portfolio" role="dialog" aria-modal="true" aria-label="This Portfolio details">
+  <div class="modal-backdrop"></div>
+  <div class="modal-inner">
+    <button class="modal-close" aria-label="Close">✕</button>
+    <div class="modal-screenshot"><img src="img/preview-portfolio.png" alt="This Portfolio" loading="lazy" decoding="async"></div>
+    <div class="modal-content">
+      <div class="ptags"><span class="ptag ptag-feat">Personal</span><span class="ptag">HTML/CSS/JS</span><span class="ptag">Netlify</span></div>
+      <h3 class="modal-title">This Portfolio</h3>
+      <div class="modal-meta">
+        <span class="modal-badge badge-role">Solo Build</span>
+        <span class="modal-badge badge-status">🟢 Live · Maintained</span>
+      </div>
+      <div class="modal-impact">
+        <div class="modal-problem"><span class="modal-label">Problem</span>Needed a portfolio that shows both design sense and technical depth — not a template.</div>
+        <div class="modal-result"><span class="modal-label">Result</span>Built from scratch with zero frameworks. Particle network, scroll reveals, 3D tilt, dark/light theming.</div>
+      </div>
+      <p class="modal-desc">Hand-coded from scratch — no frameworks, no templates. Custom animations, particle network, scroll reveals, 3D card tilt, and a full dark/light theme system.</p>
+      <div class="modal-stack-label">Tech Stack</div>
+      <div class="modal-stack"><span>HTML5</span><span>CSS3</span><span>JavaScript</span><span>Netlify</span><span>JSON-LD</span><span>IntersectionObserver</span></div>
+      <a href="https://jonathantubay.com/" target="_blank" rel="noopener noreferrer" class="btn btn-p modal-cta">View Live Site →</a>
+    </div>
+  </div>
+</div>
+
+<div class="proj-modal" id="modal-toolmart" role="dialog" aria-modal="true" aria-label="Toolmart Houston details">
+  <div class="modal-backdrop"></div>
+  <div class="modal-inner">
+    <button class="modal-close" aria-label="Close">✕</button>
+    <div class="modal-screenshot"><img src="img/preview-toolmart.png" alt="Toolmart Houston" loading="lazy" decoding="async"></div>
+    <div class="modal-content">
+      <div class="ptags"><span class="ptag ptag-c">Shopify</span><span class="ptag">Wholesale</span><span class="ptag">B2B</span></div>
+      <h3 class="modal-title">Toolmart Houston</h3>
+      <div class="modal-meta">
+        <span class="modal-badge badge-role">Lead Dev · Ongoing</span>
+        <span class="modal-badge badge-status">🟢 Live · Maintained</span>
+      </div>
+      <div class="modal-impact">
+        <div class="modal-problem"><span class="modal-label">Problem</span>Hardware retailer needed B2B wholesale ordering with automated inventory and order workflows.</div>
+        <div class="modal-result"><span class="modal-label">Result</span>Handles retail + wholesale in one store. Ordering automated via Zapier & Airtable — zero manual processing.</div>
+      </div>
+      <p class="modal-desc">Hardware supply eCommerce serving contractors and trade professionals in Houston & San Antonio. Streamlined wholesale ordering with full automation layer.</p>
+      <div class="modal-stack-label">Tech Stack</div>
+      <div class="modal-stack"><span>Shopify</span><span>Liquid</span><span>JavaScript</span><span>Zapier</span><span>Airtable</span><span>Cin7</span></div>
+      <a href="https://www.toolmarthou.com/" target="_blank" rel="noopener noreferrer" class="btn btn-p modal-cta">View Live Site →</a>
+    </div>
+  </div>
+</div>
+
+<div class="proj-modal" id="modal-kdl" role="dialog" aria-modal="true" aria-label="Kingdomland Kids details">
+  <div class="modal-backdrop"></div>
+  <div class="modal-inner">
+    <button class="modal-close" aria-label="Close">✕</button>
+    <div class="modal-screenshot"><img src="img/preview-kdl.png" alt="Kingdomland Kids" loading="lazy" decoding="async"></div>
+    <div class="modal-content">
+      <div class="ptags"><span class="ptag ptag-c">Shopify Plus</span><span class="ptag">Ongoing</span></div>
+      <h3 class="modal-title">Kingdomland Kids</h3>
+      <div class="modal-meta">
+        <span class="modal-badge badge-role">Shopify Dev · Ongoing</span>
+        <span class="modal-badge badge-status">🟢 Live · Maintained</span>
+      </div>
+      <div class="modal-impact">
+        <div class="modal-problem"><span class="modal-label">Problem</span>Children's media brand needed a conversion-focused Shopify Plus store with ongoing theme and storefront reliability.</div>
+        <div class="modal-result"><span class="modal-label">Result</span>Conversion-focused Shopify Plus storefront launched and maintained. Ongoing ownership of store, theme, and Shopify customizations.</div>
+      </div>
+      <p class="modal-desc">Children's brand on Shopify Plus with conversion-focused UX, custom theme development, and continued storefront maintenance.</p>
+      <div class="modal-stack-label">Tech Stack</div>
+      <div class="modal-stack"><span>Shopify Plus</span><span>Liquid</span><span>JavaScript</span><span>CSS</span><span>Shopify CLI</span></div>
+      <a href="https://kingdomlandkids.com/" target="_blank" rel="noopener noreferrer" class="btn btn-p modal-cta">View Live Site →</a>
+    </div>
+  </div>
+</div>
+
+<div class="proj-modal" id="modal-kdl-checker" role="dialog" aria-modal="true" aria-label="KDL Video Health Checker details">
+  <div class="modal-backdrop"></div>
+  <div class="modal-inner">
+    <button class="modal-close" aria-label="Close">✕</button>
+    <div class="modal-screenshot"><img src="img/preview-kdl-checker.png" alt="KDL Video Health Checker" loading="lazy" decoding="async"></div>
+    <div class="modal-content">
+      <div class="ptags"><span class="ptag ptag-int">Internal Tool</span><span class="ptag">Playwright</span><span class="ptag">Automation</span></div>
+      <h3 class="modal-title">KDL Video Health Checker</h3>
+      <div class="modal-meta">
+        <span class="modal-badge badge-role">Solo Initiative</span>
+        <span class="modal-badge badge-status">🟢 Live · Internal</span>
+      </div>
+      <div class="modal-impact">
+        <div class="modal-problem"><span class="modal-label">Problem</span>132+ videos needed daily automated health checks — manual verification was impossible at scale.</div>
+        <div class="modal-result"><span class="modal-label">Result</span>Automated health monitoring across 132+ videos. 100% uptime tracking. Zero manual checks. Real-time dashboard with push alerts on failure.</div>
+      </div>
+      <p class="modal-desc">Full-stack Playwright automation that scans 132+ videos on Kingdomland Kids, tracks pass/fail rates, syncs with Google Sheets, and delivers real-time results via a live dashboard.</p>
+      <div class="modal-stack-label">Tech Stack</div>
+      <div class="modal-stack"><span>Node.js</span><span>Express</span><span>Playwright</span><span>SQLite</span><span>node-cron</span><span>Web Push</span><span>Netlify</span></div>
+      <a href="https://kdlvideohealthchecker.netlify.app/" target="_blank" rel="noopener noreferrer" class="btn btn-p modal-cta">View Live Tool →</a>
+    </div>
+  </div>
+</div>
+
+<div class="proj-modal" id="modal-service-health" role="dialog" aria-modal="true" aria-label="Service Health Dashboard details">
+  <div class="modal-backdrop"></div>
+  <div class="modal-inner">
+    <button class="modal-close" aria-label="Close">✕</button>
+    <div class="modal-screenshot"><img src="img/preview-service-health.png" alt="Service Health Dashboard" loading="lazy" decoding="async"></div>
+    <div class="modal-content">
+      <div class="ptags"><span class="ptag ptag-int">Internal Tool</span><span class="ptag">Monitoring</span></div>
+      <h3 class="modal-title">Service Health Dashboard</h3>
+      <div class="modal-meta">
+        <span class="modal-badge badge-role">Solo Build</span>
+        <span class="modal-badge badge-status">🟢 Live · Internal</span>
+      </div>
+      <div class="modal-impact">
+        <div class="modal-problem"><span class="modal-label">Problem</span>Ops team needed real-time visibility across 11+ platforms — Slack, Shopify, Airtable, Zapier and more.</div>
+        <div class="modal-result"><span class="modal-label">Result</span>11 services monitored in real-time. Slack alerts on any degradation. Auto-refreshes every 60s.</div>
+      </div>
+      <p class="modal-desc">Real-time uptime monitor for the full SentryX tech stack. Edge functions proxy external status APIs and push instant Slack alerts when any service degrades.</p>
+      <div class="modal-stack-label">Tech Stack</div>
+      <div class="modal-stack"><span>JavaScript</span><span>HTML/CSS</span><span>Netlify Functions</span><span>Deno</span><span>Edge Functions</span><span>Slack API</span></div>
+      <a href="https://servicehealth-internal.netlify.app/" target="_blank" rel="noopener noreferrer" class="btn btn-p modal-cta">View Live Tool →</a>
+    </div>
+  </div>
+</div>
+
+<div class="proj-modal" id="modal-project-health" role="dialog" aria-modal="true" aria-label="Project Health Monitor details">
+  <div class="modal-backdrop"></div>
+  <div class="modal-inner">
+    <button class="modal-close" aria-label="Close">✕</button>
+    <div class="modal-screenshot"><img src="img/preview-project-health.png" alt="Project Health Monitor" loading="lazy" decoding="async"></div>
+    <div class="modal-content">
+      <div class="ptags"><span class="ptag ptag-int">Internal Tool</span><span class="ptag">Playwright</span><span class="ptag">GitHub Actions</span></div>
+      <h3 class="modal-title">Project Health Monitor</h3>
+      <div class="modal-meta">
+        <span class="modal-badge badge-role">Solo Build</span>
+        <span class="modal-badge badge-status">🟢 Live · Internal</span>
+      </div>
+      <div class="modal-impact">
+        <div class="modal-problem"><span class="modal-label">Problem</span>Client projects needed automated health checks with instant multi-channel alerts — no manual babysitting.</div>
+        <div class="modal-result"><span class="modal-label">Result</span>Runs on GitHub Actions schedule. Logs to Airtable. Alerts via Slack & SendGrid email automatically.</div>
+      </div>
+      <p class="modal-desc">Automated status checker that runs Playwright health checks on a cron schedule via GitHub Actions, logs results to Airtable, and fires Slack + email alerts on failures.</p>
+      <div class="modal-stack-label">Tech Stack</div>
+      <div class="modal-stack"><span>Node.js</span><span>Playwright</span><span>GitHub Actions</span><span>Airtable API</span><span>SendGrid</span><span>Slack Webhooks</span><span>Netlify</span></div>
+      <a href="https://projecthealthmonitoring.netlify.app/" target="_blank" rel="noopener noreferrer" class="btn btn-p modal-cta">View Live Tool →</a>
+    </div>
+  </div>
+</div>
+
+<!-- Deirdre P. Malcolm modal — Squarespace takeover, store setup, Prodigi print-on-demand,
+     custom CSS/JS tablet responsive fix -->
+<div class="proj-modal" id="modal-dpm" role="dialog" aria-modal="true" aria-label="Deirdre P. Malcolm Art details">
+  <div class="modal-backdrop"></div>
+  <div class="modal-inner">
+    <button class="modal-close" aria-label="Close">✕</button>
+    <div class="modal-screenshot"><img src="img/preview-Deirdre.png" alt="Deirdre P. Malcolm Art" loading="lazy" decoding="async"></div>
+    <div class="modal-content">
+      <div class="ptags"><span class="ptag ptag-c">Squarespace</span><span class="ptag">eCommerce</span><span class="ptag">Print-on-Demand</span><span class="ptag">Art / Creative</span></div>
+      <h3 class="modal-title">Deirdre P. Malcolm</h3>
+      <div class="modal-meta">
+        <span class="modal-badge badge-role">Takeover &amp; Enhancement</span>
+        <span class="modal-badge badge-status">🟢 Live</span>
+      </div>
+      <div class="modal-impact">
+        <div class="modal-problem"><span class="modal-label">Problem</span>Existing Squarespace site had no store — paintings couldn't be sold. Tablet layout was broken due to Squarespace's mobile-first approach.</div>
+        <div class="modal-result"><span class="modal-label">Result</span>Store enabled with Prodigi print-on-demand for multiple sizes &amp; materials. Tablet responsive fixed with custom CSS &amp; JS.</div>
+      </div>
+      <p class="modal-desc">Took over an existing artist portfolio on Squarespace, enabled eCommerce, and integrated Prodigi as a print-on-demand provider — allowing paintings to be sold in various sizes and print formats. Also resolved the tablet responsive breakpoint using custom CSS and JavaScript, since Squarespace's mobile-first philosophy had left the mid-screen layout unstyled.</p>
+      <div class="modal-stack-label">Tech Stack</div>
+      <div class="modal-stack"><span>Squarespace</span><span>Prodigi API</span><span>Custom CSS</span><span>JavaScript</span><span>eCommerce</span><span>Print-on-Demand</span></div>
+      <a href="https://www.deirdre-p-malcolm-art.com/" target="_blank" rel="noopener noreferrer" class="btn btn-p modal-cta">View Live Site →</a>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SIDE DOT NAVIGATION ══ -->
+<!-- Built and managed entirely by effects.js — this is just a container.
+     JS reads NAV_SECTIONS array and creates one .sdot button per section. -->
+<div id="side-dots" aria-hidden="true"></div>
+
+<!-- ══ KEYBOARD SHORTCUT HINT ══ -->
+<!-- Shown once after first 200px scroll (effects.js). Auto-hides after 4s.
+     Never shown again after dismissal (localStorage flag: jt-kb-seen). -->
+<div id="kb-hint" role="tooltip" aria-hidden="true">
+  Press <span class="kb-key">H</span> Home &nbsp;
+  <span class="kb-key">W</span> Work &nbsp;
+  <span class="kb-key">C</span> Contact
+</div>
+
+<!-- ══ BACK TO TOP ══ -->
+<!-- Fixed bottom-right button. Visible only after 400px of scroll (main.js).
+     .btt-ring SVG has two circles: .btt-track (faint full ring) and .btt-progress
+     (fills clockwise as you scroll — stroke-dashoffset driven by main.js). -->
+<a href="#" id="back-to-top" aria-label="Back to top">
+  <svg class="btt-ring" viewBox="0 0 44 44" aria-hidden="true">
+    <circle class="btt-track" cx="22" cy="22" r="18"/><!-- faint background ring -->
+    <circle class="btt-progress" cx="22" cy="22" r="18"/><!-- fills with scroll progress -->
+  </svg>
+  <svg class="btt-icon" viewBox="0 0 24 24" aria-hidden="true">
+    <polyline points="18 15 12 9 6 15"/><!-- upward chevron -->
+  </svg>
+</a>
+
+<!-- ══ AVAILABLE PILL + BOOK A CALL PILL ══ -->
+<!-- Both slide in from the right after scrolling (effects.js).
+     Stacked vertically — Available on top, Book below.
+     Hidden on mobile (CSS) to avoid cluttering small screens. -->
+<a href="#contact" id="avail-pill" aria-label="Available for projects">
+  <span class="avail-pill-dot"></span>Available for Projects
+</a>
+<!-- Book-a-call pill: appears after 800px scroll, links to contact with email subject -->
+<a href="mailto:jonatsbuilds@gmail.com?subject=Let%27s%20Connect" id="book-pill" aria-label="Book a free call">
+  📅 Book a Free Call
+</a>
+
+<!-- ══ EASTER EGG TERMINAL ══ -->
+<!-- Hidden overlay triggered by typing "jt" anywhere on the page (not in a form).
+     Handled by effects.js. Lines are injected by JS with staggered delays.
+     Close via the button, Escape key, or clicking outside the terminal. -->
+<div id="egg-overlay" role="dialog" aria-modal="true" aria-label="Easter egg" aria-hidden="true">
+  <div id="egg-terminal">
+    <div class="egg-bar">
+      <span class="egg-bar-dot" style="background:#ff5f57"></span><!-- red macOS dot -->
+      <span class="egg-bar-dot" style="background:#ffbd2e"></span><!-- yellow macOS dot -->
+      <span class="egg-bar-dot" style="background:#28c840"></span><!-- green macOS dot -->
+      <span class="egg-bar-title">jonathan.exe</span>
+    </div>
+    <div id="egg-lines"></div><!-- terminal lines injected here by effects.js -->
+    <button id="egg-close" aria-label="Close">[ Close ]</button>
+  </div>
+</div>
+
+<!-- ══ MOBILE STICKY CTA ══ -->
+<div class="mobile-cta-bar" id="mobileCta">
+  <a href="#contact" class="btn btn-p">Let's Talk →</a>
+</div>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <p class="footer-cta">Available for new projects — <a href="mailto:jonatsbuilds@gmail.com">jonatsbuilds@gmail.com</a></p>
+  <p>© <span id="footer-year">2025</span> Jonathan Mojica Tubay · Las Piñas City, Philippines</p>
+  <div class="f-links">
+    <a href="mailto:jonatsbuilds@gmail.com">Email</a>
+    <a href="https://www.linkedin.com/in/jonathantubay/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+  </div>
+</footer>
+
+<!-- ══ SCRIPTS ══ -->
+<!-- Both scripts use `defer` — they run after HTML parsing, in order,
+     without blocking the browser from rendering the first frame.
+     main.js   : critical interactivity (nav, modals, forms, carousel)
+     effects.js: visual enhancements (cursor, spotlight, tokens, clock)
+     If effects.js fails for any reason, the whole site still works. -->
+<script src="./main.js" defer></script>
+<script src="./effects.js" defer></script>
+</body>
+</html>
