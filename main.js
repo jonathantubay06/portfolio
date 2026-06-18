@@ -703,12 +703,17 @@ document.querySelectorAll('.c-form input[required]').forEach(input => {
 
     // Wipe and re-insert originals fresh so rebuild is idempotent
     track.innerHTML = '';
-    origCards.forEach(c => track.appendChild(c.cloneNode(true)));
+    origCards.forEach(c => {
+      const cl = c.cloneNode(true);
+      cl.classList.add('on');
+      track.appendChild(cl);
+    });
 
     // Prepend: last perPage originals
     origCards.slice(-perPage).reverse().forEach(c => {
       const cl = c.cloneNode(true);
       cl.setAttribute('aria-hidden', 'true');
+      cl.classList.add('on');
       track.insertBefore(cl, track.firstChild);
     });
 
@@ -716,6 +721,7 @@ document.querySelectorAll('.c-form input[required]').forEach(input => {
     origCards.slice(0, perPage).forEach(c => {
       const cl = c.cloneNode(true);
       cl.setAttribute('aria-hidden', 'true');
+      cl.classList.add('on');
       track.appendChild(cl);
     });
 
