@@ -1,4 +1,15 @@
 'use strict';
+// Fallback for browsers without IntersectionObserver: treat every
+// observed element as immediately visible instead of throwing and
+// breaking every scroll-reveal/animation call site in both scripts.
+if (!('IntersectionObserver' in window)) {
+  window.IntersectionObserver = class {
+    constructor(cb) { this._cb = cb; }
+    observe(el) { this._cb([{ target: el, isIntersecting: true }], this); }
+    unobserve() {}
+    disconnect() {}
+  };
+}
 /* ═══════════════════════════════════════════════════════════════
    main.js — Jonathan Tubay Portfolio
    Critical interactive functionality — runs on DOMContentLoaded.
@@ -100,7 +111,9 @@
     btn.setAttribute('aria-label', theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode');
   };
 
-  apply(saved || 'dark'); // fall back to dark if nothing is saved yet
+  // Fall back to OS preference if nothing is saved yet (matches the inline
+  // head script in index.html that sets data-theme before first paint)
+  apply(saved || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'));
 
   btn.addEventListener('click', () => {
     // Toggle: if the attribute exists we're in light mode, clicking goes dark, and vice versa
