@@ -1092,6 +1092,7 @@ h2 em{
 .cert-group.on .cert-group-count{animation:count-pop .5s cubic-bezier(.34,1.56,.64,1) both}
 .cert-group.on:nth-child(2) .cert-group-count{animation-delay:.12s}
 .cert-group.on:nth-child(3) .cert-group-count{animation-delay:.24s}
+.cert-group.on:nth-child(4) .cert-group-count{animation-delay:.36s}
 
 /* Badges */
 .certs-badges{display:flex;flex-wrap:wrap;gap:.5rem}
@@ -1114,6 +1115,10 @@ h2 em{
 .cbadge.honors{border-color:rgba(251,191,36,.25);background:rgba(251,191,36,.04)}
 .cbadge.honors:hover{border-color:rgba(251,191,36,.5);background:rgba(251,191,36,.08);color:#fbbf24}
 .cbadge.honors:hover .cbadge-view{color:#fbbf24}
+
+/* Static badges — text-only credentials, no external link to hover toward */
+.cbadge-static{cursor:default}
+.cbadge-static:hover{background:rgba(0,212,255,.04);border-color:var(--border2);color:rgba(232,244,255,.75);transform:none;box-shadow:none}
 .honors-tag{
   font-size:.62rem;font-weight:700;letter-spacing:.05em;
   background:rgba(251,191,36,.15);color:#fbbf24;
@@ -1267,7 +1272,9 @@ h2 em{
   position:relative;z-index:1;
 }
 .contact-stage1 h2{font-size:clamp(1.8rem,5vw,3.2rem)}
+.c1-copy{display:flex;flex-direction:column;align-items:center}
 .c1-tagline{font-size:clamp(.95rem,1.5vw,1.05rem);color:var(--muted2);font-weight:400;max-width:560px;line-height:1.85}
+.c1-sub{font-size:.82rem;color:var(--muted);max-width:560px;margin-top:.6rem;line-height:1.6}
 
 .c-options{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center}
 .c-opt{
@@ -1394,6 +1401,9 @@ footer{
   flex-wrap:wrap;gap:1rem;position:relative;z-index:1;
 }
 footer p{color:var(--muted);font-size:.82rem}
+.footer-legal{display:flex;flex-direction:column}
+.footer-sub{font-size:.72rem;color:var(--muted);margin-top:.15rem;opacity:.8}
+.footer-sub strong{color:var(--muted2);font-weight:600}
 .f-links{display:flex;gap:1.4rem}
 .f-links a{color:var(--muted);text-decoration:none;font-size:.82rem;transition:color var(--transition-fast)}
 .f-links a:hover{color:var(--cyan)}
@@ -1554,6 +1564,7 @@ footer p{color:var(--muted);font-size:.82rem}
 [data-theme="light"] .cert-group::before{background:linear-gradient(180deg,rgba(0,100,180,.8),rgba(0,100,180,.25))}
 [data-theme="light"] .cbadge{color:#3d4f63;background:rgba(0,100,180,.04);border-color:rgba(0,100,180,.18)}
 [data-theme="light"] .cbadge:hover{color:var(--cyan);background:rgba(0,212,255,.08);border-color:rgba(0,212,255,.35);box-shadow:0 3px 12px rgba(0,100,180,.1)}
+[data-theme="light"] .cbadge-static:hover{color:#3d4f63;background:rgba(0,100,180,.04);border-color:rgba(0,100,180,.18);box-shadow:none}
 /* Divider: slightly softer in light mode */
 [data-theme="light"] .divider,.divider::before{opacity:.7}
 
