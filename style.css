@@ -213,7 +213,7 @@ body::after{
 /* content-visibility skips rendering for off-screen sections — big perf win */
 #services,#work,#testimonials,#experience,.thanks-section,#contact,.results-strip,footer{content-visibility:auto;contain-intrinsic-size:0 700px}
 /* GPU compositing hints for animated elements */
-.testi-track,.cursor-dot,.cursor-ring,.cursor-trail-dot{will-change:transform}
+.testi-track,.cursor-dot,.cursor-ring{will-change:transform}
 .testi-track{transform:translate3d(0,0,0)} /* prime GPU layer */
 
 /* ═══════════════════════════════════════
@@ -355,18 +355,6 @@ nav.scrolled{
   background:
     radial-gradient(ellipse at 50% 40%,rgba(0,212,255,.07) 0%,transparent 55%),
     linear-gradient(to bottom,rgba(3,8,15,.6) 0%,rgba(3,8,15,.65) 45%,rgba(3,8,15,.95) 80%,rgba(3,8,15,1) 100%);
-}
-
-/* ── 1. Cursor trail dot ── */
-.cursor-trail-dot{
-  position:fixed;left:0;top:0;width:7px;height:7px;border-radius:50%;
-  background:var(--cyan);pointer-events:none;z-index:9999;
-  opacity:0;scale:1;
-  animation:trail-fade .6s ease-out forwards;
-}
-@keyframes trail-fade{
-  0%  {opacity:.55;scale:1}
-  100%{opacity:0;  scale:.15}
 }
 
 /* ── 4. Card scan line ── */
@@ -2169,6 +2157,15 @@ body,nav,.proj-card,.tc,.svc-row,.ci-row,.c-opt,footer,.modal-inner,
 
 
 /* ═══════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════
+   CANVAS CURSOR TRAIL — particle overlay
+   ═══════════════════════════════════════ */
+#trailCanvas{
+  position:fixed;inset:0;z-index:9998;
+  pointer-events:none;
+}
+
+/* ═══════════════════════════════════════
    NEW FEATURES — 15-feature enhancement pass
    ─────────────────────────────────────────────────────────────
    1.  decoding="async"    (HTML only — no CSS needed)

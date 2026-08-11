@@ -266,39 +266,6 @@
 })();
 
 
-/* ── 6. CURSOR TRAIL ───────────────────
-   Tiny cyan dots appear wherever the mouse
-   moves and fade out in 600ms — adds a
-   satisfying "particle" feel that reinforces
-   the tech/dev identity without being noisy.
-   Throttled to one dot every 50ms so fast
-   sweeps stay clean and memory stays light.
-   Dots remove themselves on animationend so
-   the DOM never accumulates stale nodes.
-   Skipped on touch devices.
-══════════════════════════════════════ */
-(function(){
-  if (window.matchMedia('(hover: none)').matches) return;
-
-  let last = 0;
-  const THROTTLE = 80; // ms — one dot per 80ms max (reduced from 50ms for perf)
-
-  document.addEventListener('mousemove', e => {
-    const now = Date.now();
-    if (now - last < THROTTLE) return;
-    last = now;
-
-    const dot = document.createElement('div');
-    dot.className = 'cursor-trail-dot';
-    dot.style.transform = `translate(${e.clientX}px,${e.clientY}px) translate(-50%,-50%)`;
-    document.body.appendChild(dot);
-
-    // Self-remove after animation finishes — no stale DOM nodes
-    dot.addEventListener('animationend', () => dot.remove(), { once: true });
-  }, { passive: true });
-})();
-
-
 /* ── 7. TIMELINE LINE DRAW ─────────────
    The vertical timeline bar starts at 0 height
    and grows to full height as the section
@@ -459,6 +426,81 @@
   }, { rootMargin: '-40% 0px -40% 0px', threshold: 0 });
 
   sections.forEach(s => obs.observe(s));
+})();
+
+
+/* ── 6. CANVAS CURSOR TRAIL ────────────────
+   Single <canvas> overlay renders a particle
+   trail behind the cursor — no DOM nodes, no
+   CSS animation conflicts, one rAF loop.
+   Particles spawn at cursor, drift outward
+   with random velocity, fade+shrink over 800ms.
+   Skipped on touch devices.
+   Pauses when cursor is idle (same idleFrames
+   counter shared with the cursor ring loop).
+══════════════════════════════════════ */
+(function(){
+  if (window.matchMedia('(hover: none)').matches) return;
+
+  const canvas = document.createElement('canvas');
+  canvas.id = 'trailCanvas';
+  canvas.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(canvas);
+
+  const ctx = canvas.getContext('2d');
+  const particles = [];
+  const MAX = 60; // hard cap to prevent memory leaks
+  let mx = -100, my = -100;
+  let spawnTimer = 0;
+  const SPAWN_MS = 25; // spawn a particle every 25ms (~40/sec at full speed)
+
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+  }, { passive: true });
+
+  (function loop(ts) {
+    requestAnimationFrame(loop);
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Spawn new particles when cursor is active
+    if (typeof idleFrames !== 'undefined' && idleFrames < 120) {
+      spawnTimer += 16; // ~60fps delta
+      while (spawnTimer >= SPAWN_MS && particles.length < MAX) {
+        particles.push({
+          x: mx, y: my,
+          vx: (Math.random() - .5) * 1.8,
+          vy: (Math.random() - .5) * 1.8 - 1.2, // bias upward
+          life: 1,
+          size: 1.5 + Math.random() * 3,
+        });
+        spawnTimer -= SPAWN_MS;
+      }
+    }
+    spawnTimer = Math.min(spawnTimer, SPAWN_MS);
+
+    // Update + render particles
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.life -= .015; // fade over ~67 frames (~1.1s)
+
+      if (p.life <= 0) { particles.splice(i, 1); continue; }
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(0,212,255,${(p.life * .45).toFixed(2)})`;
+      ctx.fill();
+    }
+  })();
 })();
 
 
