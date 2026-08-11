@@ -290,7 +290,7 @@
 
     const dot = document.createElement('div');
     dot.className = 'cursor-trail-dot';
-    dot.style.transform = `translate(${e.clientX}px,${e.clientY}px)`;
+    dot.style.transform = `translate(${e.clientX}px,${e.clientY}px) translate(-50%,-50%)`;
     document.body.appendChild(dot);
 
     // Self-remove after animation finishes — no stale DOM nodes
@@ -493,7 +493,7 @@
 
   document.addEventListener('mousemove', e => {
     mx = e.clientX; my = e.clientY;
-    dot.style.transform = `translate(${mx}px,${my}px)`;
+    dot.style.transform = `translate(${mx}px,${my}px) translate(-50%,-50%)`;
     idleFrames = 0; // reset idle counter on any movement
   }, { passive: true });
 
@@ -502,7 +502,7 @@
     if (idleFrames < 120) { // only animate when cursor moved recently (~2s at 60fps)
       rx += (mx - rx) * 0.12;
       ry += (my - ry) * 0.12;
-      ring.style.transform = `translate(${~~rx}px,${~~ry}px)`;
+      ring.style.transform = `translate(${~~rx}px,${~~ry}px) translate(-50%,-50%)`;
       idleFrames++;
     }
     requestAnimationFrame(loopRing);
