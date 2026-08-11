@@ -2418,6 +2418,7 @@ body,nav,.proj-card,.tc,.svc-row,.ci-row,.c-opt,footer,.modal-inner,
 }
 .modal-nav-btn:hover{background:rgba(0,212,255,.1);border-color:rgba(0,212,255,.5)}
 .modal-nav-count{font-size:.72rem;color:rgba(232,244,255,.3)}
+.modal-nav-spacer{display:inline-block;width:70px} /* same width as a nav button, prevents layout shift */
 [data-theme="light"] .modal-nav-btn{color:#0e7aff;border-color:rgba(14,122,255,.3)}
 [data-theme="light"] .modal-nav-count{color:rgba(15,25,42,.35)}
 

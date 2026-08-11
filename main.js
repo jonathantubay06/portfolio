@@ -1071,14 +1071,15 @@ if (yearEl) yearEl.textContent = new Date().getFullYear();
       return btn;
     };
 
-    nav.appendChild(prevId ? makeNavBtn('← Prev', prevId) : document.createElement('span'));
+    const spacer = () => { const s = document.createElement('span'); s.className = 'modal-nav-spacer'; return s; };
+    nav.appendChild(prevId ? makeNavBtn('← Prev', prevId) : spacer());
 
     const count     = document.createElement('span');
     count.className = 'modal-nav-count';
     count.textContent = `${i + 1} / ${MODAL_ORDER.length}`;
     nav.appendChild(count);
 
-    nav.appendChild(nextId ? makeNavBtn('Next →', nextId) : document.createElement('span'));
+    nav.appendChild(nextId ? makeNavBtn('Next →', nextId) : spacer());
 
     inner.appendChild(nav);
   });
