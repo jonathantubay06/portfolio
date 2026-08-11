@@ -487,10 +487,6 @@
   let rx = -200, ry = -200;
   let idleFrames = 0; // track idle state to pause the ring loop
 
-  // Initialise off-screen so neither element flashes in the viewport before mouse enters
-  dot.style.left  = '-200px';
-  dot.style.top   = '-200px';
-
   document.addEventListener('mousemove', e => {
     mx = e.clientX; my = e.clientY;
     dot.style.transform = `translate(${mx}px,${my}px) translate(-50%,-50%)`;

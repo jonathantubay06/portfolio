@@ -359,7 +359,7 @@ nav.scrolled{
 
 /* ── 1. Cursor trail dot ── */
 .cursor-trail-dot{
-  position:fixed;width:7px;height:7px;border-radius:50%;
+  position:fixed;left:0;top:0;width:7px;height:7px;border-radius:50%;
   background:var(--cyan);pointer-events:none;z-index:9999;
   opacity:0;scale:1;
   animation:trail-fade .6s ease-out forwards;
@@ -1872,16 +1872,14 @@ button:focus:not(:focus-visible){
    CUSTOM CURSOR (desktop — injected by effects.js)
 ═══════════════════════════════════════ */
 .cursor-dot{
-  position:fixed;width:7px;height:7px;border-radius:50%;
+  position:fixed;left:0;top:0;width:7px;height:7px;border-radius:50%;
   background:var(--cyan);pointer-events:none;z-index:99999;
-  transform:translate(-50%,-50%);
   transition:width .15s,height .15s,opacity .15s;
 }
 .cursor-ring{
-  position:fixed;width:28px;height:28px;border-radius:50%;
+  position:fixed;left:0;top:0;width:28px;height:28px;border-radius:50%;
   border:1.5px solid rgba(0,212,255,.5);
   pointer-events:none;z-index:99998;
-  transform:translate(-50%,-50%);
   transition:width .22s,height .22s,border-color .22s,opacity .2s;
 }
 .cursor-ring.cursor-hover{width:44px;height:44px;border-color:rgba(0,212,255,.85)}
