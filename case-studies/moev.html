@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en" data-theme>
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>MOEV Solutions — Case Study | Jonathan Tubay</title>
+<meta name="description" content="How I built and launched a full WordPress site for a Filipino EV charging startup — solo, end-to-end, in 3 weeks."/>
+<link rel="canonical" href="https://jonathantubay.com/case-studies/moev"/>
+<meta property="og:title" content="MOEV Solutions — Case Study | Jonathan Tubay"/>
+<meta property="og:description" content="Full WordPress build for a Filipino EV startup — solo, end-to-end in 3 weeks."/>
+<meta property="og:url" content="https://jonathantubay.com/case-studies/moev"/>
+<meta property="og:type" content="article"/>
+<link rel="icon" type="image/png" href="../favicon.png" sizes="32x32"/>
+<link rel="stylesheet" href="../style.css"/>
+<style>
+  .cs-hero{min-height:40vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:6rem 1.5rem 3rem}
+  .cs-hero h1{font-family:var(--font-head);font-size:clamp(2rem,5vw,3.5rem);color:#fff}
+  .cs-hero .cs-tags{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin-top:1rem}
+  .cs-hero .cs-tag{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:.3rem .8rem;border-radius:2px;border:1px solid var(--border);color:var(--muted2)}
+  .cs-body{max-width:780px;margin:0 auto;padding:2rem 1.5rem 5rem}
+  .cs-body h2{font-family:var(--font-head);font-size:1.5rem;color:var(--cyan);margin:2.5rem 0 1rem}
+  .cs-body p,.cs-body li{font-size:1.05rem;line-height:1.85;color:var(--text);margin-bottom:1rem}
+  .cs-body ul{padding-left:1.5rem}
+  .cs-body ul li::marker{color:var(--cyan)}
+  .cs-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin:2rem 0}
+  .cs-metric{text-align:center;padding:1.5rem;background:rgba(0,212,255,.04);border:1px solid var(--border);border-radius:var(--radius)}
+  .cs-metric-num{font-family:var(--font-head);font-size:1.8rem;font-weight:900;color:var(--cyan)}
+  .cs-metric-label{font-size:.85rem;color:var(--muted);margin-top:.3rem}
+  .cs-back{display:inline-flex;align-items:center;gap:.4rem;color:var(--cyan);text-decoration:none;font-weight:600;margin-bottom:2rem;transition:gap .2s}
+  .cs-back:hover{gap:.7rem}
+  .cs-tech{display:flex;flex-wrap:wrap;gap:.5rem;margin:1.5rem 0}
+  .cs-tech span{font-size:.75rem;font-weight:600;padding:.35rem .8rem;border-radius:99px;background:rgba(0,212,255,.08);color:var(--cyan);border:1px solid rgba(0,212,255,.2)}
+  @media(max-width:600px){.cs-metrics{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to main content</a>
+<div class="noise-overlay" aria-hidden="true"></div>
+
+<nav class="nav" aria-label="Main navigation">
+  <a href="../" class="nav-logo">Jonathan Tubay</a>
+  <div class="nav-links">
+    <a href="../#work">Work</a>
+    <a href="../#services">Services</a>
+    <a href="../#testimonials">Reviews</a>
+    <a href="../#experience">Experience</a>
+    <a href="../#contact" class="nav-cta">📡 Contact Me</a>
+  </div>
+</nav>
+
+<main id="main">
+  <section class="cs-hero">
+    <div>
+      <div class="cs-tags">
+        <span class="cs-tag">WordPress</span>
+        <span class="cs-tag">EV / Clean Tech</span>
+        <span class="cs-tag">Philippines</span>
+        <span class="cs-tag">Solo Build</span>
+      </div>
+      <h1>MOEV Solutions</h1>
+      <p style="color:var(--muted);font-size:1.1rem;max-width:600px;margin:1rem auto 0">
+        Full WordPress build for a Filipino EV charging startup — solo, end-to-end, launched in 3 weeks.
+      </p>
+    </div>
+  </section>
+
+  <article class="cs-body">
+    <a href="../#work" class="cs-back">← Back to Portfolio</a>
+
+    <div class="cs-metrics">
+      <div class="cs-metric">
+        <div class="cs-metric-num">3 weeks</div>
+        <div class="cs-metric-label">Discovery → Launch</div>
+      </div>
+      <div class="cs-metric">
+        <div class="cs-metric-num">Solo</div>
+        <div class="cs-metric-label">Design + Dev + Deploy</div>
+      </div>
+      <div class="cs-metric">
+        <div class="cs-metric-num">🟢</div>
+        <div class="cs-metric-label">Live & Maintained</div>
+      </div>
+    </div>
+
+    <h2>The Challenge</h2>
+    <p>
+      MOEV Solutions — a Filipino startup supplying, installing, and maintaining EV charging stations nationwide — needed a full web presence. They had no in-house development team and a tight timeline: they needed to be live within weeks, not months.
+    </p>
+    <p>
+      The site had to serve multiple audiences: fleet operators evaluating commercial charging solutions, residential customers exploring home installation, and partners looking for maintenance contracts. Each needed a clear, distinct path through the site.
+    </p>
+
+    <h2>The Approach</h2>
+    <p>I took full ownership — design, development, content structure, and deployment:</p>
+    <ul>
+      <li><strong>Discovery-first:</strong> Ran a structured intake session to map their service lines (Supply, Installation, Maintenance, Consultation) to page architecture before writing a single line of code.</li>
+      <li><strong>Custom WordPress theme:</strong> Built from scratch — no page builder bloat. Clean, semantic markup optimized for speed and SEO. Every page structured around a specific service vertical with clear CTAs.</li>
+      <li><strong>Mobile-first responsive:</strong> The EV industry skews mobile — fleet managers and homeowners both browse on phones. Every page tested at 400px and up.</li>
+      <li><strong>One-week staging preview:</strong> Deployed to a staging environment by week 2 so the client could review, provide feedback, and iterate before launch. No surprises on go-live day.</li>
+      <li><strong>Hosting + email setup:</strong> Configured their domain, professional email, and hosting as part of the package — they didn't need to coordinate with multiple vendors.</li>
+    </ul>
+
+    <h2>The Tech Stack</h2>
+    <div class="cs-tech">
+      <span>WordPress</span><span>PHP</span><span>Custom Theme</span>
+      <span>SQLite</span><span>Netlify</span><span>ACF</span>
+      <span>CSS3</span><span>JavaScript</span>
+    </div>
+
+    <h2>The Result</h2>
+    <p>
+      Launched in 3 weeks — solo. The client received a fast, professional web presence that clearly communicates their four service lines, builds trust with enterprise and residential customers alike, and requires minimal ongoing maintenance.
+    </p>
+    <p>
+      Since launch, MOEV has received positive feedback from clients and partners on the site's clarity and professionalism. The site continues to serve as their primary digital storefront.
+    </p>
+    <blockquote style="border-left:3px solid var(--cyan);padding:1rem 1.5rem;margin:2rem 0;background:rgba(0,212,255,.04);border-radius:0 var(--radius) var(--radius) 0;font-style:italic;color:var(--text)">
+      "Working with Jonathan on our website was an excellent experience from start to finish. He was consistently professional, proactive in his approach, and always delivered on time. The final website exceeded our expectations — not only in design but also in functionality and overall user experience."
+      <footer style="margin-top:.8rem;font-style:normal;font-weight:600;color:var(--muted)">— Manuel Olondriz, MOEV Solutions</footer>
+    </blockquote>
+
+    <p style="text-align:center;margin-top:3rem">
+      <a href="https://moev.ph/" class="btn btn-p" target="_blank" rel="noopener noreferrer">Visit Live Site →</a>
+      &nbsp;
+      <a href="../#contact" class="btn btn-g">Start Your Project →</a>
+    </p>
+  </article>
+</main>
+
+<footer>
+  <div class="foot-inner">
+    <p>© <span id="footYear"></span> Jonathan Tubay. Built by hand.</p>
+    <p class="foot-reg">DTI Registered · BIR Accredited · BMBE Certified</p>
+  </div>
+</footer>
+<script>document.getElementById('footYear').textContent=new Date().getFullYear()</script>
+</body>
+</html>

@@ -210,6 +210,8 @@ body::after{
 
 /* Performance containment */
 .hero{contain-intrinsic-size:none}
+/* content-visibility skips rendering for off-screen sections — big perf win */
+#services,#work,#testimonials,#experience,.thanks-section,#contact,.results-strip,footer{content-visibility:auto;contain-intrinsic-size:0 700px}
 
 /* ═══════════════════════════════════════
    SCROLL PROGRESS BAR
@@ -2582,4 +2584,62 @@ body,nav,.proj-card,.tc,.svc-row,.ci-row,.c-opt,footer,.modal-inner,
   .qp-btns{width:100%}
   .qp-btn{flex:1;text-align:center;min-width:0}
   .qp-btn:hover{transform:none}
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RESULTS STRIP — key metrics between Portfolio & Testimonials
+   ═══════════════════════════════════════════════════════════════ */
+.results-strip{
+  background:linear-gradient(180deg,var(--bg) 0%,rgba(10,22,40,.6) 50%,var(--bg) 100%);
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+}
+.results-inner{
+  max-width:1120px;margin:0 auto;padding:3rem 1.5rem;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;
+}
+.result-item{
+  text-align:center;padding:1.5rem 1rem;
+  background:rgba(0,212,255,.03);border:1px solid var(--border);
+  border-radius:var(--radius);
+  display:flex;flex-direction:column;align-items:center;gap:.5rem;
+  transition:border-color var(--transition-fast),transform var(--transition-fast);
+}
+.result-item:hover{border-color:rgba(0,212,255,.25);transform:translateY(-2px)}
+.result-icon{font-size:1.8rem}
+.result-num{
+  font-family:var(--font-head);font-size:1.15rem;font-weight:700;
+  color:var(--cyan);letter-spacing:.03em;
+}
+.result-label{font-size:.85rem;color:var(--muted);line-height:1.5}
+
+/* ═══════════════════════════════════════════════════════════════
+   TRUST BAR — business credentials above contact form
+   ═══════════════════════════════════════════════════════════════ */
+.trust-bar{
+  display:flex;justify-content:center;gap:1.2rem;flex-wrap:wrap;
+  margin-bottom:1.8rem;
+}
+.trust-badge{
+  font-size:.78rem;font-weight:600;
+  padding:.45rem 1rem;border-radius:var(--radius-pill);
+  background:rgba(0,212,255,.05);border:1px solid var(--border);
+  color:var(--muted2);letter-spacing:.03em;
+  white-space:nowrap;
+}
+
+/* ── Results + trust: light mode ── */
+[data-theme="light"] .results-strip{
+  background:linear-gradient(180deg,#faf8f5 0%,rgba(240,237,232,.6) 50%,#faf8f5 100%);
+}
+[data-theme="light"] .result-item{background:rgba(0,100,180,.03)}
+[data-theme="light"] .result-label{color:#5a6880}
+[data-theme="light"] .trust-badge{background:rgba(0,100,180,.04);color:#3d4f63}
+
+/* ── Results: mobile ── */
+@media(max-width:768px){
+  .results-inner{grid-template-columns:repeat(2,1fr);gap:1rem;padding:2rem 1rem}
+}
+@media(max-width:500px){
+  .results-inner{grid-template-columns:1fr}
 }

@@ -928,8 +928,9 @@
 
 
 /* ── 16. KEYBOARD SHORTCUTS ────────────────
-   Press W → Work, S → Services, T → Reviews,
-   E → Experience, C → Contact, H → Home (top).
+   Press H → Home, W → Work, S → Services,
+   T → Testimonials, E → Experience, C → Contact,
+   D → Dark/Light theme toggle.
    A one-time hint tooltip shows on first scroll
    (after 200px) and auto-hides after 4s.
    The hint never shows again (localStorage flag).
@@ -965,6 +966,12 @@
     if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (e.key.length !== 1) return;
+
+    // 'd' toggles dark/light theme
+    if (e.key.toLowerCase() === 'd') {
+      document.getElementById('themeToggle')?.click();
+      return;
+    }
 
     const id = SHORTCUTS[e.key.toLowerCase()];
     if (!id) return;

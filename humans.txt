@@ -1,0 +1,18 @@
+/* TEAM */
+Developer: Jonathan Tubay
+Site: https://jonathantubay.com
+Location: Las Piñas City, Philippines
+Contact: jonatsbuilds@gmail.com
+
+/* TECH */
+Stack: HTML5, CSS3, Vanilla JS — zero frameworks
+Hosting: Netlify
+Repo: https://github.com/jonathantubay06/portfolio
+Fonts: Orbitron, Plus Jakarta Sans (Google Fonts)
+Icons: Simple Icons CDN + emoji
+Analytics: None (privacy-first)
+
+/* THANKS */
+Nick Le — for the leadership that sparked the hustle
+Claude (Anthropic) — for the code review passes
+E.D.I.T.H. (Hermes Agent) — for keeping the repo clean

@@ -64,7 +64,7 @@
 <link rel="preload" as="font" href="https://fonts.gstatic.com/s/orbitron/v31/yMJMMIlzdpvBhQQL_SC3X9yhF25-T1nyGy6xpmIyXjU1pg.woff2" type="font/woff2" crossorigin/>
 
 <!-- Preload hero background — largest above-the-fold image, critical for LCP -->
-<link rel="preload" as="image" href="./hero-bg.webp" type="image/webp"/>
+<link rel="preload" as="image" href="./hero-bg.webp" type="image/webp" fetchpriority="high"/>
 
 <!-- Inline critical CSS: renders the hero skeleton instantly before style.css downloads.
      Only above-the-fold essentials — full styles are in style.css below. -->
@@ -229,8 +229,7 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
   <!-- #typingRole text is filled by the typing animation loop in main.js -->
   <p class="hero-sub"><span id="typingRole"></span><span class="typing-cursor" aria-hidden="true">|</span></p>
   <p class="hero-desc">
-    Based in the Philippines, I build Shopify stores, WordPress sites, and Softr apps — then automate everything
-    with Zapier, Airtable, and n8n. From zero to live, from chaos to streamlined.
+    I build Shopify stores, WordPress sites, and workflow automations that save businesses 5–15 hours every week. From zero to live in weeks, not months — based in the Philippines, working worldwide.
   </p>
 
   <div class="platforms" role="list" aria-label="Platforms">
@@ -364,7 +363,7 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
 
     <article class="proj-card r" data-category="wordpress" data-modal="modal-moev">
       <div class="proj-thumb thumb-ss">
-        <img src="img/preview-moev.png" alt="MOEV Solutions" class="ss-img" loading="lazy" decoding="async" width="1745" height="860">
+        <picture><source srcset="img/preview-moev.webp" type="image/webp"><img src="img/preview-moev.png" alt="MOEV Solutions" class="ss-img" loading="lazy" decoding="async" width="1745" height="860"></picture>
         <span class="card-live-badge" aria-label="Live site">● LIVE</span>
         <div class="t-urlbar" aria-hidden="true">
           <div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div>
@@ -387,7 +386,7 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
     <!-- Deirdre P. Malcolm — Squarespace takeover + store + print-on-demand -->
     <article class="proj-card r" data-category="wordpress" data-modal="modal-dpm">
       <div class="proj-thumb thumb-ss">
-        <img src="img/preview-Deirdre.png" alt="Deirdre P. Malcolm Art" class="ss-img" loading="lazy" decoding="async" width="1899" height="952">
+        <picture><source srcset="img/preview-Deirdre.webp" type="image/webp"><img src="img/preview-Deirdre.png" alt="Deirdre P. Malcolm Art" class="ss-img" loading="lazy" decoding="async" width="1899" height="952"></picture>
         <span class="card-live-badge" aria-label="Live site">● LIVE</span>
         <div class="t-urlbar" aria-hidden="true">
           <div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div>
@@ -409,7 +408,7 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
 
     <article class="proj-card r" data-category="tools" data-modal="modal-portfolio">
       <div class="proj-thumb thumb-ss">
-        <img src="img/preview-portfolio.png" alt="This Portfolio" class="ss-img" loading="lazy" decoding="async" width="1900" height="936">
+        <picture><source srcset="img/preview-portfolio.webp" type="image/webp"><img src="img/preview-portfolio.png" alt="This Portfolio" class="ss-img" loading="lazy" decoding="async" width="1900" height="936"></picture>
         <span class="card-live-badge" aria-label="Live site">● LIVE</span>
         <div class="t-urlbar" aria-hidden="true">
           <div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div>
@@ -431,7 +430,7 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
 
     <article class="proj-card r" data-category="shopify" data-modal="modal-toolmart">
       <div class="proj-thumb thumb-ss">
-        <img src="img/preview-toolmart.png" alt="Toolmart Houston" class="ss-img" loading="lazy" decoding="async" width="1740" height="854">
+        <picture><source srcset="img/preview-toolmart.webp" type="image/webp"><img src="img/preview-toolmart.png" alt="Toolmart Houston" class="ss-img" loading="lazy" decoding="async" width="1740" height="854"></picture>
         <span class="card-live-badge" aria-label="Live site">● LIVE</span>
         <div class="t-urlbar" aria-hidden="true">
           <div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div>
@@ -453,7 +452,7 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
 
     <article class="proj-card r" data-category="shopify" data-modal="modal-kdl">
       <div class="proj-thumb thumb-ss">
-        <img src="img/preview-kdl.png" alt="Kingdomland Kids" class="ss-img" loading="lazy" decoding="async" width="1742" height="853">
+        <picture><source srcset="img/preview-kdl.webp" type="image/webp"><img src="img/preview-kdl.png" alt="Kingdomland Kids" class="ss-img" loading="lazy" decoding="async" width="1742" height="853"></picture>
         <div class="t-urlbar" aria-hidden="true">
           <div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div>
           <span class="t-url">kingdomlandkids.com</span>
@@ -474,7 +473,7 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
 
     <article class="proj-card r" data-category="tools" data-modal="modal-kdl-checker">
       <div class="proj-thumb thumb-ss">
-        <img src="img/preview-kdl-checker.png" alt="KDL Video Health Checker" class="ss-img" loading="lazy" decoding="async" width="1740" height="853">
+        <picture><source srcset="img/preview-kdl-checker.webp" type="image/webp"><img src="img/preview-kdl-checker.png" alt="KDL Video Health Checker" class="ss-img" loading="lazy" decoding="async" width="1740" height="853"></picture>
         <div class="t-urlbar" aria-hidden="true">
           <div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div>
           <span class="t-url">kdlvideohealthchecker.netlify.app</span>
@@ -495,7 +494,7 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
 
     <article class="proj-card r" data-category="tools" data-modal="modal-service-health">
       <div class="proj-thumb thumb-ss">
-        <img src="img/preview-service-health.png" alt="Service Health Dashboard" class="ss-img" loading="lazy" decoding="async" width="1741" height="855">
+        <picture><source srcset="img/preview-service-health.webp" type="image/webp"><img src="img/preview-service-health.png" alt="Service Health Dashboard" class="ss-img" loading="lazy" decoding="async" width="1741" height="855"></picture>
         <div class="t-urlbar" aria-hidden="true">
           <div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div>
           <span class="t-url">servicehealth-internal.netlify.app</span>
@@ -516,7 +515,7 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
 
     <article class="proj-card r" data-category="tools" data-modal="modal-project-health">
       <div class="proj-thumb thumb-ss">
-        <img src="img/preview-project-health.png" alt="Project Health Monitor" class="ss-img" loading="lazy" decoding="async" width="1739" height="851">
+        <picture><source srcset="img/preview-project-health.webp" type="image/webp"><img src="img/preview-project-health.png" alt="Project Health Monitor" class="ss-img" loading="lazy" decoding="async" width="1739" height="851"></picture>
         <div class="t-urlbar" aria-hidden="true">
           <div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div>
           <span class="t-url">projecthealthmonitoring.netlify.app</span>
@@ -535,6 +534,32 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
       </div>
     </article>
 
+  </div>
+</section>
+
+<!-- ══ RESULTS STRIP ══ -->
+<section class="results-strip" aria-label="Key results">
+  <div class="results-inner">
+    <div class="result-item r">
+      <span class="result-icon">⚡</span>
+      <span class="result-num">10+ hrs/week</span>
+      <span class="result-label">saved for Tool Mart via automation</span>
+    </div>
+    <div class="result-item r">
+      <span class="result-icon">🚀</span>
+      <span class="result-num">3 weeks</span>
+      <span class="result-label">solo launch of MOEV Solutions</span>
+    </div>
+    <div class="result-item r">
+      <span class="result-icon">📹</span>
+      <span class="result-num">132+ videos</span>
+      <span class="result-label">monitored automatically, zero manual checks</span>
+    </div>
+    <div class="result-item r">
+      <span class="result-icon">🟢</span>
+      <span class="result-num">11 services</span>
+      <span class="result-label">tracked 24/7 with real-time Slack alerts</span>
+    </div>
   </div>
 </section>
 
@@ -878,6 +903,13 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
         <div class="stage2-line"></div>
       </div>
 
+      <!-- Trust badges -->
+      <div class="trust-bar">
+        <span class="trust-badge">🏛️ DTI Registered</span>
+        <span class="trust-badge">📄 BIR Accredited</span>
+        <span class="trust-badge">✅ BMBE Certified</span>
+      </div>
+
       <div class="c-layout">
         <form class="c-form" name="contact" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
           <!-- Netlify hidden fields -->
@@ -948,7 +980,7 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
   <div class="modal-backdrop"></div>
   <div class="modal-inner">
     <button class="modal-close" aria-label="Close">✕</button>
-    <div class="modal-screenshot"><img src="img/preview-moev.png" alt="MOEV Solutions" loading="lazy" decoding="async" width="1745" height="860"></div>
+    <div class="modal-screenshot"><picture><source srcset="img/preview-moev.webp" type="image/webp"><img src="img/preview-moev.png" alt="MOEV Solutions" loading="lazy" decoding="async" width="1745" height="860"></picture></div>
     <div class="modal-content">
       <div class="ptags"><span class="ptag ptag-feat">Featured</span><span class="ptag ptag-c">WordPress</span><span class="ptag">EV / Clean Tech</span><span class="ptag">Philippines</span></div>
       <h3 class="modal-title">MOEV Solutions</h3>
@@ -964,6 +996,7 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
       <div class="modal-stack-label">Tech Stack</div>
       <div class="modal-stack"><span>WordPress</span><span>PHP</span><span>Custom Theme</span><span>SQLite</span><span>Netlify</span><span>ACF</span></div>
       <a href="https://moev.ph/" target="_blank" rel="noopener noreferrer" class="btn btn-p modal-cta">View Live Site →</a>
+      <a href="case-studies/moev.html" class="btn btn-g modal-cta" style="margin-left:.5rem">Read Case Study →</a>
     </div>
   </div>
 </div>
@@ -972,7 +1005,7 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
   <div class="modal-backdrop"></div>
   <div class="modal-inner">
     <button class="modal-close" aria-label="Close">✕</button>
-    <div class="modal-screenshot"><img src="img/preview-portfolio.png" alt="This Portfolio" loading="lazy" decoding="async" width="1900" height="936"></div>
+    <div class="modal-screenshot"><picture><source srcset="img/preview-portfolio.webp" type="image/webp"><img src="img/preview-portfolio.png" alt="This Portfolio" loading="lazy" decoding="async" width="1900" height="936"></picture></div>
     <div class="modal-content">
       <div class="ptags"><span class="ptag ptag-feat">Personal</span><span class="ptag">HTML/CSS/JS</span><span class="ptag">Netlify</span></div>
       <h3 class="modal-title">This Portfolio</h3>
@@ -996,7 +1029,7 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
   <div class="modal-backdrop"></div>
   <div class="modal-inner">
     <button class="modal-close" aria-label="Close">✕</button>
-    <div class="modal-screenshot"><img src="img/preview-toolmart.png" alt="Toolmart Houston" loading="lazy" decoding="async" width="1740" height="854"></div>
+    <div class="modal-screenshot"><picture><source srcset="img/preview-toolmart.webp" type="image/webp"><img src="img/preview-toolmart.png" alt="Toolmart Houston" loading="lazy" decoding="async" width="1740" height="854"></picture></div>
     <div class="modal-content">
       <div class="ptags"><span class="ptag ptag-c">Shopify</span><span class="ptag">Wholesale</span><span class="ptag">B2B</span></div>
       <h3 class="modal-title">Toolmart Houston</h3>
@@ -1020,7 +1053,7 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
   <div class="modal-backdrop"></div>
   <div class="modal-inner">
     <button class="modal-close" aria-label="Close">✕</button>
-    <div class="modal-screenshot"><img src="img/preview-kdl.png" alt="Kingdomland Kids" loading="lazy" decoding="async" width="1742" height="853"></div>
+    <div class="modal-screenshot"><picture><source srcset="img/preview-kdl.webp" type="image/webp"><img src="img/preview-kdl.png" alt="Kingdomland Kids" loading="lazy" decoding="async" width="1742" height="853"></picture></div>
     <div class="modal-content">
       <div class="ptags"><span class="ptag ptag-c">Shopify Plus</span><span class="ptag">Ongoing</span></div>
       <h3 class="modal-title">Kingdomland Kids</h3>
@@ -1044,7 +1077,7 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
   <div class="modal-backdrop"></div>
   <div class="modal-inner">
     <button class="modal-close" aria-label="Close">✕</button>
-    <div class="modal-screenshot"><img src="img/preview-kdl-checker.png" alt="KDL Video Health Checker" loading="lazy" decoding="async" width="1740" height="853"></div>
+    <div class="modal-screenshot"><picture><source srcset="img/preview-kdl-checker.webp" type="image/webp"><img src="img/preview-kdl-checker.png" alt="KDL Video Health Checker" loading="lazy" decoding="async" width="1740" height="853"></picture></div>
     <div class="modal-content">
       <div class="ptags"><span class="ptag ptag-int">Internal Tool</span><span class="ptag">Playwright</span><span class="ptag">Automation</span></div>
       <h3 class="modal-title">KDL Video Health Checker</h3>
@@ -1068,7 +1101,7 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
   <div class="modal-backdrop"></div>
   <div class="modal-inner">
     <button class="modal-close" aria-label="Close">✕</button>
-    <div class="modal-screenshot"><img src="img/preview-service-health.png" alt="Service Health Dashboard" loading="lazy" decoding="async" width="1741" height="855"></div>
+    <div class="modal-screenshot"><picture><source srcset="img/preview-service-health.webp" type="image/webp"><img src="img/preview-service-health.png" alt="Service Health Dashboard" loading="lazy" decoding="async" width="1741" height="855"></picture></div>
     <div class="modal-content">
       <div class="ptags"><span class="ptag ptag-int">Internal Tool</span><span class="ptag">Monitoring</span></div>
       <h3 class="modal-title">Service Health Dashboard</h3>
@@ -1092,7 +1125,7 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
   <div class="modal-backdrop"></div>
   <div class="modal-inner">
     <button class="modal-close" aria-label="Close">✕</button>
-    <div class="modal-screenshot"><img src="img/preview-project-health.png" alt="Project Health Monitor" loading="lazy" decoding="async" width="1739" height="851"></div>
+    <div class="modal-screenshot"><picture><source srcset="img/preview-project-health.webp" type="image/webp"><img src="img/preview-project-health.png" alt="Project Health Monitor" loading="lazy" decoding="async" width="1739" height="851"></picture></div>
     <div class="modal-content">
       <div class="ptags"><span class="ptag ptag-int">Internal Tool</span><span class="ptag">Playwright</span><span class="ptag">GitHub Actions</span></div>
       <h3 class="modal-title">Project Health Monitor</h3>
@@ -1118,7 +1151,7 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
   <div class="modal-backdrop"></div>
   <div class="modal-inner">
     <button class="modal-close" aria-label="Close">✕</button>
-    <div class="modal-screenshot"><img src="img/preview-Deirdre.png" alt="Deirdre P. Malcolm Art" loading="lazy" decoding="async" width="1899" height="952"></div>
+    <div class="modal-screenshot"><picture><source srcset="img/preview-Deirdre.webp" type="image/webp"><img src="img/preview-Deirdre.png" alt="Deirdre P. Malcolm Art" loading="lazy" decoding="async" width="1899" height="952"></picture></div>
     <div class="modal-content">
       <div class="ptags"><span class="ptag ptag-c">Squarespace</span><span class="ptag">eCommerce</span><span class="ptag">Print-on-Demand</span><span class="ptag">Art / Creative</span></div>
       <h3 class="modal-title">Deirdre P. Malcolm</h3>
@@ -1149,7 +1182,8 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
 <div id="kb-hint" role="tooltip" aria-hidden="true">
   Press <span class="kb-key">H</span> Home &nbsp;
   <span class="kb-key">W</span> Work &nbsp;
-  <span class="kb-key">C</span> Contact
+  <span class="kb-key">C</span> Contact &nbsp;
+  <span class="kb-key">D</span> Theme
 </div>
 
 <!-- ══ BACK TO TOP ══ -->
