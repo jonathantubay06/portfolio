@@ -361,12 +361,12 @@ nav.scrolled{
 .cursor-trail-dot{
   position:fixed;width:7px;height:7px;border-radius:50%;
   background:var(--cyan);pointer-events:none;z-index:9999;
-  transform:translate(-50%,-50%);opacity:0;
+  opacity:0;scale:1;
   animation:trail-fade .6s ease-out forwards;
 }
 @keyframes trail-fade{
-  0%  {opacity:.55;transform:translate(-50%,-50%) scale(1)}
-  100%{opacity:0;  transform:translate(-50%,-50%) scale(.15)}
+  0%  {opacity:.55;scale:1}
+  100%{opacity:0;  scale:.15}
 }
 
 /* ── 4. Card scan line ── */
