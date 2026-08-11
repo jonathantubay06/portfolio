@@ -1,16 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
-  <defs>
-    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="1.2"/>
-    </filter>
-    <filter id="outer" x="-100%" y="-100%" width="300%" height="300%">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="2.5"/>
-    </filter>
-  </defs>
-  <!-- Outer glow -->
-  <path d="M6 4L26 9l-8 3-3 8L6 4z" fill="#00d4ff" opacity="0.35" filter="url(#outer)"/>
-  <!-- Core glow -->
-  <path d="M6 4L26 9l-8 3-3 8L6 4z" fill="none" stroke="#00d4ff" stroke-width="2" stroke-linejoin="round" filter="url(#glow)"/>
-  <!-- White core -->
-  <path d="M6 4L26 9l-8 3-3 8L6 4z" fill="none" stroke="#fff" stroke-width="0.8" stroke-linejoin="round"/>
+  <!-- Glow layer: soft cyan, low opacity -->
+  <path d="M6 4L26 9l-8 3-3 8L6 4z" fill="none" stroke="#00d4ff" stroke-width="3" stroke-linejoin="round" opacity="0.2"/>
+  <!-- Core: site text color, subtle -->
+  <path d="M6 4L26 9l-8 3-3 8L6 4z" fill="none" stroke="#e8f4ff" stroke-width="0.6" stroke-linejoin="round" opacity="0.5"/>
 </svg>
