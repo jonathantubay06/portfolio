@@ -1863,7 +1863,7 @@ body{
   cursor: url('cursors/arrow.svg') 4 4, auto;
 }
 a, button, [role="button"], label, input, select, textarea, .btn, .pf-btn, .proj-card{
-  cursor: url('cursors/hand.svg') 12 4, pointer;
+  cursor: pointer;
 }
 /* Keep native cursor on touch */
 @media(hover:none){
