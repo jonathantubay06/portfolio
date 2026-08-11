@@ -212,6 +212,9 @@ body::after{
 .hero{contain-intrinsic-size:none}
 /* content-visibility skips rendering for off-screen sections — big perf win */
 #services,#work,#testimonials,#experience,.thanks-section,#contact,.results-strip,footer{content-visibility:auto;contain-intrinsic-size:0 700px}
+/* GPU compositing hints for animated elements */
+.testi-track,.cursor-dot,.cursor-ring,.cursor-trail-dot{will-change:transform}
+.testi-track{transform:translate3d(0,0,0)} /* prime GPU layer */
 
 /* ═══════════════════════════════════════
    SCROLL PROGRESS BAR

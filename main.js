@@ -694,6 +694,8 @@ document.querySelectorAll('.c-form input[required]').forEach(input => {
   let startX     = 0;
   let dragOffset = 0;
   let autoTimer  = null;
+  let _cachedCardWidth = 0; // cached to avoid getBoundingClientRect on every slide
+  let _cachedPerPage   = 0; // cache key for invalidation
 
   // Stash all cards — origCards is the working set, filtered by testimonial type
   const allCards = Array.from(track.children);
@@ -742,9 +744,13 @@ document.querySelectorAll('.c-form input[required]').forEach(input => {
     cloneCount = perPage;
   }
 
-  // ── Geometry helpers ───────────────────────────────────────
+  // ── Geometry helpers (cached) ──────────────────────────────
   function cardWidth() {
-    return (wrap.getBoundingClientRect().width - GAP * (perPage - 1)) / perPage;
+    if (_cachedPerPage !== perPage) {
+      _cachedCardWidth = (wrap.getBoundingClientRect().width - GAP * (perPage - 1)) / perPage;
+      _cachedPerPage = perPage;
+    }
+    return _cachedCardWidth;
   }
   function offsetForIdx(idx) { return idx * (cardWidth() + GAP); }
 
@@ -792,7 +798,7 @@ document.querySelectorAll('.c-form input[required]').forEach(input => {
   let current = 0; // index into full (cloned) track
   function goTo(idx, animate) {
     track.style.transition = animate === false ? 'none' : EASE;
-    track.style.transform  = `translateX(-${offsetForIdx(idx)}px)`;
+    track.style.transform  = `translate3d(-${offsetForIdx(idx)}px,0,0)`;
     current = idx;
     syncDots();
     if (animate !== false) {
@@ -877,7 +883,7 @@ document.querySelectorAll('.c-form input[required]').forEach(input => {
   function onMove(x) {
     if (!isDragging) return;
     dragOffset = x - startX;
-    track.style.transform = `translateX(${-(offsetForIdx(current) - dragOffset)}px)`;
+    track.style.transform = `translate3d(${-(offsetForIdx(current) - dragOffset)}px,0,0)`;
   }
   wrap.addEventListener('mousemove', e => onMove(e.clientX));
   wrap.addEventListener('touchmove', e => onMove(e.touches[0].clientX), { passive: true });
@@ -900,6 +906,7 @@ document.querySelectorAll('.c-form input[required]').forEach(input => {
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => {
+      _cachedPerPage = 0; // invalidate cardWidth cache on resize
       // Remember which real card was leftmost before rebuild
       const realIdx = ((current - cloneCount) % origTotal + origTotal) % origTotal;
       init(realIdx);

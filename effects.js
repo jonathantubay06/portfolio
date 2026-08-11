@@ -281,7 +281,7 @@
   if (window.matchMedia('(hover: none)').matches) return;
 
   let last = 0;
-  const THROTTLE = 50; // ms — one dot per 50ms max
+  const THROTTLE = 80; // ms — one dot per 80ms max (reduced from 50ms for perf)
 
   document.addEventListener('mousemove', e => {
     const now = Date.now();
@@ -290,8 +290,7 @@
 
     const dot = document.createElement('div');
     dot.className = 'cursor-trail-dot';
-    dot.style.left = `${e.clientX}px`;
-    dot.style.top  = `${e.clientY}px`;
+    dot.style.transform = `translate(${e.clientX}px,${e.clientY}px)`;
     document.body.appendChild(dot);
 
     // Self-remove after animation finishes — no stale DOM nodes
@@ -486,6 +485,7 @@
 
   let mx = -200, my = -200; // start off-screen so it never flashes at 0,0
   let rx = -200, ry = -200;
+  let idleFrames = 0; // track idle state to pause the ring loop
 
   // Initialise off-screen so neither element flashes in the viewport before mouse enters
   dot.style.left  = '-200px';
@@ -493,16 +493,18 @@
 
   document.addEventListener('mousemove', e => {
     mx = e.clientX; my = e.clientY;
-    dot.style.left = mx + 'px';
-    dot.style.top  = my + 'px';
+    dot.style.transform = `translate(${mx}px,${my}px)`;
+    idleFrames = 0; // reset idle counter on any movement
   }, { passive: true });
 
-  // Ring follows with lerp lag — gives it weight
+  // Ring follows with lerp lag — pauses when cursor is idle
   (function loopRing() {
-    rx += (mx - rx) * 0.12;
-    ry += (my - ry) * 0.12;
-    ring.style.left = rx.toFixed(2) + 'px';
-    ring.style.top  = ry.toFixed(2) + 'px';
+    if (idleFrames < 120) { // only animate when cursor moved recently (~2s at 60fps)
+      rx += (mx - rx) * 0.12;
+      ry += (my - ry) * 0.12;
+      ring.style.transform = `translate(${~~rx}px,${~~ry}px)`;
+      idleFrames++;
+    }
     requestAnimationFrame(loopRing);
   })();
 
