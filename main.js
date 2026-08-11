@@ -1044,7 +1044,8 @@ if (yearEl) yearEl.textContent = new Date().getFullYear();
   // Inject prev/next navigation into each modal
   const MODAL_ORDER = [
     'modal-moev', 'modal-dpm', 'modal-portfolio', 'modal-toolmart',
-    'modal-kdl', 'modal-kdl-checker', 'modal-service-health', 'modal-project-health'
+    'modal-kdl', 'modal-kdl-checker', 'modal-service-health', 'modal-project-health',
+    'modal-edith'
   ];
   MODAL_ORDER.forEach((id, i) => {
     const modal = document.getElementById(id);
