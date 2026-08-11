@@ -452,6 +452,7 @@
   const MAX = 60; // hard cap to prevent memory leaks
   let mx = -100, my = -100;
   let spawnTimer = 0;
+  let idleFrames = 0; // for idle detection (was shared with cursor ring)
   const SPAWN_MS = 25; // spawn a particle every 25ms (~40/sec at full speed)
 
   function resize() {
@@ -463,6 +464,7 @@
 
   document.addEventListener('mousemove', e => {
     mx = e.clientX; my = e.clientY;
+    idleFrames = 0;
   }, { passive: true });
 
   (function loop(ts) {
@@ -471,7 +473,7 @@
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Spawn new particles when cursor is active
-    if (typeof idleFrames !== 'undefined' && idleFrames < 120) {
+    if (idleFrames < 120) {
       spawnTimer += 16; // ~60fps delta
       while (spawnTimer >= SPAWN_MS && particles.length < MAX) {
         particles.push({
@@ -485,6 +487,7 @@
       }
     }
     spawnTimer = Math.min(spawnTimer, SPAWN_MS);
+    idleFrames++;
 
     // Update + render particles
     for (let i = particles.length - 1; i >= 0; i--) {
@@ -501,61 +504,6 @@
       ctx.fill();
     }
   })();
-})();
-
-
-/* ── 11. CUSTOM CURSOR ─────────────────
-   A small dot + trailing ring replace the
-   default cursor on desktop — the dot snaps
-   to the exact cursor position while the ring
-   lerp-follows with a slight lag for depth.
-   Ring scales up on hover over links/buttons.
-   Skipped entirely on touch devices.
-══════════════════════════════════════ */
-(function(){
-  if (window.matchMedia('(hover: none)').matches) return;
-
-  const dot  = document.createElement('div');
-  dot.className  = 'cursor-dot';
-  const ring = document.createElement('div');
-  ring.className = 'cursor-ring';
-  document.body.appendChild(dot);
-  document.body.appendChild(ring);
-
-  // Hide native cursor once elements are ready
-  document.body.classList.add('custom-cursor-active');
-
-  let mx = -200, my = -200; // start off-screen so it never flashes at 0,0
-  let rx = -200, ry = -200;
-  let idleFrames = 0; // track idle state to pause the ring loop
-
-  document.addEventListener('mousemove', e => {
-    mx = e.clientX; my = e.clientY;
-    dot.style.transform = `translate(${mx}px,${my}px) translate(-50%,-50%)`;
-    idleFrames = 0; // reset idle counter on any movement
-  }, { passive: true });
-
-  // Ring follows with lerp lag — pauses when cursor is idle
-  (function loopRing() {
-    if (idleFrames < 120) { // only animate when cursor moved recently (~2s at 60fps)
-      rx += (mx - rx) * 0.12;
-      ry += (my - ry) * 0.12;
-      ring.style.transform = `translate(${~~rx}px,${~~ry}px) translate(-50%,-50%)`;
-      idleFrames++;
-    }
-    requestAnimationFrame(loopRing);
-  })();
-
-  // Scale ring on hoverable elements
-  document.addEventListener('mouseover', e => {
-    const hov = e.target.closest('a, button, [role="button"], label, input, select, textarea');
-    dot.classList.toggle('cursor-hover', !!hov);
-    ring.classList.toggle('cursor-hover', !!hov);
-  });
-
-  // Hide when mouse leaves the window
-  document.addEventListener('mouseleave', () => { dot.style.opacity = '0'; ring.style.opacity = '0'; });
-  document.addEventListener('mouseenter', () => { dot.style.opacity = ''; ring.style.opacity = ''; });
 })();
 
 

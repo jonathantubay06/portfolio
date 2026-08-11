@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <defs>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="1.2"/>
+    </filter>
+    <filter id="outer" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2.5"/>
+    </filter>
+  </defs>
+  <!-- Outer glow -->
+  <g fill="#00d4ff" opacity="0.35" filter="url(#outer)">
+    <!-- Palm + fingers -->
+    <rect x="9" y="14" width="8" height="12" rx="3"/>
+    <!-- Index finger pointing up -->
+    <rect x="17" y="4" width="5" height="14" rx="2.5"/>
+    <!-- Thumb -->
+    <rect x="3" y="10" width="7" height="6" rx="3" transform="rotate(-30 6 13)"/>
+  </g>
+  <!-- Core glow -->
+  <g fill="none" stroke="#00d4ff" stroke-width="2" stroke-linejoin="round" filter="url(#glow)">
+    <rect x="9" y="14" width="8" height="12" rx="3"/>
+    <rect x="17" y="4" width="5" height="14" rx="2.5"/>
+    <rect x="3" y="10" width="7" height="6" rx="3" transform="rotate(-30 6 13)"/>
+  </g>
+  <!-- White core -->
+  <g fill="none" stroke="#fff" stroke-width="0.8" stroke-linejoin="round">
+    <rect x="9" y="14" width="8" height="12" rx="3"/>
+    <rect x="17" y="4" width="5" height="14" rx="2.5"/>
+    <rect x="3" y="10" width="7" height="6" rx="3" transform="rotate(-30 6 13)"/>
+  </g>
+</svg>

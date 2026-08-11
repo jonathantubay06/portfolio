@@ -213,7 +213,7 @@ body::after{
 /* content-visibility skips rendering for off-screen sections — big perf win */
 #services,#work,#testimonials,#experience,.thanks-section,#contact,.results-strip,footer{content-visibility:auto;contain-intrinsic-size:0 700px}
 /* GPU compositing hints for animated elements */
-.testi-track,.cursor-dot,.cursor-ring{will-change:transform}
+.testi-track{will-change:transform}
 .testi-track{transform:translate3d(0,0,0)} /* prime GPU layer */
 
 /* ═══════════════════════════════════════
@@ -1857,22 +1857,23 @@ button:focus:not(:focus-visible){
 }
 
 /* ═══════════════════════════════════════
+   NEON SVG CURSORS — arrow default, hand on links
+   ═══════════════════════════════════════ */
+body{
+  cursor: url('cursors/arrow.svg') 4 4, auto;
+}
+a, button, [role="button"], label, input, select, textarea, .btn, .pf-btn, .proj-card{
+  cursor: url('cursors/hand.svg') 12 4, pointer;
+}
+/* Keep native cursor on touch */
+@media(hover:none){
+  body, a, button{ cursor: auto }
+}
+
+/* ═══════════════════════════════════════
    CUSTOM CURSOR (desktop — injected by effects.js)
 ═══════════════════════════════════════ */
-.cursor-dot{
-  position:fixed;left:0;top:0;width:7px;height:7px;border-radius:50%;
-  background:var(--cyan);pointer-events:none;z-index:99999;
-  transition:width .15s,height .15s,opacity .15s;
-}
-.cursor-ring{
-  position:fixed;left:0;top:0;width:28px;height:28px;border-radius:50%;
-  border:1.5px solid rgba(0,212,255,.5);
-  pointer-events:none;z-index:99998;
-  transition:width .22s,height .22s,border-color .22s,opacity .2s;
-}
-.cursor-ring.cursor-hover{width:44px;height:44px;border-color:rgba(0,212,255,.85)}
-.cursor-dot.cursor-hover{width:4px;height:4px;opacity:.5}
-body.custom-cursor-active,body.custom-cursor-active *{cursor:none!important}
+/* Dot + ring removed — replaced by SVG neon cursors above */
 
 /* ═══════════════════════════════════════
    AVAILABLE FOR PROJECTS PILL
