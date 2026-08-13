@@ -551,7 +551,28 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
       <div class="proj-body">
         <div class="ptags"><span class="ptag ptag-int">AI Agent</span><span class="ptag">Hermes</span><span class="ptag">Cloud</span></div>
         <div class="proj-name">E.D.I.T.H.</div>
-        <p class="proj-desc">Custom AI agent — 24/7 ops, automated QC, multi-platform, self-managing with watchdog.</p>
+        <p class="proj-desc">Every detail inspected, totally helpful — your cloud AI agent. 24/7 ops, automated QC, multi-platform.</p>
+      </div>
+    </article>
+
+    <!-- T.H.O.R. — AI Agent (Local) -->
+    <article class="proj-card r" data-category="tools" data-modal="modal-thor">
+      <div class="proj-thumb thumb-ss">
+        <picture><source srcset="img/preview-thor.webp" type="image/webp"><img src="img/preview-thor.png" alt="T.H.O.R. AI Agent" class="ss-img" loading="lazy" decoding="async" width="1740" height="853"></picture>
+        <div class="t-urlbar" aria-hidden="true">
+          <div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div>
+          <span class="t-url">edgexpert.local:8000 — Qwen3.6-27B</span>
+        </div>
+        <div class="t-overlay">
+          <div class="t-overlay-actions">
+            <button class="btn-modal-open" data-modal="modal-thor"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Details</button>
+          </div>
+        </div>
+      </div>
+      <div class="proj-body">
+        <div class="ptags"><span class="ptag ptag-int">AI Agent</span><span class="ptag">Local</span><span class="ptag">On-Prem</span></div>
+        <div class="proj-name">T.H.O.R.</div>
+        <p class="proj-desc">Thunder-Heavy Operations Runner — the on-prem workhorse. Private, zero per-token cost.</p>
       </div>
     </article>
 
@@ -1183,9 +1204,33 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
         <div class="modal-problem"><span class="modal-label">Problem</span>Ops work — QC, monitoring, automations — needed a reliable 24/7 assistant that could actually execute, not just chat.</div>
         <div class="modal-result"><span class="modal-label">Result</span>Custom AI agent deployed on cloud VPS. Handles QC for 1,500+ SKUs, runs cron automations, connects via Slack/Telegram/desktop. Self-managing with watchdog + auto-failover.</div>
       </div>
-      <p class="modal-desc">E.D.I.T.H. (Every Detail Inspected, Totally Helpful) is a custom AI agent built on Nous Research's Hermes Agent framework. Deployed on a DigitalOcean VPS in Singapore, she runs 24/7 — handling SKU quality control, scheduled price checks, cron automations, and operational monitoring across multiple client projects. Connects via Slack, Telegram, and desktop app. Self-managing with a watchdog process and automatic failover.</p>
+      <p class="modal-desc">E.D.I.T.H. — Every Detail Inspected, Totally Helpful. The always-on AI agent watching over operations. Built on Nous Research's Hermes Agent framework and deployed 24/7 on a DigitalOcean VPS in Singapore, she handles SKU quality control, scheduled price checks, cron automations, and operational monitoring across multiple client projects. Connects via Slack, Telegram, and desktop — self-managing with a watchdog process and automatic failover.</p>
       <div class="modal-stack-label">Tech Stack</div>
       <div class="modal-stack"><span>Hermes Agent</span><span>Python</span><span>DigitalOcean</span><span>systemd</span><span>Slack API</span><span>Telegram API</span><span>GitHub</span><span>DeepSeek</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- T.H.O.R. modal — local on-prem workhorse, Qwen3.6-27B -->
+<div class="proj-modal" id="modal-thor" role="dialog" aria-modal="true" aria-label="T.H.O.R. AI Agent details">
+  <div class="modal-backdrop"></div>
+  <div class="modal-inner">
+    <button class="modal-close" aria-label="Close">✕</button>
+    <div class="modal-screenshot"><picture><source srcset="img/preview-thor.webp" type="image/webp"><img src="img/preview-thor.png" alt="T.H.O.R. AI Agent" loading="lazy" decoding="async" width="1740" height="853"></picture></div>
+    <div class="modal-content">
+      <div class="ptags"><span class="ptag ptag-int">AI Agent</span><span class="ptag">Local</span><span class="ptag">On-Prem</span><span class="ptag">Qwen</span></div>
+      <h3 class="modal-title">T.H.O.R.</h3>
+      <div class="modal-meta">
+        <span class="modal-badge badge-role">Solo Build</span>
+        <span class="modal-badge badge-status">🟢 Live · On-Prem</span>
+      </div>
+      <div class="modal-impact">
+        <div class="modal-problem"><span class="modal-label">Problem</span>Private, boring-but-critical ops work — payroll extraction, invoicing, classification — shouldn't rack up per-token cloud costs.</div>
+        <div class="modal-result"><span class="modal-label">Result</span>The Hammer of Results. Local workhorse on Qwen3.6-27B — zero per-token cost, private, workload-sufficient. Runs payroll, invoicing, extraction & drafting lanes.</div>
+      </div>
+      <p class="modal-desc">T.H.O.R. (Thunder-Heavy Operations Runner — The Hammer of Results) is the on-prem workhorse. Running Qwen3.6-27B-NVFP4 via vLLM on the EdgeXpert box, he carries the private operational workload at zero per-token cost. Local brain, same "measure → verify → disclose" standard as E.D.I.T.H. — quiet, verify-first, and lands real outcomes.</p>
+      <div class="modal-stack-label">Tech Stack</div>
+      <div class="modal-stack"><span>Qwen3.6-27B</span><span>vLLM</span><span>NVFP4</span><span>EdgeXpert</span><span>Tailscale</span><span>Python</span><span>Hermes Agent</span></div>
     </div>
   </div>
 </div>

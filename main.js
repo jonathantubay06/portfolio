@@ -1045,7 +1045,7 @@ if (yearEl) yearEl.textContent = new Date().getFullYear();
   const MODAL_ORDER = [
     'modal-moev', 'modal-dpm', 'modal-portfolio', 'modal-toolmart',
     'modal-kdl', 'modal-kdl-checker', 'modal-service-health', 'modal-project-health',
-    'modal-edith'
+    'modal-edith', 'modal-thor'
   ];
   MODAL_ORDER.forEach((id, i) => {
     const modal = document.getElementById(id);
