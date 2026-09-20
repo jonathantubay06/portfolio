@@ -16,4 +16,8 @@ desktop.ini
 # Internal working docs — netlify.toml publishes "." and robots.txt allows all,
 # so anything committed here is served publicly at jonathantubay.com/<path>.
 DESIGN-IS-*/
+3D-HERO-CONCEPT-*/
+*-CONCEPT-*/
 sessions-summary.md
+CLAUDE.md
+AGENTS.md
