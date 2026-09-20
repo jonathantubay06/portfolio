@@ -201,29 +201,20 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
 <main id="main">
 
 <!-- ══ HERO ══ -->
-<!-- Full-viewport intro. Layer order (z-index low→high):
-     0: .hero-bg-img  (blurred anime background image)
-     1: .hero-overlay (dark gradient fade — keeps text readable)
-     1: .hero-canvas  (particle network drawn by main.js)
-     1: .hero::before (dot grid — CSS radial-gradient pattern)
-     2: .hero-spotlight  (mouse-follow glow — injected by effects.js)
-     2: .hero-code-float (floating code tokens — injected by effects.js)
-     3: all other hero content (eyebrow, h1, cta, stat strip…) -->
-<section class="hero" aria-label="Introduction">
-  <!-- Aurora ambient blobs — softly drifting colour glows behind the hero.
-       Pure CSS animation, pointer-events:none, heavily blurred so they're
-       atmospheric rather than distracting. Hidden on ≤600px to save battery. -->
-  <div class="aurora" aria-hidden="true">
-    <div class="aurora-blob aurora-1"></div><!-- cyan — drifts top-left -->
-    <div class="aurora-blob aurora-2"></div><!-- indigo — drifts bottom-right -->
-    <div class="aurora-blob aurora-3"></div><!-- blue-purple — drifts centre -->
-  </div>
-  <canvas id="heroCanvas" class="hero-canvas" aria-hidden="true"></canvas><!-- particle network canvas -->
-  <div class="hero-bg-img" aria-hidden="true"></div><!-- blurred bg image -->
-  <div class="hero-overlay" aria-hidden="true"></div><!-- dark gradient overlay for readability -->
-  <div class="orbit orbit-1" aria-hidden="true"></div><!-- decorative spinning ring 1 (parallax) -->
-  <div class="orbit orbit-2" aria-hidden="true"></div><!-- decorative spinning ring 2 (opposite direction) -->
+<!-- Two columns at >=1024px: copy left, workstation render right.
+     Stacks to a single centred column below that.
 
+     The previous build layered eleven decorative systems here (blurred
+     background image, particle canvas, aurora blobs, orbit rings, dot
+     grid, mouse spotlight, floating code tokens...). The 2026-09-20
+     design audit scored that 0/3 on both "unobtrusive" and "as little
+     design as possible", and the body copy had to be blurred to stay
+     readable over it. Those layers are gone; one render replaces them.
+
+     Decorative overlays sit inside .hero-art, which is aria-hidden. -->
+<section class="hero" aria-label="Introduction">
+
+  <div class="hero-copy">
   <div class="hero-eyebrow">
     <span class="avail-dot" aria-hidden="true"></span><!-- pulsing green availability dot -->
     Available for Freelance Projects
@@ -265,6 +256,41 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
   <!-- Scroll hint -->
   <div class="scroll-hint" aria-hidden="true">
     <span class="sh-bubble">Scroll to explore</span>
+  </div>
+  </div><!-- /.hero-copy -->
+
+  <!-- Decorative workstation render. Everything here is presentational:
+       aria-hidden, empty alt, nothing focusable. The SVG overlays share
+       the plate's own pixel space (1500x1288) so their coordinates were
+       measured from the image rather than eyeballed. -->
+  <div class="hero-art" id="heroStage" aria-hidden="true">
+    <div class="hero-scene" id="heroScene">
+      <div class="hero-ambient"></div>
+      <img class="hero-plate" src="img/hero-plate.webp" alt=""
+           width="1500" height="1288" fetchpriority="high" decoding="async">
+
+      <div class="hero-fx">
+        <div class="fx-laptop"></div>
+        <div class="fx-tablet"></div>
+
+        <svg class="fx-svg" viewBox="0 0 1500 1288" aria-hidden="true">
+          <path class="fx-wire w1" d="M778,204 L795,210 L827,213 L860,216 L875,213 L891,200 L908,184 L923,183"/>
+          <path class="fx-wire w2" d="M1058,213 L1076,213 L1092,216 L1109,238 L1127,263 L1143,269 L1178,274 L1211,281"/>
+          <path class="fx-wire w3" d="M987,249 L990,285 L992,330"/>
+          <path class="fx-wire w4" d="M1290,361 L1290,397 L1290,431"/>
+
+          <circle class="fx-lamp n1" cx="1176" cy="514" r="26"/>
+          <circle class="fx-lamp n2" cx="1152" cy="614" r="24"/>
+          <circle class="fx-lamp n3" cx="1130" cy="715" r="26"/>
+          <circle class="fx-ping n1" cx="1176" cy="514" r="30"/>
+          <circle class="fx-ping n2" cx="1152" cy="614" r="28"/>
+          <circle class="fx-ping n3" cx="1130" cy="715" r="30"/>
+
+          <ellipse class="fx-pen" cx="1068" cy="991" rx="22" ry="13"
+                   transform="rotate(-25 1068 991)"/>
+        </svg>
+      </div>
+    </div>
   </div>
 </section>
 

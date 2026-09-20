@@ -321,18 +321,181 @@ nav.scrolled{
 /* ═══════════════════════════════════════
    HERO
 ═══════════════════════════════════════ */
+/* ═══════════════════════════════════════
+   HERO — two-column at >=1024px
+   Copy left, workstation render right. Below 1024px it falls back to
+   the original centred single column.
+   Replaces the previous eleven-layer decorative stack (see index.html).
+═══════════════════════════════════════ */
 .hero{
   min-height:100svh;display:flex;flex-direction:column;
   justify-content:center;align-items:center;text-align:center;
   padding:6rem 1.5rem 3rem;position:relative;z-index:1;overflow:hidden;
+  background:
+    radial-gradient(circle at 1px 1px,rgba(0,212,255,.04) 1px,transparent 0) 0 0/34px 34px,
+    linear-gradient(160deg,#081221 0%,#0a1524 45%,#081321 100%);
 }
-/* Dot grid — blueprint feel, fades toward edges so it doesn't fight the content */
-.hero::before{
-  content:'';position:absolute;inset:0;z-index:1;pointer-events:none;
-  background-image:radial-gradient(circle,rgba(0,212,255,.18) 1px,transparent 1px);
-  background-size:30px 30px;
-  mask-image:radial-gradient(ellipse 75% 75% at 50% 50%,transparent 30%,black 100%);
-  -webkit-mask-image:radial-gradient(ellipse 75% 75% at 50% 50%,transparent 30%,black 100%);
+
+@media(min-width:1024px){
+  .hero{
+    display:grid;
+    grid-template-columns:minmax(0,.88fr) minmax(0,1.18fr);
+    align-items:center;align-content:center;
+    gap:clamp(.5rem,2vw,1.5rem);
+    text-align:left;
+    padding-block:clamp(1.5rem,3vh,2.5rem);
+    /* Centres the CONTENT without capping the element — a max-width here
+       would stop the hero's own background and show body colour as bands
+       down both sides. */
+    padding-inline:max(clamp(1rem,4vw,3.5rem),calc((100% - 1640px) / 2));
+  }
+  .hero-copy{position:relative;z-index:5}
+  .hero-desc{margin-inline:0}
+  .hero .hero-eyebrow,.hero .platforms,.hero .hero-cta,.hero .stat-strip{justify-content:flex-start}
+  .hero .scroll-hint{display:none}
+}
+.hero-art{display:none}
+
+@media(min-width:1024px){
+  .hero-art{
+    display:flex;justify-content:center;
+    position:relative;z-index:1;
+    perspective:1250px;perspective-origin:50% 45%;
+  }
+  .hero-scene{
+    position:relative;width:max-content;max-width:100%;
+    transform-style:preserve-3d;
+    transform:rotateX(calc(var(--hty,0)*1deg)) rotateY(calc(var(--htx,0)*1deg));
+    will-change:transform;
+    animation:heroFloat 9s ease-in-out infinite;
+  }
+  @keyframes heroFloat{0%,100%{translate:0 0}50%{translate:0 -7px}}
+
+  /* Width is the SOLE sizing driver so the element box always equals the
+     drawn picture; object-fit:contain would letterbox and the mask would
+     then feather transparent padding instead of the image's real edges.
+     1.1646 = 1500/1288, so the vh term caps effective height. */
+  .hero-plate{
+    display:block;height:auto;
+    width:min(100%,930px,calc(78vh * 1.1646));
+    position:relative;z-index:1;
+    -webkit-mask-image:
+      linear-gradient(to right,transparent 0,#000 16%,#000 84%,transparent 100%),
+      linear-gradient(to bottom,transparent 0,#000 12%,#000 82%,transparent 100%),
+      radial-gradient(72% 68% at 50% 46%,#000 42%,transparent 100%);
+    -webkit-mask-composite:source-in,source-in;
+    mask-image:
+      linear-gradient(to right,transparent 0,#000 16%,#000 84%,transparent 100%),
+      linear-gradient(to bottom,transparent 0,#000 12%,#000 82%,transparent 100%),
+      radial-gradient(72% 68% at 50% 46%,#000 42%,transparent 100%);
+    mask-composite:intersect,intersect;
+    transform:translateZ(0);
+  }
+  /* 200-byte blur of the plate, scaled out and feathered so the render's
+     own backdrop continues into the page instead of ending at an edge. */
+  .hero-ambient{
+    position:absolute;left:0;top:0;width:100%;height:100%;
+    background:url('img/hero-ambient.webp') center/100% 100% no-repeat;
+    transform:scale(2.1);
+    -webkit-mask-image:radial-gradient(closest-side,#000 28%,rgba(0,0,0,.55) 52%,transparent 78%);
+    mask-image:radial-gradient(closest-side,#000 28%,rgba(0,0,0,.55) 52%,transparent 78%);
+    pointer-events:none;z-index:0;
+    animation:heroAmbient 11s ease-in-out infinite;
+  }
+  @keyframes heroAmbient{0%,100%{opacity:.85}50%{opacity:1}}
+
+  .hero-fx{
+    position:absolute;left:0;top:0;
+    width:min(100%,930px,calc(78vh * 1.1646));aspect-ratio:1500/1288;
+    pointer-events:none;z-index:2;
+  }
+
+  /* Laptop screen: rows drifting behind the glass, clipped to the
+     screen's real parallelogram (corners measured off the plate). */
+  .fx-laptop{
+    position:absolute;inset:0;overflow:hidden;
+    clip-path:polygon(39.4% 23.1%,68.5% 33%,63.6% 55.1%,34.5% 45%);
+  }
+  .fx-laptop::before{
+    content:"";position:absolute;left:0;right:0;top:-100%;height:300%;
+    background:repeating-linear-gradient(to bottom,
+      transparent 0 26px,rgba(0,0,0,.055) 26px 30px,transparent 30px 56px);
+    animation:fxRows 9s linear infinite;
+  }
+  @keyframes fxRows{0%{transform:translateY(0)}100%{transform:translateY(56px)}}
+  .fx-laptop::after{
+    content:"";position:absolute;inset:0;opacity:0;
+    background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.14) 50%,transparent 60%);
+    animation:fxGlare 11s ease-in-out infinite 3s;
+  }
+  @keyframes fxGlare{
+    0%{transform:translateX(-60%);opacity:0}
+    8%{opacity:.85}
+    30%{transform:translateX(60%);opacity:0}
+    100%{transform:translateX(60%);opacity:0}
+  }
+
+  .fx-tablet{
+    position:absolute;inset:0;overflow:hidden;
+    clip-path:polygon(70.5% 27.5%,93.5% 32.5%,90.5% 56%,67.8% 59.5%);
+  }
+  .fx-tablet::before{
+    content:"";position:absolute;inset:0;
+    background:radial-gradient(60% 50% at 40% 45%,rgba(90,190,255,.14),transparent 70%);
+    animation:fxTablet 6.5s ease-in-out infinite;
+  }
+  @keyframes fxTablet{0%,100%{opacity:.4}50%{opacity:.95}}
+
+  /* Overlay SVG shares the plate's pixel space with the DEFAULT
+     preserveAspectRatio. "0 0 100 100" + preserveAspectRatio="none"
+     scales x and y differently, which corrupts stroke-dasharray. */
+  .fx-svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+
+  .fx-wire{
+    fill:none;stroke:#9beeff;stroke-linecap:round;stroke-width:3;
+    stroke-dasharray:26 4000;opacity:0;
+    filter:drop-shadow(0 0 5px rgba(120,230,255,1));
+  }
+  .fx-wire.w1{animation:fxFlow 5.2s cubic-bezier(.45,0,.4,1) infinite}
+  .fx-wire.w2{animation:fxFlow 5.2s cubic-bezier(.45,0,.4,1) infinite 1.3s}
+  .fx-wire.w3{animation:fxFlow 5.2s cubic-bezier(.45,0,.4,1) infinite .9s}
+  .fx-wire.w4{animation:fxFlow 5.2s cubic-bezier(.45,0,.4,1) infinite 2.4s}
+  @keyframes fxFlow{
+    0%{stroke-dashoffset:4026;opacity:0}
+    8%{opacity:1}
+    52%{stroke-dashoffset:0;opacity:1}
+    66%{stroke-dashoffset:0;opacity:0}
+    100%{stroke-dashoffset:0;opacity:0}
+  }
+
+  .fx-lamp,.fx-ping{transform-box:fill-box;transform-origin:center;opacity:0}
+  .fx-lamp{fill:#7fe0ff}
+  .fx-ping{fill:none;stroke:#7fe0ff;stroke-width:3}
+  .fx-lamp.n1{animation:fxLamp 6s ease-in-out infinite}
+  .fx-lamp.n2{animation:fxLamp 6s ease-in-out infinite .7s}
+  .fx-lamp.n3{animation:fxLamp 6s ease-in-out infinite 1.4s}
+  .fx-ping.n1{animation:fxPing 6s ease-out infinite}
+  .fx-ping.n2{animation:fxPing 6s ease-out infinite .7s}
+  .fx-ping.n3{animation:fxPing 6s ease-out infinite 1.4s}
+  @keyframes fxLamp{0%,100%{opacity:0}8%{opacity:.5}26%{opacity:0}}
+  @keyframes fxPing{
+    0%{opacity:0;transform:scale(.55)}
+    10%{opacity:.85;transform:scale(.85)}
+    32%{opacity:0;transform:scale(1.5)}
+    100%{opacity:0;transform:scale(1.5)}
+  }
+
+  .fx-pen{
+    fill:#ffdca8;opacity:0;
+    transform-box:fill-box;transform-origin:center;
+    animation:fxPen 11s ease-in-out infinite 4s;
+  }
+  @keyframes fxPen{
+    0%,100%{opacity:0;transform:scale(.6)}
+    5%{opacity:.55;transform:scale(1)}
+    13%{opacity:.18;transform:scale(1.25)}
+    20%{opacity:0;transform:scale(1.4)}
+  }
 }
 /* Bottom fade-out — darkens the last ~140px of the hero so the
    first divider line feels like it emerges from shadow, not thin air */
@@ -342,8 +505,10 @@ nav.scrolled{
   background:linear-gradient(to bottom,transparent,rgba(2,8,20,.75));
   z-index:2;pointer-events:none;
 }
-.hero > *:not(.hero-bg-img):not(.hero-overlay):not(.orbit):not(.hero-spotlight):not(.hero-code-float):not(canvas){position:relative;z-index:3}
-.hero h1,.hero .hero-sub,.hero .hero-desc{text-shadow:0 2px 20px rgba(0,0,0,.9),0 0 40px rgba(0,0,0,.6)}
+.hero > *{position:relative;z-index:3}
+/* The heavy text-shadow existed to keep copy legible over the blurred
+   background image. That image is gone, so the shadow only muddied the
+   type — this was the audit's "soft/blurred body copy" finding. */
 .hero-bg-img{
   position:absolute;inset:0;z-index:0;
   background:url('./hero-bg.webp') center center / cover no-repeat;
@@ -1686,6 +1851,13 @@ footer p{color:var(--muted);font-size:.82rem}
    REDUCED MOTION — granular
 ═══════════════════════════════════════ */
 @media(prefers-reduced-motion:reduce){
+  /* Hero render: freeze the plate and every overlay. */
+  .hero-scene,.hero-ambient,.fx-laptop::before,.fx-laptop::after,
+  .fx-tablet::before,.fx-wire,.fx-lamp,.fx-ping,.fx-pen{
+    animation:none!important;transform:none!important;
+  }
+  .fx-svg,.fx-laptop,.fx-tablet{display:none}
+
   *,*::before,*::after{
     animation-duration:.01ms!important;
     animation-iteration-count:1!important;

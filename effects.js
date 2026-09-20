@@ -111,6 +111,12 @@ const PREFERS_REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduc
    gives it weight and feels cinematic.
 ══════════════════════════════════════ */
 (function(){
+  // Disabled with the 2026-09-21 hero rebuild: the hero now holds a single
+  // workstation render, and a mouse-follow glow sat on top of it as another
+  // competing layer. Kept rather than deleted so it can be restored if the
+  // hero direction changes.
+  return;
+
   if (PREFERS_REDUCED_MOTION) return; // decorative motion only — nothing here carries content
   if (window.matchMedia('(hover: none)').matches) return;
 
@@ -163,6 +169,10 @@ const PREFERS_REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduc
    Skipped on small screens (< 600px).
 ══════════════════════════════════════ */
 (function(){
+  // Disabled with the 2026-09-21 hero rebuild — the floating tokens landed
+  // directly over the workstation render. See the spotlight note above.
+  return;
+
   if (PREFERS_REDUCED_MOTION) return; // decorative motion only — nothing here carries content
   const hero = document.querySelector('.hero');
   if (!hero || window.innerWidth < 768) return; // hidden on tablets & below via CSS too
