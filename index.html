@@ -22,7 +22,7 @@
 <meta property="og:type" content="website"/>
 <meta property="og:locale" content="en_US"/>
 <meta property="og:url" content="https://jonathantubay.com/"/>
-<meta property="og:image" content="https://jonathantubay.com/og-preview.png"/>
+<meta property="og:image" content="https://jonathantubay.com/og-preview.jpg"/>
 <meta property="og:image:width" content="1200"/>
 <meta property="og:image:height" content="630"/>
 
@@ -30,7 +30,7 @@
 <meta name="twitter:card" content="summary_large_image"/>
 <meta name="twitter:title" content="Jonathan Tubay — Shopify & WordPress Developer | Automation"/>
 <meta name="twitter:description" content="Shopify & WordPress (ACF/Gutenberg) developer in the Philippines — Figma-to-production builds and workflow automation with Zapier & Airtable."/>
-<meta name="twitter:image" content="https://jonathantubay.com/og-preview.png"/>
+<meta name="twitter:image" content="https://jonathantubay.com/og-preview.jpg"/>
 
 <!-- Theme color for mobile browsers -->
 <meta name="theme-color" content="#060e1a"/>
@@ -194,6 +194,12 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
   <a href="#contact">Contact Me</a>
 </nav>
 
+<!-- ══ MAIN LANDMARK ══ -->
+<!-- Wraps every content section (hero → contact). The skip link targets
+     this element; project dialogs live outside it so a trapped modal is
+     not nested inside the main landmark. -->
+<main id="main">
+
 <!-- ══ HERO ══ -->
 <!-- Full-viewport intro. Layer order (z-index low→high):
      0: .hero-bg-img  (blurred anime background image)
@@ -203,7 +209,7 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
      2: .hero-spotlight  (mouse-follow glow — injected by effects.js)
      2: .hero-code-float (floating code tokens — injected by effects.js)
      3: all other hero content (eyebrow, h1, cta, stat strip…) -->
-<section id="main" class="hero" aria-label="Introduction">
+<section class="hero" aria-label="Introduction">
   <!-- Aurora ambient blobs — softly drifting colour glows behind the hero.
        Pure CSS animation, pointer-events:none, heavily blurred so they're
        atmospheric rather than distracting. Hidden on ≤600px to save battery. -->
@@ -353,10 +359,10 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
   <!-- Filter tabs — data-filter must match data-category on each .proj-card.
        JS in main.js toggles .hidden on non-matching cards. -->
   <div class="pf-filters" role="group" aria-label="Filter projects">
-    <button class="pf-btn active" data-filter="all">All</button>
-    <button class="pf-btn" data-filter="shopify">Shopify</button>
-    <button class="pf-btn" data-filter="wordpress">WordPress</button>
-    <button class="pf-btn" data-filter="tools">Internal Tools</button>
+    <button class="pf-btn active" data-filter="all" aria-pressed="true">All</button>
+    <button class="pf-btn" data-filter="shopify" aria-pressed="false">Shopify</button>
+    <button class="pf-btn" data-filter="wordpress" aria-pressed="false">WordPress</button>
+    <button class="pf-btn" data-filter="tools" aria-pressed="false">Internal Tools</button>
   </div>
 
   <div class="grid-portfolio">
@@ -537,7 +543,7 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
     <!-- E.D.I.T.H. — AI Agent -->
     <article class="proj-card r" data-category="tools" data-modal="modal-edith">
       <div class="proj-thumb thumb-ss">
-        <picture><source srcset="img/preview-edith.webp" type="image/webp"><img src="img/preview-edith.png" alt="E.D.I.T.H. AI Agent" class="ss-img" loading="lazy" decoding="async" width="1740" height="853"></picture>
+        <picture><source srcset="img/preview-edith.webp" type="image/webp"><img src="img/preview-edith.png" alt="E.D.I.T.H. AI Agent" class="ss-img" loading="lazy" decoding="async" width="2048" height="1152"></picture>
         <div class="t-urlbar" aria-hidden="true">
           <div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div>
           <span class="t-url">github.com/JonatsTubay0908/edith-brain</span>
@@ -558,7 +564,7 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
     <!-- T.H.O.R. — AI Agent (Local) -->
     <article class="proj-card r" data-category="tools" data-modal="modal-thor">
       <div class="proj-thumb thumb-ss">
-        <picture><source srcset="img/preview-thor.webp" type="image/webp"><img src="img/preview-thor.png" alt="T.H.O.R. AI Agent" class="ss-img" loading="lazy" decoding="async" width="1740" height="853"></picture>
+        <picture><source srcset="img/preview-thor.webp" type="image/webp"><img src="img/preview-thor.png" alt="T.H.O.R. AI Agent" class="ss-img" loading="lazy" decoding="async" width="2048" height="1152"></picture>
         <div class="t-urlbar" aria-hidden="true">
           <div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div>
           <span class="t-url">edgexpert.local:8000 — Qwen3.6-27B</span>
@@ -953,7 +959,11 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
       </div>
 
       <div class="c-layout">
-        <form class="c-form" name="contact" method="POST" data-netlify="true" data-netlify-honeypot="bot-field">
+        <!-- novalidate: the browser's native bubbles fire BEFORE the submit
+             event, which made the custom validation in handleSubmit()
+             unreachable. Taking validation over in JS keeps required/type as
+             semantics for assistive tech while we announce failures ourselves. -->
+        <form class="c-form" name="contact" method="POST" novalidate data-netlify="true" data-netlify-honeypot="bot-field">
           <!-- Netlify hidden fields -->
           <input type="hidden" name="form-name" value="contact"/>
           <p style="display:none"><input name="bot-field"/></p>
@@ -973,6 +983,11 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
             </select>
           </div>
           <div class="fg"><label for="f-msg">Tell Me More</label><textarea id="f-msg" name="message" placeholder="Brief description of your project, timeline, and budget..." autocomplete="off"></textarea></div>
+          <!-- Announced to screen readers on validation failure and on submit
+               result. Visually hidden: sighted users get the inline field
+               errors and the button label instead. -->
+          <div class="sr-only" id="form-status" role="status" aria-live="polite" aria-atomic="true"></div>
+
           <div class="form-submit-row">
             <button type="submit" class="btn btn-p" style="width:fit-content">Launch Project →</button>
             <span class="form-response-note">⚡ Usually replies within 24h</span>
@@ -1015,6 +1030,8 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
     </div>
   </div>
 </section>
+
+</main><!-- /#main -->
 
 <!-- ══ PROJECT MODALS ══ -->
 
@@ -1192,7 +1209,7 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
   <div class="modal-backdrop"></div>
   <div class="modal-inner">
     <button class="modal-close" aria-label="Close">✕</button>
-    <div class="modal-screenshot"><picture><source srcset="img/preview-edith.webp" type="image/webp"><img src="img/preview-edith.png" alt="E.D.I.T.H. AI Agent" loading="lazy" decoding="async" width="1740" height="853"></picture></div>
+    <div class="modal-screenshot"><picture><source srcset="img/preview-edith.webp" type="image/webp"><img src="img/preview-edith.png" alt="E.D.I.T.H. AI Agent" loading="lazy" decoding="async" width="2048" height="1152"></picture></div>
     <div class="modal-content">
       <div class="ptags"><span class="ptag ptag-int">AI Agent</span><span class="ptag">Hermes</span><span class="ptag">Cloud</span><span class="ptag">Automation</span></div>
       <h3 class="modal-title">E.D.I.T.H.</h3>
@@ -1216,7 +1233,7 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
   <div class="modal-backdrop"></div>
   <div class="modal-inner">
     <button class="modal-close" aria-label="Close">✕</button>
-    <div class="modal-screenshot"><picture><source srcset="img/preview-thor.webp" type="image/webp"><img src="img/preview-thor.png" alt="T.H.O.R. AI Agent" loading="lazy" decoding="async" width="1740" height="853"></picture></div>
+    <div class="modal-screenshot"><picture><source srcset="img/preview-thor.webp" type="image/webp"><img src="img/preview-thor.png" alt="T.H.O.R. AI Agent" loading="lazy" decoding="async" width="2048" height="1152"></picture></div>
     <div class="modal-content">
       <div class="ptags"><span class="ptag ptag-int">AI Agent</span><span class="ptag">Local</span><span class="ptag">On-Prem</span><span class="ptag">Qwen</span></div>
       <h3 class="modal-title">T.H.O.R.</h3>

@@ -1,4 +1,9 @@
 'use strict';
+/* Single source of truth for the motion preference. CSS has its own
+   @media (prefers-reduced-motion) rules; this gates the JS-driven loops
+   (rAF spotlight, cursor trail, scramble, typewriter) that CSS cannot reach. */
+const PREFERS_REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 /* ═══════════════════════════════════════
    EFFECTS.JS — visual enhancements
    Loaded with `defer` so it never blocks
@@ -15,6 +20,7 @@
    cyan colour on "Jonathan" is preserved.
 ══════════════════════════════════════ */
 (function(){
+  if (PREFERS_REDUCED_MOTION) return; // decorative motion only — nothing here carries content
   const h1 = document.querySelector('.glitch-name');
   if (!h1) return;
 
@@ -67,6 +73,7 @@
    mousemove never fires.
 ══════════════════════════════════════ */
 (function(){
+  if (PREFERS_REDUCED_MOTION) return; // decorative motion only — nothing here carries content
   if (window.matchMedia('(hover: none)').matches) return; // touch device — skip
 
   document.querySelectorAll('.hero-cta .btn').forEach(btn => {
@@ -104,6 +111,7 @@
    gives it weight and feels cinematic.
 ══════════════════════════════════════ */
 (function(){
+  if (PREFERS_REDUCED_MOTION) return; // decorative motion only — nothing here carries content
   if (window.matchMedia('(hover: none)').matches) return;
 
   const hero = document.querySelector('.hero');
@@ -155,6 +163,7 @@
    Skipped on small screens (< 600px).
 ══════════════════════════════════════ */
 (function(){
+  if (PREFERS_REDUCED_MOTION) return; // decorative motion only — nothing here carries content
   const hero = document.querySelector('.hero');
   if (!hero || window.innerWidth < 768) return; // hidden on tablets & below via CSS too
 
@@ -303,6 +312,7 @@
    and removed when done.
 ══════════════════════════════════════ */
 (function(){
+  if (PREFERS_REDUCED_MOTION) return; // decorative motion only — nothing here carries content
   const labels = document.querySelectorAll('.sec-label');
   if (!labels.length) return;
 
@@ -358,6 +368,7 @@
    hero CTAs, contact submit, back-to-top, etc.
 ══════════════════════════════════════ */
 (function(){
+  if (PREFERS_REDUCED_MOTION) return; // decorative motion only — nothing here carries content
   document.addEventListener('click', e => {
     const btn = e.target.closest('.btn');
     if (!btn) return;
@@ -440,6 +451,7 @@
    counter shared with the cursor ring loop).
 ══════════════════════════════════════ */
 (function(){
+  if (PREFERS_REDUCED_MOTION) return; // decorative motion only — nothing here carries content
   if (window.matchMedia('(hover: none)').matches) return;
 
   const canvas = document.createElement('canvas');

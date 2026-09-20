@@ -12,3 +12,8 @@ desktop.ini
 *~
 .vscode/
 .idea/
+
+# Internal working docs — netlify.toml publishes "." and robots.txt allows all,
+# so anything committed here is served publicly at jonathantubay.com/<path>.
+DESIGN-IS-*/
+sessions-summary.md

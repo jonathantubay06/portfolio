@@ -773,6 +773,9 @@ h2 em{
   opacity:0;transition:opacity .3s;
 }
 .proj-card:hover .t-overlay{opacity:1}
+/* Keyboard parity: opacity:0 still leaves Details/Live Site focusable, so a
+   Tab into them must reveal the overlay rather than move focus to nothing. */
+.proj-card:focus-within .t-overlay{opacity:1}
 
 .proj-body{padding:1.35rem;display:flex;flex-direction:column;flex:1}
 .ptags{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.65rem}

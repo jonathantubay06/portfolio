@@ -334,8 +334,14 @@ const pfCards = document.querySelectorAll('.proj-card');
 
 pfBtns.forEach(btn => {
   btn.addEventListener('click', () => {
-    pfBtns.forEach(b => b.classList.remove('active'));
+    // .active drives the visual state; aria-pressed mirrors it for
+    // assistive tech, which cannot see the class change.
+    pfBtns.forEach(b => {
+      b.classList.remove('active');
+      b.setAttribute('aria-pressed', 'false');
+    });
     btn.classList.add('active');
+    btn.setAttribute('aria-pressed', 'true');
 
     const filter = btn.dataset.filter;
 
@@ -580,9 +586,11 @@ function handleSubmit(e) {
   const nameField  = form.querySelector('#f-name');
   const emailField = form.querySelector('#f-email');
   let valid = true;
+  const invalid = []; // collected so the announcement can name the fields
 
   if (!nameField.value.trim()) {
     showFieldError(nameField, 'Please enter your name');
+    invalid.push(nameField);
     valid = false;
   } else {
     clearFieldError(nameField);
@@ -591,16 +599,32 @@ function handleSubmit(e) {
   // .validity.valid uses the browser's built-in email format check (RFC 5322-ish)
   if (!emailField.value.trim() || !emailField.validity.valid) {
     showFieldError(emailField, 'Please enter a valid email');
+    invalid.push(emailField);
     valid = false;
   } else {
     clearFieldError(emailField);
   }
 
-  if (!valid) return; // stop here — don't submit until fields are fixed
+  if (!valid) {
+    // Name the bad fields rather than saying "fix the errors" — the user is
+    // told what to fix without having to walk the whole form to find it.
+    const labels = invalid.map(f => form.querySelector('label[for="' + f.id + '"]').textContent.trim());
+    const list   = labels.length > 1
+      ? labels.slice(0, -1).join(', ') + ' and ' + labels[labels.length - 1]
+      : labels[0];
+    announceForm(labels.length > 1
+      ? list + ' need attention. Moving to the first one.'
+      : list + ' needs attention.');
+    // Focus after announcing, on the next tick: moving focus immediately can
+    // interrupt a polite live region before it is read out.
+    setTimeout(() => invalid[0].focus(), 120);
+    return; // stop here — don't submit until fields are fixed
+  }
 
   /* Disable button during submit to prevent double-sending */
   btn.disabled    = true;
   btn.textContent = 'Sending...';
+  announceForm('Sending your message.');
 
   // Netlify forms: POST to '/' with URL-encoded body — Netlify intercepts this
   // server-side before the response comes back. The form needs data-netlify="true" in HTML.
@@ -615,6 +639,7 @@ function handleSubmit(e) {
   })
   .then(() => {
     btn.textContent   = 'Message Sent! \u2713'; // ✓ checkmark
+    announceForm('Message sent. Jonathan usually replies within 24 hours.');
     btn.style.background = 'linear-gradient(135deg,#27c984,#00d4ff)'; // success green-to-cyan
 
     // Reset after 3.5s — long enough to read the success state, not so long it feels stuck
@@ -629,6 +654,7 @@ function handleSubmit(e) {
     // Something went wrong — re-enable so user can try again
     btn.textContent = 'Error \u2014 try again'; // — em dash
     btn.disabled    = false;
+    announceForm('Your message could not be sent. Please try again, or email jonatsbuilds@gmail.com directly.');
   });
 }
 const contactForm = document.querySelector('.c-form');
@@ -640,17 +666,31 @@ function showFieldError(field, msg) {
   if (!err) {
     err           = document.createElement('span');
     err.className = 'field-error';
+    // Stable id derived from the field so aria-describedby can point at it
+    err.id        = field.id + '-err';
     field.parentElement.appendChild(err);
   }
   err.textContent = msg;
   err.classList.add('visible');
+  // Without these the red border and the message text are visual-only
+  field.setAttribute('aria-invalid', 'true');
+  field.setAttribute('aria-describedby', err.id);
   field.style.borderColor = '#ff4d6a'; // red border to visually flag the problem field
 }
 
 function clearFieldError(field) {
   const err = field.parentElement.querySelector('.field-error');
   if (err) { err.classList.remove('visible'); err.textContent = ''; }
+  field.removeAttribute('aria-invalid');
+  field.removeAttribute('aria-describedby');
   field.style.borderColor = ''; // revert to CSS default
+}
+
+/* Writes into the form's live region. Re-setting identical text does not
+   re-announce in most screen readers, so callers should vary the message. */
+function announceForm(msg) {
+  const region = document.getElementById('form-status');
+  if (region) region.textContent = msg;
 }
 
 /* Clear error as soon as user starts typing — immediate positive feedback */
@@ -986,18 +1026,33 @@ if (yearEl) yearEl.textContent = new Date().getFullYear();
   const FOCUSABLE_SEL = 'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])';
   let _opener = null; // element that triggered open — focus returns here on close
 
+  // Closed modals are hidden with opacity/pointer-events only, which leaves
+  // their links and buttons in the accessibility tree and in the Tab order.
+  // `inert` removes both; aria-hidden is set alongside it for older engines.
+  document.querySelectorAll('.proj-modal').forEach(m => {
+    if (!m.classList.contains('open')) {
+      m.setAttribute('inert', '');
+      m.setAttribute('aria-hidden', 'true');
+    }
+  });
+
   function openModal(id, trigger) {
     const modal = document.getElementById(id);
     if (!modal) return;
 
     _opener = trigger || null;
     modal.classList.add('open');
+    // Must clear inert before focusing — an inert subtree cannot take focus
+    modal.removeAttribute('inert');
+    modal.removeAttribute('aria-hidden');
     document.body.style.overflow = 'hidden';
     modal.querySelector('.modal-close').focus();
   }
 
   function closeModal(modal) {
     modal.classList.remove('open');
+    modal.setAttribute('inert', '');
+    modal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
     // Return focus to the button that opened this modal so keyboard nav stays coherent
     if (_opener) { _opener.focus(); _opener = null; }
