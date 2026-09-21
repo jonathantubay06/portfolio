@@ -25,22 +25,36 @@
 }
 .hud-on .hud-cursor{opacity:1}
 
-/* Hide the native cursor only where the custom one is actually live,
-   so the two never render at the same time. Scoped to .hud-on, which
-   only exists once the desktop gate has passed. */
-.hud-on,
-.hud-on body,
-.hud-on a,.hud-on button,.hud-on [role="button"],
-.hud-on label,.hud-on select,.hud-on .btn,.hud-on .pf-btn,
-.hud-on .proj-card{
+/* Hide the native cursor wherever the custom one is live, so the two
+   never render at the same time. Scoped to .hud-on, which only exists
+   once the desktop gate has passed.
+
+   This has to be a universal selector, not a list. Listing tags only
+   covers inherited cursors; any element that sets its OWN cursor still
+   draws the native one on top of ours. The site has eight such rules —
+   .glitch-name{cursor:default} on the hero H1 was the visible one, plus
+   .built-item, .cbadge-static, .fg select, .testi-nav:disabled,
+   .testi-track-wrap, its :active, and .tl-content.
+
+   The "html" prefix matters: ".hud-on *" alone is (0,1,0) and loses to
+   any descendant rule like ".fg select" (0,1,1). "html.hud-on *" is
+   (0,1,1), tying those, and this partial is concatenated last — so it
+   wins on order without needing a rule per offender. */
+html.hud-on,
+html.hud-on *{
   cursor:none;
 }
-/* Text entry keeps its I-beam — a HUD target over a caret is wrong,
-   and losing the caret shape would hurt usability. */
+/* Text entry keeps its I-beam — a HUD target over a caret is wrong, and
+   losing the caret would hurt usability. Higher specificity than the
+   universal rule above so it survives. */
 .hud-on input:not([type="button"]):not([type="submit"]):not([type="checkbox"]):not([type="radio"]),
 .hud-on textarea{
   cursor:text;
 }
+/* The carousel's grab/grabbing states communicate that it is draggable;
+   that affordance is worth more than cursor consistency. */
+.hud-on .testi-track-wrap{cursor:grab}
+.hud-on .testi-track-wrap:active{cursor:grabbing}
 
 /* ── Idle: arrow. Same silhouette as cursors/arrow.svg (M6 4L26 9…),
    drawn inline so it can animate out on lock. ── */
@@ -110,13 +124,9 @@
    it somehow exists, hide it and restore the native cursor. */
 @media(prefers-reduced-motion:reduce){
   .hud-cursor{display:none!important}
-  .hud-on,.hud-on body,.hud-on a,.hud-on button,.hud-on [role="button"],
-  .hud-on label,.hud-on select,.hud-on .btn,.hud-on .pf-btn,
-  .hud-on .proj-card{cursor:auto}
+  html.hud-on,html.hud-on *{cursor:auto}
 }
 @media(hover:none),(pointer:coarse),(max-width:1023px){
   .hud-cursor{display:none!important}
-  .hud-on,.hud-on body,.hud-on a,.hud-on button,.hud-on [role="button"],
-  .hud-on label,.hud-on select,.hud-on .btn,.hud-on .pf-btn,
-  .hud-on .proj-card{cursor:auto}
+  html.hud-on,html.hud-on *{cursor:auto}
 }
