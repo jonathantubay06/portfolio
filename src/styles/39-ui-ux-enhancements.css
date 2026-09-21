@@ -100,7 +100,8 @@
 [data-theme="light"] .footer-cta{color:#5a6880;border-bottom-color:rgba(0,0,0,.08)}
 [data-theme="light"] .testi-filter-btn{border-color:#d0dae8;color:#5a6880}
 [data-theme="light"] .testi-filter-btn.active{background:#0e7aff;border-color:#0e7aff;color:#fff}
-[data-theme="light"] .tl-expand-hint{color:#8a9ab0}
+/* 2.70:1 on #faf8f5 — see the .sec-label note in 23-light-mode.css. */
+[data-theme="light"] .tl-expand-hint{color:var(--muted)}
 
 /* ── 10. Book-a-call pill ───────────────────────────────────────
    Second floating pill below #avail-pill.

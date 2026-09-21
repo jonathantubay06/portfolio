@@ -47,6 +47,8 @@
     linesEl.innerHTML = '';
     overlay.classList.add('open');
     overlay.setAttribute('aria-hidden', 'false');
+    // inert must come off before focus() — an inert subtree cannot take focus.
+    overlay.removeAttribute('inert');
     closeBtn.focus();
 
     LINES.forEach(line => {
@@ -59,6 +61,8 @@
   function closeEgg() {
     overlay.classList.remove('open');
     overlay.setAttribute('aria-hidden', 'true');
+    // Takes the close button back out of the tab order.
+    overlay.setAttribute('inert', '');
   }
 
   closeBtn.addEventListener('click', closeEgg);

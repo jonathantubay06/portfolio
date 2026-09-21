@@ -2,7 +2,11 @@
 <!-- Hidden overlay triggered by typing "jt" anywhere on the page (not in a form).
      Handled by effects.js. Lines are injected by JS with staggered delays.
      Close via the button, Escape key, or clicking outside the terminal. -->
-<div id="egg-overlay" role="dialog" aria-modal="true" aria-label="Easter egg" aria-hidden="true">
+<!-- inert as well as aria-hidden while closed. aria-hidden alone hid the
+     dialog from screen readers but left its close button in the tab order,
+     which is the "[aria-hidden] contains focusable descendents" failure
+     the 2026-09-21 audit reported. Same pairing as the project modals. -->
+<div id="egg-overlay" role="dialog" aria-modal="true" aria-label="Easter egg" aria-hidden="true" inert>
   <div id="egg-terminal">
     <div class="egg-bar">
       <span class="egg-bar-dot" style="background:#ff5f57"></span><!-- red macOS dot -->

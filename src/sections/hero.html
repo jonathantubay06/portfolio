@@ -64,8 +64,25 @@
   <div class="hero-art" id="heroStage" aria-hidden="true">
     <div class="hero-scene" id="heroScene">
       <div class="hero-ambient"></div>
-      <img class="hero-plate" src="img/hero-plate.webp" alt=""
-           width="1500" height="1288" fetchpriority="high" decoding="async">
+      <!-- Below 1024px .hero-art is display:none — but an <img> inside a
+           hidden subtree is still fetched, so mobile was downloading 133 KB
+           at fetchpriority="high", competing with its real LCP and never
+           painting a pixel of it. The first <source> hands small screens a
+           1x1 GIF (~60 bytes) instead; <picture> stops at the first
+           matching source, so the real plate is never requested there.
+
+           Above 1024px the slot is min(100%,930px,78vh*1.1646) — roughly
+           52vw at common widths — so 930w covers 1x displays and the
+           original 1500w covers 2x. -->
+      <picture>
+        <source media="(max-width:1023px)"
+                srcset="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
+        <source media="(min-width:1024px)"
+                srcset="img/hero-plate-930w.webp 930w, img/hero-plate.webp 1500w"
+                sizes="min(52vw, 930px)">
+        <img class="hero-plate" src="img/hero-plate.webp" alt=""
+             width="1500" height="1288" fetchpriority="high" decoding="async">
+      </picture>
 
       <div class="hero-fx">
         <div class="fx-laptop"></div>

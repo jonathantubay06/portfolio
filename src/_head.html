@@ -41,32 +41,50 @@
 <link rel="apple-touch-icon" href="./favicon.png"/>
 <title>Jonathan Tubay — Shopify & WordPress Developer | Automation</title>
 
-<!-- DNS + TCP warmup before any request fires -->
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link rel="dns-prefetch" href="https://fonts.googleapis.com"/>
-<link rel="dns-prefetch" href="https://fonts.gstatic.com"/>
+<!-- ── Fonts: self-hosted ────────────────────────────────────────────
+     Previously both faces came from fonts.googleapis.com via the
+     media="print" onload trick. That loads asynchronously, so the page
+     always painted in the fallbacks ('Arial Black' for headings, system
+     UI for body) and then re-laid-out every line of text when the real
+     faces arrived. The 2026-09-21 PageSpeed run measured the cost:
+     CLS 0.372 on mobile (attributed to the hero H1's own <span class="glow">)
+     and 0.103 on desktop, i.e. almost all of both scores' layout shift.
+     Orbitron and 'Arial Black' have very different advance widths, so the
+     H1 re-wrapped and, on the two-column desktop hero, dragged the art
+     column with it.
+
+     Self-hosting fixes it at the source: one variable woff2 per family,
+     latin subset, same origin, preloaded so the bytes are in flight
+     during the HTML parse. font-display:optional is the guarantee — it
+     tells the browser to use the fallback for this page view rather than
+     swap after first paint, so a slow network can cost the webfont but
+     can never cost layout stability.
+
+     crossorigin is required on a font preload even same-origin: font
+     fetches always use CORS mode, and without it the preload is
+     discarded and the file is fetched a second time.
+
+     Two glyphs the site uses (→ ▶ ●) fall outside Google's "latin"
+     subset. They already fell back to a system face with the CDN build,
+     so nothing changes there.
+
+     Licences: both families are SIL OFL 1.1 — see fonts/OFL-*.txt. -->
+<link rel="preload" href="./fonts/orbitron-latin-var.woff2" as="font" type="font/woff2" crossorigin/>
+<link rel="preload" href="./fonts/plus-jakarta-sans-latin-var.woff2" as="font" type="font/woff2" crossorigin/>
+
 <!-- Marquee brand icons served from Simple Icons CDN -->
 <link rel="preconnect" href="https://cdn.simpleicons.org"/>
 <link rel="dns-prefetch" href="https://cdn.simpleicons.org"/>
 
-<!-- Non-blocking font load: media trick loads async, then swaps to all -->
-<link rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
-      media="print" onload="this.media='all'"/>
-<!-- Fallback for no-JS -->
-<noscript>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"/>
-</noscript>
-
-<!-- Preload Orbitron 900 — used for hero name above the fold; preloading eliminates
-     the flash of unstyled text (FOUT) that would otherwise occur while the font loads -->
-
-<!-- Preload hero background — largest above-the-fold image, critical for LCP -->
 
 <!-- Inline critical CSS: renders the hero skeleton instantly before style.css downloads.
      Only above-the-fold essentials — full styles are in style.css below. -->
 <style>
+/* @font-face lives here rather than in src/styles/ so the faces are
+   registered in the same parse step that kicks off the preloads above —
+   a declaration arriving with style.css would be too late to matter. */
+@font-face{font-family:'Orbitron';src:url('./fonts/orbitron-latin-var.woff2') format('woff2');font-weight:400 900;font-style:normal;font-display:optional}
+@font-face{font-family:'Plus Jakarta Sans';src:url('./fonts/plus-jakarta-sans-latin-var.woff2') format('woff2');font-weight:400 700;font-style:normal;font-display:optional}
 /* Critical: body base so there's no white flash */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#060e1a;--cyan:#00d4ff;--text:#e8f4ff;--font-head:'Orbitron','Arial Black',sans-serif;--font-body:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,system-ui,sans-serif}

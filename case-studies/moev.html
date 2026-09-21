@@ -11,6 +11,11 @@
 <meta property="og:url" content="https://jonathantubay.com/case-studies/moev"/>
 <meta property="og:type" content="article"/>
 <link rel="icon" type="image/png" href="../favicon.png" sizes="32x32"/>
+<!-- Fonts are self-hosted and declared in style.css; preload them here so
+     they are in flight during the parse rather than discovered by the CSS.
+     crossorigin is required even same-origin — font fetches use CORS mode. -->
+<link rel="preload" href="../fonts/orbitron-latin-var.woff2" as="font" type="font/woff2" crossorigin/>
+<link rel="preload" href="../fonts/plus-jakarta-sans-latin-var.woff2" as="font" type="font/woff2" crossorigin/>
 <link rel="stylesheet" href="../style.css"/>
 <style>
   .cs-hero{min-height:40vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:6rem 1.5rem 3rem}

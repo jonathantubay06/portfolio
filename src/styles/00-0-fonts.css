@@ -1,0 +1,29 @@
+/* ═══════════════════════════════════════
+   FONTS — self-hosted variable woff2, latin subset
+
+   index.html declares these same faces inline in its <head> so they are
+   registered in the same parse step as the preloads. They are repeated
+   here because style.css is also what case-studies/moev.html loads, and
+   that page has no inline block — before this partial existed it had no
+   @font-face at all and silently rendered in the fallbacks.
+
+   Declaring a face twice is free: the browser keys the download on the
+   resolved URL, so the file is still fetched once.
+
+   url() is resolved against this stylesheet, not the document, so the
+   one path works from / and from /case-studies/ alike.
+
+   font-display:optional rather than swap — see the note in src/_head.html.
+   In short: swap re-lays-out every line of text when the face lands,
+   which is where the 0.372 mobile CLS came from.
+═══════════════════════════════════════ */
+@font-face{
+  font-family:'Orbitron';
+  src:url('./fonts/orbitron-latin-var.woff2') format('woff2');
+  font-weight:400 900;font-style:normal;font-display:optional;
+}
+@font-face{
+  font-family:'Plus Jakarta Sans';
+  src:url('./fonts/plus-jakarta-sans-latin-var.woff2') format('woff2');
+  font-weight:400 700;font-style:normal;font-display:optional;
+}

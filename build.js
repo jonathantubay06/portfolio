@@ -12,19 +12,21 @@
  *   2. style.css   <- src/styles/*   concatenated in manifest order
  *   3. main.js     <- src/scripts/main/*
  *   4. effects.js  <- src/scripts/effects/*
- *   5. copies static assets across
+ *   5. minifies all four (see minify.js)
+ *   6. content-hashes the CSS/JS filenames and rewrites every reference
+ *   7. copies static assets across
  *
  * Concatenation order is authoritative and lives in src/manifest.json.
  * CSS cascade and the IIFE execution order in the JS both depend on it,
  * so the build must never sort or dedupe.
  *
- * Usage:  node build.js            build once
- *         node build.js --check    build, then verify byte-for-byte
- *                                  against the committed flat files
+ * Usage:  node build.js
  */
 'use strict';
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
+const minify = require('./minify.js');
 
 const SRC = path.join(__dirname, 'src');
 const DIST = path.join(__dirname, 'dist');
@@ -125,12 +127,57 @@ function buildSitemap(){
 fs.rmSync(DIST, { recursive: true, force: true });
 fs.mkdirSync(DIST, { recursive: true });
 
+/* ── content hashing ──────────────────────────────────────────────────
+ * The CSS and JS filenames carry a hash of their own contents, which is
+ * what lets netlify.toml serve them `immutable` for a year. Before this,
+ * the names were fixed, so the only safe header was a one-hour max-age
+ * plus a revalidation request per asset per visit — PageSpeed flagged all
+ * three files under "Use efficient cache lifetimes".
+ *
+ * A changed build produces a new filename, so a stale cached copy can
+ * never be served: there is nothing to invalidate.
+ */
+const hash = (s) => crypto.createHash('sha256').update(s).digest('hex').slice(0, 8);
+
+const styleCss = minify.css(concat('styles', manifest.styles));
+const mainJs = minify.js(concat('scripts/main', manifest.main));
+const effectsJs = minify.js(concat('scripts/effects', manifest.effects));
+
+/** Fixed name -> hashed name, for rewriting references. */
+const HASHED = {
+  'style.css': `style.${hash(styleCss)}.css`,
+  'main.js': `main.${hash(mainJs)}.js`,
+  'effects.js': `effects.${hash(effectsJs)}.js`,
+};
+
+/**
+ * Point every reference at the hashed filename. Throws rather than
+ * silently shipping a page with no stylesheet: a renamed reference in a
+ * partial would otherwise produce an unstyled site that still built
+ * cleanly.
+ */
+function rehash(markup, prefix, { require: mustExist = true } = {}) {
+  let out = markup;
+  for (const [from, to] of Object.entries(HASHED)) {
+    const ref = prefix + from;
+    const hits = out.split(ref).length - 1;
+    if (hits === 0) {
+      if (mustExist && from === 'style.css') {
+        throw new Error(`no reference to ${ref} found — cannot hash it`);
+      }
+      continue;
+    }
+    out = out.split(ref).join(prefix + to);
+  }
+  return out;
+}
+
 const outputs = {
-  'index.html':  buildHtml(),
+  'index.html': rehash(minify.html(buildHtml()), './'),
   'sitemap.xml': buildSitemap(),
-  'style.css':  concat('styles', manifest.styles),
-  'main.js':    concat('scripts/main', manifest.main),
-  'effects.js': concat('scripts/effects', manifest.effects),
+  [HASHED['style.css']]: styleCss,
+  [HASHED['main.js']]: mainJs,
+  [HASHED['effects.js']]: effectsJs,
 };
 
 for (const [name, content] of Object.entries(outputs)) {
@@ -145,12 +192,21 @@ for (const [name, content] of Object.entries(outputs)) {
 // script is tooling rather than site content. Shipping either would put
 // build internals on the public site.
 const STATIC = [
-  'img', 'cursors', 'case-studies',
+  'img', 'cursors', 'case-studies', 'fonts',
   'favicon.png', 'og-preview.jpg', 'robots.txt',
   'humans.txt', '404.html',
 ];
 let copied = 0;
 for (const item of STATIC) copied += copy(item);
+
+// case-studies/*.html load ../style.css, so they need the hashed name too.
+// They are plain files copied verbatim above rather than assembled from
+// partials, so the rewrite happens here, after the copy.
+for (const f of fs.readdirSync(path.join(DIST, 'case-studies'))) {
+  if (!f.endsWith('.html')) continue;
+  const p = path.join(DIST, 'case-studies', f);
+  fs.writeFileSync(p, rehash(minify.html(fs.readFileSync(p, 'utf8')), '../'));
+}
 
 // Google Search Console verification file, if present
 for (const f of fs.readdirSync(ROOT)) {
@@ -159,26 +215,18 @@ for (const f of fs.readdirSync(ROOT)) {
 
 // ── report ───────────────────────────────────────────────────────────
 const kb = n => (n / 1024).toFixed(0).padStart(4) + ' KB';
+// Partial counts are keyed off the ORIGINAL name, since the shipped one now
+// carries a content hash.
+const PARTS = {
+  'index.html': ['sections', lines(read(path.join(SRC, '_order.txt'))).length],
+  [HASHED['style.css']]: ['style partials', manifest.styles.length],
+  [HASHED['main.js']]: ['main partials', manifest.main.length],
+  [HASHED['effects.js']]: ['effects partials', manifest.effects.length],
+};
 console.log('built dist/');
 for (const [name, content] of Object.entries(outputs)) {
-  const parts = name === 'index.html'
-    ? lines(read(path.join(SRC, '_order.txt'))).length
-    : (manifest[name.replace(/\.(css|js)$/, '').replace('style', 'styles')] || {}).length;
-  const from = parts === undefined ? 'generated' : `from ${parts} partials`;
-  console.log(`  ${name.padEnd(12)}${kb(Buffer.byteLength(content))}  ${from}`);
+  const p = PARTS[name];
+  const from = p ? `from ${p[1]} ${p[0]}` : 'generated';
+  console.log(`  ${name.padEnd(24)}${kb(Buffer.byteLength(content))}  ${from}`);
 }
-console.log(`  ${'static'.padEnd(12)}${String(copied).padStart(4)} files`);
-
-// ── optional verification ────────────────────────────────────────────
-if (process.argv.includes('--check')) {
-  console.log('\nbyte-for-byte check against the flat files:');
-  let ok = true;
-  for (const name of Object.keys(outputs)) {
-    const flat = path.join(ROOT, name);
-    if (!fs.existsSync(flat)) { console.log(`  ${name.padEnd(12)} no flat file to compare`); continue; }
-    const same = Buffer.compare(fs.readFileSync(flat), Buffer.from(outputs[name])) === 0;
-    if (!same) ok = false;
-    console.log(`  ${name.padEnd(12)} ${same ? 'IDENTICAL' : 'DIFFERS'}`);
-  }
-  if (!ok) process.exitCode = 1;
-}
+console.log(`  ${'static'.padEnd(24)}${String(copied).padStart(4)} files`);

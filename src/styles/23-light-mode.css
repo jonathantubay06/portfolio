@@ -18,7 +18,10 @@
 [data-theme="light"] .nav-links a:hover{color:var(--cyan)}
 [data-theme="light"] .nav-logo{color:#1c2333}
 [data-theme="light"] .sec{background:#faf8f5}
-[data-theme="light"] .sec-label{color:#7a90a8}
+/* #7a90a8 measured 3.10:1 on #faf8f5 — under the 4.5:1 AA floor for
+   text this size. --muted (#5a6880) is 5.32:1 and already in the
+   light palette, so this needs no new colour. */
+[data-theme="light"] .sec-label{color:var(--muted)}
 [data-theme="light"] .proj-card{background:#fff;border-color:rgba(0,100,180,0.14)}
 [data-theme="light"] .proj-card:hover{box-shadow:0 24px 56px rgba(0,100,180,.14)}
 [data-theme="light"] .proj-name{color:#1c2333}
@@ -50,7 +53,9 @@
 [data-theme="light"] .nav-drawer{background:#faf8f5}
 [data-theme="light"] .nav-drawer a{color:#1c2333}
 [data-theme="light"] .pf-btn{border-color:rgba(0,100,180,.2);color:#3d4f63}
-[data-theme="light"] .pf-btn.active{background:var(--cyan);color:#fff;border-color:var(--cyan)}
+/* No colour override: white on #00d4ff is 1.77:1. The dark-mode rule
+   already uses #03080f on this same cyan, which is 11.35:1. */
+[data-theme="light"] .pf-btn.active{background:var(--cyan);border-color:var(--cyan)}
 [data-theme="light"] h2{color:#1c2333}
 /* Hero always stays dark-on-dark — never override its text */
 [data-theme="light"] .hero,

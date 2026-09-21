@@ -30,6 +30,11 @@
     el.className   = 'sdot';
     el.setAttribute('data-label', label);
     el.setAttribute('aria-label', `Scroll to ${label}`);
+    // The container is aria-hidden, so these were reachable by keyboard but
+    // silent to a screen reader — the worst of both. They duplicate the main
+    // nav, so the right answer is out of the tab order entirely rather than
+    // announced twice. (aria-label stays for devtools/hover legibility.)
+    el.tabIndex = -1;
     el.addEventListener('click', () => {
       const target = document.getElementById(id);
       if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });

@@ -42,8 +42,17 @@
     position:relative;z-index:1;
     perspective:1250px;perspective-origin:50% 45%;
   }
+  /* Sized explicitly rather than by max-content. With max-content the
+     scene's width came from whatever the plate resolved to, so the art
+     column's geometry depended on a child finishing layout; anything that
+     reflowed the hero (a font landing, the H1 re-wrapping) could move it.
+     One --plate-w for all three layers keeps them locked together, and
+     aspect-ratio reserves the height before the image decodes.
+     1.1646 = 1500/1288, so the vh term caps effective height. */
   .hero-scene{
-    position:relative;width:max-content;max-width:100%;
+    --plate-w:min(100%,930px,calc(78vh * 1.1646));
+    position:relative;width:var(--plate-w);max-width:100%;
+    aspect-ratio:1500/1288;
     transform-style:preserve-3d;
     transform:rotateX(calc(var(--hty,0)*1deg)) rotateY(calc(var(--htx,0)*1deg));
     will-change:transform;
@@ -55,9 +64,12 @@
      drawn picture; object-fit:contain would letterbox and the mask would
      then feather transparent padding instead of the image's real edges.
      1.1646 = 1500/1288, so the vh term caps effective height. */
+  /* <picture> is inline by default — block keeps the plate's layout box
+     identical to what it was when the <img> was a direct child. */
+  .hero-scene picture{display:block}
   .hero-plate{
     display:block;height:auto;
-    width:min(100%,930px,calc(78vh * 1.1646));
+    width:100%;
     position:relative;z-index:1;
     -webkit-mask-image:
       linear-gradient(to right,transparent 0,#000 16%,#000 84%,transparent 100%),
@@ -86,7 +98,7 @@
 
   .hero-fx{
     position:absolute;left:0;top:0;
-    width:min(100%,930px,calc(78vh * 1.1646));aspect-ratio:1500/1288;
+    width:100%;aspect-ratio:1500/1288;
     pointer-events:none;z-index:2;
   }
 

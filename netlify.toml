@@ -7,19 +7,30 @@
 
 # ── Caching ──────────────────────────────────────────────
 # Netlify's default for static files is `max-age=0,must-revalidate`, which
-# costs a conditional request per asset on every return visit. Filenames here
-# are not content-hashed, so long-lived immutable caching is only safe for
-# assets that change with a new filename. CSS/JS keep a short max-age plus
-# revalidation; images and fonts are effectively immutable in practice.
+# costs a conditional request per asset on every return visit.
+#
+# build.js now writes the CSS and JS as style.<hash>.css, main.<hash>.js and
+# effects.<hash>.js, so a changed file always arrives under a new URL and a
+# stale copy can never be served. That makes `immutable` correct for them —
+# previously the names were fixed, the only safe policy was a one-hour
+# max-age plus revalidation, and PageSpeed flagged all three files under
+# "Use efficient cache lifetimes".
 [[headers]]
   for = "/*.css"
   [headers.values]
-    Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
+    Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
   for = "/*.js"
   [headers.values]
-    Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Fonts are versioned by filename too (the subset is baked into the name),
+# and they are the one asset a repeat visitor must never re-fetch.
+[[headers]]
+  for = "/fonts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
   for = "/img/*"
