@@ -202,7 +202,7 @@ body::after{
 }
 
 /* ── GPU hints ── */
-.orbit{will-change:transform}
+
 .testi-track{will-change:transform}
 #scroll-bar{will-change:width}
 .r{will-change:opacity,transform}
@@ -510,13 +510,6 @@ nav.scrolled{
    background image. That image is gone, so the shadow only muddied the
    type — this was the audit's "soft/blurred body copy" finding. */
 
-.hero-overlay{
-  position:absolute;inset:0;z-index:1;
-  background:
-    radial-gradient(ellipse at 50% 40%,rgba(0,212,255,.07) 0%,transparent 55%),
-    linear-gradient(to bottom,rgba(3,8,15,.6) 0%,rgba(3,8,15,.65) 45%,rgba(3,8,15,.95) 80%,rgba(3,8,15,1) 100%);
-}
-
 /* ── 4. Card scan line ── */
 /* A cyan light sweeps top→bottom across the thumbnail on hover */
 .proj-thumb::after{
@@ -549,20 +542,10 @@ nav.scrolled{
 }
 
 /* ── Mouse Spotlight (injected by effects.js) ── */
-.hero-spotlight{
-  position:absolute!important;inset:0;z-index:2;pointer-events:none;
-  background:radial-gradient(circle 380px at var(--sx,50%) var(--sy,50%),rgba(0,212,255,.1) 0%,transparent 68%);
-  opacity:0;transition:opacity .45s ease;
-}
 
 /* ── Floating Code Decorations (injected by effects.js) ── */
 /* color is fully opaque — keyframe opacity alone controls how visible they are */
-.hero-code-float{
-  position:absolute!important;pointer-events:none;z-index:2;
-  font-family:var(--font-head);letter-spacing:.06em;font-weight:700;
-  color:var(--cyan);user-select:none;white-space:nowrap;
-  animation:code-drift 8s ease-in-out infinite;
-}
+
 @keyframes code-drift{
   0%,100%{transform:translateY(0)    rotate(-2deg);opacity:.18}
   50%    {transform:translateY(-18px) rotate(2deg); opacity:.38}
@@ -614,14 +597,6 @@ nav.scrolled{
   62%    {transform:translateX(-50%) rotate(-4deg) translateY(5px)}
   78%    {transform:translateX(-50%) rotate(-4deg) translateY(9px)}
 }
-.orbit{
-  position:absolute;top:50%;left:50%;border-radius:50%;
-  border:1px solid rgba(0,212,255,.07);pointer-events:none;
-  will-change:transform;
-}
-.orbit-1{width:min(480px,90vw);height:min(480px,90vw);margin:-min(240px,45vw) 0 0 -min(240px,45vw);animation:orbit-spin 28s linear infinite}
-.orbit-2{width:min(700px,130vw);height:min(700px,130vw);margin:-min(350px,65vw) 0 0 -min(350px,65vw);animation:orbit-spin 48s linear infinite reverse}
-@keyframes orbit-spin{to{transform:rotate(360deg)}}
 
 .hero-eyebrow{
   display:inline-flex;align-items:center;gap:.7rem;
@@ -664,7 +639,6 @@ h1{
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 
 /* Hero particle canvas */
-.hero-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1;opacity:.5}
 
 /* Glitch on name hover */
 .glitch-name{cursor:default}
@@ -937,7 +911,6 @@ h2 em{
 /* Hide URL bar when hover overlay is showing so buttons aren't covered */
 .proj-card:hover .t-urlbar{opacity:0;pointer-events:none}
 
-
 .t-urlbar{
   position:absolute;bottom:0;left:0;right:0;z-index:3;
   display:flex;align-items:center;gap:.5rem;padding:.35rem .7rem;
@@ -971,7 +944,6 @@ h2 em{
 /* ═══════════════════════════════════════
    INTERNAL TOOL THUMBS
 ═══════════════════════════════════════ */
-
 
 /* ═══════════════════════════════════════
    TESTIMONIALS
@@ -1263,7 +1235,6 @@ h2 em{
 .cbadge:hover .cbadge-year{opacity:0;max-width:0;margin-left:0}
 .cbadge-year{font-size:.68rem;opacity:.4;transition:all .2s;max-width:40px;overflow:hidden;white-space:nowrap}
 .cbadge-view{font-size:.68rem;color:var(--cyan);opacity:0;max-width:0;overflow:hidden;white-space:nowrap;transition:all .22s}
-
 
 /* Honors */
 .cbadge.honors{border-color:rgba(251,191,36,.25);background:rgba(251,191,36,.04)}
@@ -1718,7 +1689,6 @@ footer p{color:var(--muted);font-size:.82rem}
 [data-theme="light"] .c-opt{background:#fff;border-color:rgba(0,100,180,.14)}
 [data-theme="light"] .c-info-intro{color:#5a6880}
 
-
 [data-theme="light"] .fg input,
 [data-theme="light"] .fg textarea,
 [data-theme="light"] .fg select{background:#fff;border-color:rgba(0,100,180,.2);color:#1c2333}
@@ -1766,7 +1736,6 @@ footer p{color:var(--muted);font-size:.82rem}
   .c-layout{grid-template-columns:1fr}
   .sec{padding:4rem 1.5rem}
   .hero{padding:5rem 1.2rem 2.5rem}
-  .orbit-1,.orbit-2{display:none}
   .process-inline{flex-wrap:wrap;gap:.4rem}
   .pi-arrow{display:none}
   .cert-group-header{flex-wrap:wrap}
@@ -1887,7 +1856,6 @@ footer p{color:var(--muted);font-size:.82rem}
   }
   body{opacity:1;animation:none}
   .r{opacity:1;transform:none;animation:none}
-  .orbit{display:none}
   .testi-track{transition:none}
   #back-to-top{transition:none}
   .proj-card:hover{transform:none}
@@ -2352,15 +2320,10 @@ body,nav,.proj-card,.tc,.svc-row,.ci-row,.c-opt,footer,.modal-inner,
   contain-intrinsic-size:0 700px;
 }
 
-
 /* ═══════════════════════════════════════════════════════════════
 /* ═══════════════════════════════════════
    CANVAS CURSOR TRAIL — particle overlay
    ═══════════════════════════════════════ */
-#trailCanvas{
-  position:fixed;inset:0;z-index:9998;
-  pointer-events:none;
-}
 
 /* ═══════════════════════════════════════
    NEW FEATURES — 15-feature enhancement pass
@@ -2388,62 +2351,12 @@ body,nav,.proj-card,.tc,.svc-row,.ci-row,.c-opt,footer,.modal-inner,
    Animations are offset so they never sync up (feels organic).
    Hidden on mobile — saves battery and avoids distraction.
 ──────────────────────────────────────────────────────────────── */
-.aurora{
-  position:absolute;inset:0;overflow:hidden;
-  pointer-events:none;z-index:0;
-}
-.aurora-blob{
-  position:absolute;border-radius:50%;
-  filter:blur(90px);opacity:0;
-  animation-timing-function:ease-in-out;
-  animation-iteration-count:infinite;
-  animation-direction:alternate;
-  will-change:transform;
-}
+
 /* Blob 1 — cyan, top-left, large */
-.aurora-1{
-  width:520px;height:520px;
-  top:-10%;left:-8%;
-  background:radial-gradient(circle,rgba(0,212,255,.22),transparent 70%);
-  animation:aurora-drift-1 22s ease-in-out infinite alternate;
-}
+
 /* Blob 2 — indigo/purple, bottom-right */
-.aurora-2{
-  width:460px;height:460px;
-  bottom:-12%;right:-6%;
-  background:radial-gradient(circle,rgba(99,102,241,.18),transparent 70%);
-  animation:aurora-drift-2 28s ease-in-out infinite alternate;
-}
+
 /* Blob 3 — blue, mid-centre — lightest of the three */
-.aurora-3{
-  width:360px;height:360px;
-  top:30%;left:35%;
-  background:radial-gradient(circle,rgba(14,122,255,.14),transparent 70%);
-  animation:aurora-drift-3 18s ease-in-out infinite alternate;
-}
-/* Fade blobs in after page load so they don't flash */
-.aurora-blob{animation-fill-mode:both}
-@keyframes aurora-drift-1{
-  0%  {opacity:.7;transform:translate(0,0)   scale(1)}
-  100%{opacity:.9;transform:translate(60px,40px) scale(1.12)}
-}
-@keyframes aurora-drift-2{
-  0%  {opacity:.6;transform:translate(0,0)    scale(1)}
-  100%{opacity:.85;transform:translate(-50px,-35px) scale(1.08)}
-}
-@keyframes aurora-drift-3{
-  0%  {opacity:.5;transform:translate(0,0) scale(1)}
-  100%{opacity:.7;transform:translate(30px,-25px) scale(1.15)}
-}
-/* Light mode: aurora is lighter so it doesn't clash with the dark hero bg */
-[data-theme="light"] .aurora-1{background:radial-gradient(circle,rgba(0,180,220,.18),transparent 70%)}
-[data-theme="light"] .aurora-2{background:radial-gradient(circle,rgba(99,102,241,.12),transparent 70%)}
-[data-theme="light"] .aurora-3{background:radial-gradient(circle,rgba(14,80,200,.1),transparent 70%)}
-/* Mobile: hide blobs 2 and 3, reduce blob 1 */
-@media(max-width:600px){
-  .aurora-2,.aurora-3{display:none}
-  .aurora-1{width:280px;height:280px;filter:blur(70px)}
-}
 
 /* ── 3. Testimonial countdown bar ───────────────────────────────
    2px cyan line across the top of the carousel.
@@ -2729,13 +2642,7 @@ body,nav,.proj-card,.tc,.svc-row,.ci-row,.c-opt,footer,.modal-inner,
    Each sparkle scales up, rotates, then fades — 500ms life.
    Only on desktop (touch devices skip entirely in JS).
 ──────────────────────────────────────────────────────────────── */
-.cursor-sparkle{
-  position:fixed;pointer-events:none;z-index:9999;
-  width:6px;height:6px;border-radius:50%;
-  background:var(--cyan);
-  transform:scale(0);
-  animation:sparkle-life .5s ease-out forwards;
-}
+
 @keyframes sparkle-life{
   0%  {transform:scale(0);    opacity:.9}
   40% {transform:scale(1.4);  opacity:.7}
