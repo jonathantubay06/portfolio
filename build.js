@@ -83,10 +83,14 @@ for (const [name, content] of Object.entries(outputs)) {
 // Static assets that ship as-is. Anything NOT listed here never reaches
 // dist, which is the point: `publish = "dist"` means internal working
 // folders cannot leak just because someone forgot a .gitignore line.
+// netlify.toml and scripts/ are deliberately absent: Netlify reads the
+// config from the repo root, not the publish directory, and the build
+// script is tooling rather than site content. Shipping either would put
+// build internals on the public site.
 const STATIC = [
   'img', 'cursors', 'case-studies',
   'favicon.png', 'og-preview.jpg', 'robots.txt', 'sitemap.xml',
-  'humans.txt', '404.html', 'netlify.toml', 'scripts',
+  'humans.txt', '404.html',
 ];
 let copied = 0;
 for (const item of STATIC) copied += copy(item);
