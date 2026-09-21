@@ -84,13 +84,19 @@
   // ── Geometry helpers (cached) ──────────────────────────────
   function cardWidth() {
     if (_cachedPerPage !== perPage) {
-      // Measured lazily, on first slide, and deliberately not hoisted into
-      // buildTrack(): #testimonials carries content-visibility:auto, so
-      // while the section is off-screen its subtree is not laid out and
-      // this would measure 0. Hence also the width > 0 guard — caching a
-      // zero would wedge the carousel for the rest of the session.
+      // Measured lazily rather than in buildTrack(), and cross-checked
+      // before it is cached. init() runs while this section is far below
+      // the fold, and a bad value here is not a cosmetic problem: it
+      // translates the whole track by the wrong offset and parks every
+      // card outside the viewport.
+      //
+      // The width > 0 guard catches a subtree that has not been laid out.
+      // The parent cross-check catches the harder case — a positive width
+      // the element cannot actually have, which is what size containment
+      // on a skipped section produces.
       const width = wrap.getBoundingClientRect().width;
-      if (width <= 0) return _cachedCardWidth;
+      const limit = wrap.parentElement ? wrap.parentElement.getBoundingClientRect().width : Infinity;
+      if (width <= 0 || (limit > 0 && width > limit + 1)) return _cachedCardWidth;
       _cachedCardWidth = (width - GAP * (perPage - 1)) / perPage;
       _cachedPerPage = perPage;
     }
@@ -185,6 +191,26 @@
   }
   init(0);
   resetTimer();
+
+  // ── Re-measure once the section is really on screen ────────
+  // Insurance for the cache above. init() positions the track using a
+  // measurement taken while the section is far below the fold; if anything
+  // about the container's width is not final at that moment the wrong
+  // offset gets baked in and the carousel renders blank until a resize.
+  // Commit 9162899 shipped exactly that.
+  //
+  // One self-disconnecting observer: the first time the wrapper is
+  // genuinely visible, drop the cache and re-apply the current position
+  // with animation off, so the correction is invisible.
+  if ('IntersectionObserver' in window) {
+    const remeasure = new IntersectionObserver(entries => {
+      if (!entries.some(e => e.isIntersecting)) return;
+      remeasure.disconnect();
+      _cachedPerPage = 0;
+      goTo(current, false);
+    });
+    remeasure.observe(wrap);
+  }
 
   // ── Testimonial filter ─────────────────────────────────────
   function filterBy(type) {

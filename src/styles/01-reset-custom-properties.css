@@ -90,8 +90,15 @@ body::after{
 
 /* Performance containment */
 .hero{contain-intrinsic-size:none}
-/* content-visibility skips rendering for off-screen sections — big perf win */
-#services,#work,#testimonials,#experience,.thanks-section,#contact,.results-strip,footer{content-visibility:auto;contain-intrinsic-size:0 700px}
+/* content-visibility skips rendering for off-screen sections — big perf win.
+   #testimonials is deliberately NOT in this list. It holds the only widget
+   on the page whose layout is measured in JS: the carousel reads the track
+   wrapper's width to work out how far to translate. While a section is
+   skipped it also has size containment, so a measurement taken inside it
+   can come back as a width the element never actually has — the carousel
+   cached 1615px for a 961px wrapper, translated the track by 1635px
+   instead of 981px, and parked every card outside the viewport. */
+#services,#work,#experience,.thanks-section,#contact,.results-strip,footer{content-visibility:auto;contain-intrinsic-size:0 700px}
 /* GPU compositing hints for animated elements */
 .testi-track{will-change:transform}
 .testi-track{transform:translate3d(0,0,0)} /* prime GPU layer */
