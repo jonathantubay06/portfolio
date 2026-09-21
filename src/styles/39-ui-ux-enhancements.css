@@ -98,6 +98,12 @@
 .footer-cta a{color:var(--cyan);text-decoration:none}
 .footer-cta a:hover{text-decoration:underline}
 [data-theme="light"] .footer-cta{color:#5a6880;border-bottom-color:rgba(0,0,0,.08)}
+/* The cyan reads on the dark footer at 10.24:1 but collapses to 1.52:1 on
+   the light one (#f0ede8) — the footer's main contact link was very nearly
+   invisible in light mode. #0a63b8 is the same brand blue as --blue
+   (#0e7aff) taken darker: 5.15:1 on the light footer, 5.68:1 on a light
+   section. */
+[data-theme="light"] .footer-cta a{color:#0a63b8}
 [data-theme="light"] .testi-filter-btn{border-color:#d0dae8;color:#5a6880}
 [data-theme="light"] .testi-filter-btn.active{background:#0e7aff;border-color:#0e7aff;color:#fff}
 /* 2.70:1 on #faf8f5 — see the .sec-label note in 23-light-mode.css. */

@@ -104,7 +104,18 @@
     }, delay);
   }
 
-  // Both words start close together and finish around the 3s mark
-  scramble(spanEl, v => { spanEl.textContent = v; }, 'Jonathan', 2600, 200);
-  scramble(tailEl, v => { tailEl.textContent = v; }, 'Tubay',    2600, 400);
+  // Durations are an LCP budget, not a taste call.
+  //
+  // On mobile the hero plate is not rendered, so this H1 is the largest
+  // contentful element on the page — and a text element's LCP lands on its
+  // LAST paint, which is the end of this animation. The 2026-09-21 run
+  // measured mobile LCP 2.9s against an element render delay of 2,110ms on
+  // <span class="glow">, matching the old 200+2600ms endpoint almost
+  // exactly. Desktop was unaffected at 0.8s because the plate paints there
+  // and is larger, so the H1 never becomes the LCP candidate.
+  //
+  // Ending by ~1.2s keeps mobile LCP inside the 2.5s "good" threshold with
+  // room to spare, and still reads clearly as a terminal reveal.
+  scramble(spanEl, v => { spanEl.textContent = v; }, 'Jonathan', 900, 150);
+  scramble(tailEl, v => { tailEl.textContent = v; }, 'Tubay',    900, 300);
 })();

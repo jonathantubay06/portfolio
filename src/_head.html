@@ -72,9 +72,18 @@
 <link rel="preload" href="./fonts/orbitron-latin-var.woff2" as="font" type="font/woff2" crossorigin/>
 <link rel="preload" href="./fonts/plus-jakarta-sans-latin-var.woff2" as="font" type="font/woff2" crossorigin/>
 
-<!-- Marquee brand icons served from Simple Icons CDN -->
-<link rel="preconnect" href="https://cdn.simpleicons.org"/>
-<link rel="dns-prefetch" href="https://cdn.simpleicons.org"/>
+<!-- Brand icons are self-hosted in img/icons/ rather than pulled from
+     cdn.simpleicons.org. Twelve of them were separate third-party requests
+     on an origin the browser had to connect to before it could fetch any of
+     them, and they carried a 1-day cache TTL that PageSpeed flagged under
+     "Use efficient cache lifetimes" — a TTL this site cannot set. Locally
+     they are 39 KB total, served immutable from the same connection.
+     The preconnect and dns-prefetch that used to sit here existed only for
+     that origin.
+
+     The SVGs come from Simple Icons (CC0). The marks themselves remain the
+     trademarks of their owners and are used nominatively to name the tools,
+     exactly as before. -->
 
 
 <!-- Inline critical CSS: renders the hero skeleton instantly before style.css downloads.

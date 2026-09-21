@@ -31,9 +31,17 @@
   let origCards  = allCards.slice();
   let origTotal  = origCards.length;
 
+  // matchMedia rather than window.innerWidth. Reading innerWidth forces the
+  // browser to flush pending style and layout work before it can answer, and
+  // buildTrack() calls this immediately before writing to the DOM — the
+  // 2026-09-21 PageSpeed run attributed 28ms of forced reflow to exactly
+  // this line. A media query list is evaluated without a layout pass.
+  // Breakpoints mirror .testi-track in 11-testimonials.css.
+  const MQ_ONE = window.matchMedia('(max-width: 600px)');
+  const MQ_TWO = window.matchMedia('(max-width: 900px)');
   function getPerPage() {
-    if (window.innerWidth <= 600) return 1;
-    if (window.innerWidth <= 900) return 2;
+    if (MQ_ONE.matches) return 1;
+    if (MQ_TWO.matches) return 2;
     return 3;
   }
 
@@ -76,7 +84,14 @@
   // ── Geometry helpers (cached) ──────────────────────────────
   function cardWidth() {
     if (_cachedPerPage !== perPage) {
-      _cachedCardWidth = (wrap.getBoundingClientRect().width - GAP * (perPage - 1)) / perPage;
+      // Measured lazily, on first slide, and deliberately not hoisted into
+      // buildTrack(): #testimonials carries content-visibility:auto, so
+      // while the section is off-screen its subtree is not laid out and
+      // this would measure 0. Hence also the width > 0 guard — caching a
+      // zero would wedge the carousel for the rest of the session.
+      const width = wrap.getBoundingClientRect().width;
+      if (width <= 0) return _cachedCardWidth;
+      _cachedCardWidth = (width - GAP * (perPage - 1)) / perPage;
       _cachedPerPage = perPage;
     }
     return _cachedCardWidth;
