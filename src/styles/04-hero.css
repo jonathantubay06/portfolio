@@ -389,15 +389,26 @@ h1{
 /* Hero particle canvas */
 
 /* Glitch on name hover */
-/* Both halves of the name are width-locked by the scramble script while it
-   runs. overflow:hidden clips a scrambled string that measures wider than
-   the final text instead of letting it push the line box around;
-   vertical-align:top is declared with it because overflow:hidden moves an
-   inline-block's baseline to its bottom margin edge, which would drop the
-   text by the font's descender. Both are set permanently so nothing about
-   the box changes when the lock goes on or comes off. */
-.glow,
-.gname-tail{display:inline-block;overflow:hidden;vertical-align:top}
+/* inline-block so the scramble script can pin these boxes to their final
+   width while it runs.
+
+   NO overflow:hidden here. It was added to clip a scrambled string wider
+   than the final text, and it clipped .glow's text-shadow too — a 56px
+   blur radius cut off square at the element box, which rendered as a hard
+   cyan rectangle behind the name rather than a glow fading out. Reported
+   from production.
+
+   Clipping was never needed anyway: the script pins `width` in px, and a
+   fixed-width inline-block keeps that width whatever its content does, so
+   a wide scrambled string overflows visually without reflowing anything.
+   The worst case is the scramble briefly overlapping "Tubay" during its
+   900ms run, which is a far smaller problem than a permanent box around
+   the name.
+   
+   vertical-align:top went with it — it only existed because
+   overflow:hidden moves an inline-block's baseline to its bottom margin
+   edge. */
+.gname-tail{display:inline-block}
 .glitch-name{cursor:default}
 .glitch-name:hover .glow,
 .glitch-name.glitch-auto .glow{animation:glitch .5s linear}
