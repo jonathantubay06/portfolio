@@ -1,0 +1,27 @@
+<!-- ══ BACK TO TOP ══ -->
+<!-- Fixed bottom-right button. Visible only after 400px of scroll (main.js).
+     .btt-ring SVG has two circles: .btt-track (faint full ring) and .btt-progress
+     (fills clockwise as you scroll — stroke-dashoffset driven by main.js). -->
+<a href="#" id="back-to-top" aria-label="Back to top">
+  <svg class="btt-ring" viewBox="0 0 44 44" aria-hidden="true">
+    <circle class="btt-track" cx="22" cy="22" r="18"/><!-- faint background ring -->
+    <circle class="btt-progress" cx="22" cy="22" r="18"/><!-- fills with scroll progress -->
+  </svg>
+  <svg class="btt-icon" viewBox="0 0 24 24" aria-hidden="true">
+    <polyline points="18 15 12 9 6 15"/><!-- upward chevron -->
+  </svg>
+</a>
+
+<!-- ══ AVAILABLE PILL + BOOK A CALL PILL ══ -->
+<!-- Both slide in from the right after scrolling (effects.js).
+     Stacked vertically — Available on top, Book below.
+     Hidden on mobile (CSS) to avoid cluttering small screens. -->
+<a href="#contact" id="avail-pill" aria-label="Available for projects">
+  <span class="avail-pill-dot"></span>Available for Projects
+</a>
+<!-- Email pill: appears after 800px scroll. Labelled "Email me" because the
+     href is a mailto — "Book a Call" promised a calendar that does not exist. -->
+<a href="mailto:jonatsbuilds@gmail.com?subject=Let%27s%20Connect" id="book-pill" aria-label="Email Jonathan about a project">
+  ✉️ Email Me
+</a>
+

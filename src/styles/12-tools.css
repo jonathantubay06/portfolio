@@ -1,0 +1,31 @@
+/* ═══════════════════════════════════════
+   TOOLS
+═══════════════════════════════════════ */
+/* Same treatment as .testi-bg — dark flush against the line */
+.tools-bg{
+  background:linear-gradient(180deg,
+    rgba(2,8,20,.65) 0%,
+    #05101f 8%,
+    #05101f 92%,
+    rgba(2,8,20,.65) 100%
+  );
+  padding:5rem 0;position:relative;z-index:1;
+}
+.tools-bg::before,.tools-bg::after{
+  content:'';position:absolute;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent 0%,rgba(0,212,255,.0) 15%,rgba(0,212,255,.95) 50%,rgba(0,212,255,.0) 85%,transparent 100%);
+  animation:energize 3s ease-in-out infinite;
+}
+.tools-bg::before{top:0}
+.tools-bg::after{bottom:0}
+
+.chips{display:flex;flex-wrap:wrap;gap:.65rem;margin-top:2.2rem}
+.chip{
+  display:flex;align-items:center;gap:.4rem;
+  padding:.52rem 1rem;
+  background:rgba(14,122,255,.055);border:1px solid var(--border2);
+  border-radius:var(--radius-sm);font-size:.84rem;font-weight:500;
+  color:rgba(232,244,255,.7);transition:all .22s;cursor:default;
+}
+.chip:hover{background:rgba(0,212,255,.09);border-color:rgba(0,212,255,.32);color:var(--cyan)}
+

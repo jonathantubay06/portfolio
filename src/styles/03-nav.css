@@ -1,0 +1,91 @@
+/* ═══════════════════════════════════════
+   NAV
+═══════════════════════════════════════ */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:.9rem 2rem;
+  background:transparent;
+  backdrop-filter:none;-webkit-backdrop-filter:none;
+  border-bottom:none;
+  transition:background .4s ease,border-color .4s ease,backdrop-filter .4s ease;
+}
+/* Stronger frosted glass when scrolled:
+   brighter bottom border + subtle glow adds a futuristic HUD feel */
+nav.scrolled{
+  background:rgba(3,8,15,.88);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid rgba(0,212,255,.22);
+  box-shadow:0 1px 24px rgba(0,212,255,.07),0 4px 20px rgba(0,0,0,.3);
+}
+.nav-brand{display:flex;align-items:center;flex-shrink:0}
+.nav-logo{
+  font-family:var(--font-head);font-weight:900;font-size:1rem;
+  letter-spacing:.06em;color:var(--text);text-decoration:none;
+  display:flex;align-items:center;gap:.45rem;
+}
+.logo-dot{
+  width:9px;height:9px;border-radius:50%;
+  background:var(--cyan);
+  box-shadow:0 0 8px var(--cyan);
+  animation:pulse-dot 2.4s ease-in-out infinite;
+}
+@keyframes pulse-dot{0%,100%{box-shadow:0 0 6px var(--cyan)}50%{box-shadow:0 0 14px var(--cyan),0 0 26px rgba(0,212,255,.3)}}
+
+.nav-links{display:flex;gap:1.6rem;list-style:none}
+.nav-links a{
+  color:var(--muted2);text-decoration:none;font-size:.8rem;
+  font-weight:600;letter-spacing:.1em;text-transform:uppercase;
+  transition:color var(--transition-fast);white-space:nowrap;
+  position:relative;
+}
+.nav-links a::after{
+  content:'';position:absolute;bottom:-4px;left:0;width:0;height:2px;
+  background:var(--cyan);transition:width var(--transition-med);
+}
+.nav-links a:hover{color:var(--cyan)}
+.nav-links a:hover::after{width:100%}
+
+/* Hamburger — mobile */
+.nav-toggle{
+  display:none;flex-direction:column;gap:5px;cursor:pointer;
+  background:none;border:none;padding:.4rem;
+}
+.nav-toggle span{
+  display:block;width:22px;height:2px;
+  background:var(--muted2);border-radius:2px;
+  transition:all var(--transition-med);
+}
+.nav-toggle.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.nav-toggle.open span:nth-child(2){opacity:0}
+.nav-toggle.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+
+/* Mobile drawer */
+.nav-drawer{
+  display:none;position:fixed;top:57px;left:0;right:0;
+  background:rgba(3,8,15,.97);border-bottom:1px solid var(--border);
+  z-index:99;padding:1.2rem 1.5rem;
+  flex-direction:column;gap:.2rem;
+}
+.nav-drawer.open{display:flex}
+.nav-drawer a{
+  color:var(--muted2);text-decoration:none;font-size:.92rem;
+  font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  padding:.65rem 0;border-bottom:1px solid var(--border);
+  transition:color var(--transition-fast);
+}
+.nav-drawer a:last-child{border-bottom:none}
+.nav-drawer a:hover{color:var(--cyan)}
+
+.nav-cta{
+  display:inline-flex;align-items:center;gap:.4rem;
+  padding:.55rem 1.3rem;
+  border:1px solid var(--cyan);color:var(--cyan);
+  font-family:var(--font-body);font-size:.8rem;font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;text-decoration:none;
+  border-radius:var(--radius-sm);transition:all .25s;
+  box-shadow:0 0 10px rgba(0,212,255,.12);
+  flex-shrink:0;
+}
+.nav-cta:hover{background:var(--cyan);color:#000;box-shadow:0 0 20px rgba(0,212,255,.4)}
+

@@ -1,0 +1,228 @@
+/* ════════════════════════════════════════════════════════════
+   UI/UX ENHANCEMENTS
+════════════════════════════════════════════════════════════ */
+
+/* ── Hero CTA: stronger visual weight ── */
+.hero-cta .btn-p{padding:.95rem 2.2rem;font-size:.92rem;box-shadow:0 6px 28px rgba(0,212,255,.42)}
+
+/* ── Project cards: touch press feedback ── */
+@media(hover:none){.proj-card:active{transform:scale(.97);transition:transform .1s ease}}
+
+/* ── Project image: bg for loading state ── */
+.ss-img{background:var(--bg)}
+
+/* ── Project card one-liner description ── */
+.proj-card .proj-desc{
+  font-size:.75rem;line-height:1.5;margin:.2rem 0 0;
+  overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+  color:rgba(232,244,255,.45);
+}
+[data-theme="light"] .proj-card .proj-desc{color:rgba(15,25,42,.5)}
+
+/* ── Service rows: expand indicator on touch ── */
+@media(hover:none){
+  .svc-row{position:relative;padding-right:2.5rem}
+  .svc-row::after{
+    content:'+';position:absolute;right:1rem;top:50%;
+    transform:translateY(-50%);
+    color:var(--cyan);font-size:1.2rem;font-weight:300;
+    transition:transform .25s;pointer-events:none;
+  }
+  .svc-row.svc-open::after{transform:translateY(-50%) rotate(45deg)}
+}
+
+/* ── Testimonial filter buttons ── */
+.testi-filters{display:flex;gap:.5rem;justify-content:center;margin-bottom:1.8rem}
+.testi-filter-btn{
+  background:transparent;border:1px solid var(--border);color:var(--muted);
+  padding:.4rem 1rem;border-radius:var(--radius-pill);
+  font-size:.78rem;font-weight:600;cursor:pointer;letter-spacing:.04em;
+  transition:all var(--transition-fast);
+}
+.testi-filter-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.testi-filter-btn.active{background:var(--cyan);border-color:var(--cyan);color:#03080f}
+
+/* ── Carousel arrows: below track on mobile ── */
+@media(max-width:600px){
+  .testi-carousel{padding-bottom:3.5rem}
+  .testi-nav{top:auto;transform:none;bottom:.25rem}
+  .testi-prev{left:calc(50% - 54px)}
+  .testi-next{right:auto;left:calc(50% + 12px)}
+}
+
+/* ── Modal prev/next navigation ── */
+.modal-nav{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:1.25rem 0 0;margin-top:1.5rem;
+  border-top:1px solid rgba(255,255,255,.07);
+}
+.modal-nav-btn{
+  background:none;border:1px solid rgba(0,212,255,.25);color:var(--cyan);
+  padding:.4rem .9rem;border-radius:3px;
+  font-size:.78rem;font-weight:600;cursor:pointer;
+  font-family:var(--font-body);letter-spacing:.04em;transition:all .2s;
+}
+.modal-nav-btn:hover{background:rgba(0,212,255,.1);border-color:rgba(0,212,255,.5)}
+.modal-nav-count{font-size:.72rem;color:rgba(232,244,255,.3)}
+.modal-nav-spacer{display:inline-block;width:70px} /* same width as a nav button, prevents layout shift */
+[data-theme="light"] .modal-nav-btn{color:#0e7aff;border-color:rgba(14,122,255,.3)}
+[data-theme="light"] .modal-nav-count{color:rgba(15,25,42,.35)}
+
+/* ── Quick-pick buttons: focus-visible ── */
+.qp-btn:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+
+/* ── Mobile sticky CTA bar ── */
+.mobile-cta-bar{display:none}
+@media(max-width:768px){
+  .mobile-cta-bar{
+    display:block;position:fixed;bottom:0;left:0;right:0;
+    padding:.75rem 1rem env(safe-area-inset-bottom,0px);
+    background:rgba(6,14,26,.97);
+    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    border-top:1px solid rgba(0,212,255,.18);
+    z-index:95;text-align:center;
+    transform:translateY(100%);
+    transition:transform .4s cubic-bezier(.4,0,.2,1);
+  }
+  .mobile-cta-bar.visible{transform:translateY(0)}
+  .mobile-cta-bar .btn{width:100%;max-width:400px;justify-content:center;padding:.75rem 1rem;font-size:.88rem}
+  footer{padding-bottom:5.5rem}
+}
+[data-theme="light"] .mobile-cta-bar{background:rgba(240,245,255,.97)}
+
+/* ── Footer CTA line ── */
+.footer-cta{
+  width:100%;text-align:center;font-size:.85rem;color:var(--muted);
+  padding-bottom:.75rem;border-bottom:1px solid rgba(255,255,255,.06);margin-bottom:.25rem;
+}
+.footer-cta a{color:var(--cyan);text-decoration:none}
+.footer-cta a:hover{text-decoration:underline}
+[data-theme="light"] .footer-cta{color:#5a6880;border-bottom-color:rgba(0,0,0,.08)}
+[data-theme="light"] .testi-filter-btn{border-color:#d0dae8;color:#5a6880}
+[data-theme="light"] .testi-filter-btn.active{background:#0e7aff;border-color:#0e7aff;color:#fff}
+[data-theme="light"] .tl-expand-hint{color:#8a9ab0}
+
+/* ── 10. Book-a-call pill ───────────────────────────────────────
+   Second floating pill below #avail-pill.
+   Same slide-in pattern — hidden until 800px scroll (JS).
+   Teal/green accent to distinguish from cyan Available pill.
+──────────────────────────────────────────────────────────────── */
+/* Sits between back-to-top and avail-pill — same right edge as both */
+#book-pill{
+  position:fixed;bottom:5.4rem;right:1.8rem;z-index:149;
+  display:flex;align-items:center;gap:.45rem;
+  background:rgba(6,14,26,.94);
+  border:1px solid rgba(52,211,153,.35);
+  border-radius:99px;padding:.45rem 1rem;
+  font-size:.72rem;font-weight:600;letter-spacing:.03em;
+  color:#34d399;text-decoration:none;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  box-shadow:0 4px 20px rgba(52,211,153,.12);
+  opacity:0;pointer-events:none;
+  transform:translateX(120%);
+  transition:opacity .4s ease,
+             transform .4s cubic-bezier(.25,.8,.25,1),
+             box-shadow .25s ease,
+             background .25s ease;
+  z-index:149;white-space:nowrap;
+}
+#book-pill.visible{opacity:1;transform:translateX(0);pointer-events:auto}
+#book-pill:hover{
+  background:rgba(52,211,153,.12);
+  box-shadow:0 4px 24px rgba(52,211,153,.22);
+}
+/* Hide both pills on mobile — avoid cluttering small screens */
+@media(max-width:600px){#book-pill{display:none}}
+[data-theme="light"] #book-pill{
+  background:rgba(255,255,255,.92);
+  border-color:rgba(22,163,74,.3);
+  color:#16a34a;
+  box-shadow:0 4px 20px rgba(22,163,74,.1);
+}
+
+/* ── 11. Live project badge ──────────────────────────────────────
+   Small "● LIVE" pill in the top-left of project card thumbnails.
+   Green dot pulses via avail-pulse animation (already defined).
+   Small enough not to block the preview image.
+──────────────────────────────────────────────────────────────── */
+.card-live-badge{
+  position:absolute;top:.55rem;left:.55rem;
+  font-size:.6rem;font-weight:700;letter-spacing:.08em;
+  background:rgba(34,197,94,.15);
+  border:1px solid rgba(34,197,94,.4);
+  border-radius:99px;padding:.18rem .5rem;
+  color:#4ade80;z-index:3;pointer-events:none;
+  display:flex;align-items:center;gap:.28rem;
+}
+/* The ● pulses using the same avail-pulse keyframe (already defined) */
+.card-live-badge::before{
+  content:'';width:5px;height:5px;border-radius:50%;
+  background:#4ade80;flex-shrink:0;
+  animation:avail-pulse 2s ease-in-out infinite;
+}
+/* Hide the raw "●" text since we use ::before for the dot */
+.card-live-badge{font-size:.6rem}
+.card-live-badge{text-indent:0} /* keep LIVE text */
+
+/* ── 12. Contact response note ───────────────────────────────────
+   Small ⚡ note beside the submit button — reduces hesitation.
+──────────────────────────────────────────────────────────────── */
+.form-submit-row{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.form-response-note{
+  font-size:.72rem;color:var(--muted);
+  display:flex;align-items:center;gap:.3rem;
+}
+[data-theme="light"] .form-response-note{color:#7a90a8}
+
+/* ── 14. Cursor sparkle trail ───────────────────────────────────
+   Tiny star shapes emitted from the cursor on mousemove.
+   Each sparkle scales up, rotates, then fades — 500ms life.
+   Only on desktop (touch devices skip entirely in JS).
+──────────────────────────────────────────────────────────────── */
+
+@keyframes sparkle-life{
+  0%  {transform:scale(0);    opacity:.9}
+  40% {transform:scale(1.4);  opacity:.7}
+  100%{transform:scale(0) translateY(-8px);opacity:0}
+}
+
+/* ── 15. Quick-pick service buttons ──────────────────────────────
+   3 icon+label buttons below the services process strip.
+   Clicking smooth-scrolls to contact and pre-selects the dropdown.
+──────────────────────────────────────────────────────────────── */
+.qp-wrap{
+  margin-top:2rem;padding:1.2rem 1.5rem;
+  border:1px solid var(--border);border-radius:12px;
+  background:rgba(0,212,255,.02);
+  display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap;
+}
+.qp-label{
+  font-size:.75rem;color:var(--muted);white-space:nowrap;
+  font-weight:600;letter-spacing:.05em;
+}
+.qp-btns{display:flex;gap:.65rem;flex-wrap:wrap}
+.qp-btn{
+  font-size:.75rem;font-weight:600;
+  padding:.42rem 1rem;border-radius:99px;
+  background:rgba(0,212,255,.06);
+  border:1px solid rgba(0,212,255,.2);
+  color:var(--text);cursor:pointer;
+  transition:all .22s;
+}
+.qp-btn:hover{
+  background:rgba(0,212,255,.14);
+  border-color:rgba(0,212,255,.45);
+  color:var(--cyan);
+  transform:translateY(-2px);
+}
+[data-theme="light"] .qp-wrap{background:rgba(0,100,180,.02);border-color:rgba(0,100,180,.12)}
+[data-theme="light"] .qp-btn{background:rgba(0,100,180,.04);border-color:rgba(0,100,180,.2);color:#3d4f63}
+[data-theme="light"] .qp-btn:hover{background:rgba(0,100,180,.1);border-color:rgba(0,100,180,.4);color:var(--cyan)}
+[data-theme="light"] .qp-label{color:#7a90a8}
+@media(max-width:600px){
+  .qp-wrap{flex-direction:column;align-items:flex-start;gap:.8rem;padding:.9rem 1rem}
+  .qp-btns{width:100%}
+  .qp-btn{flex:1;text-align:center;min-width:0}
+  .qp-btn:hover{transform:none}
+}
+

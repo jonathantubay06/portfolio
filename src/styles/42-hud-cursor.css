@@ -1,0 +1,132 @@
+/* ═══════════════════════════════════════
+   HUD LOCK-ON CURSOR (desktop only)
+
+   Idle  : a compact arrow, matching the existing cursors/arrow.svg
+           shape so the treatment reads as one design, not two.
+   Locked: a 32px HUD target over deliberate interactive elements,
+           with one acquire pass, then completely static.
+
+   The native cursor is suppressed ONLY while .hud-on is set — that
+   flag is added by JS after the desktop gate passes (pointer:fine,
+   hover:hover, >=1024px, no reduced-motion). It is never a global
+   `cursor:none`: on touch, narrow layouts, reduced motion, or if the
+   JS simply fails to run, the flag is absent and the native SVG arrow
+   from the NEON SVG CURSORS block is what you get.
+   ═══════════════════════════════════════ */
+
+.hud-cursor{
+  position:fixed;left:0;top:0;
+  width:26px;height:26px;
+  pointer-events:none;          /* never intercepts clicks */
+  z-index:9998;                 /* under modals (9999+), over content */
+  opacity:0;
+  will-change:transform;
+  /* translate3d is written inline by JS on pointermove */
+}
+.hud-on .hud-cursor{opacity:1}
+
+/* Hide the native cursor wherever the custom one is live, so the two
+   never render at the same time. Scoped to .hud-on, which only exists
+   once the desktop gate has passed.
+
+   This has to be a universal selector, not a list. Listing tags only
+   covers inherited cursors; any element that sets its OWN cursor still
+   draws the native one on top of ours. The site has eight such rules —
+   .glitch-name{cursor:default} on the hero H1 was the visible one, plus
+   .built-item, .cbadge-static, .fg select, .testi-nav:disabled,
+   .testi-track-wrap, its :active, and .tl-content.
+
+   The "html" prefix matters: ".hud-on *" alone is (0,1,0) and loses to
+   any descendant rule like ".fg select" (0,1,1). "html.hud-on *" is
+   (0,1,1), tying those, and this partial is concatenated last — so it
+   wins on order without needing a rule per offender. */
+html.hud-on,
+html.hud-on *{
+  cursor:none;
+}
+/* Text entry keeps its I-beam — a HUD target over a caret is wrong, and
+   losing the caret would hurt usability. Higher specificity than the
+   universal rule above so it survives. */
+.hud-on input:not([type="button"]):not([type="submit"]):not([type="checkbox"]):not([type="radio"]),
+.hud-on textarea{
+  cursor:text;
+}
+/* The carousel's grab/grabbing states communicate that it is draggable;
+   that affordance is worth more than cursor consistency. */
+.hud-on .testi-track-wrap{cursor:grab}
+.hud-on .testi-track-wrap:active{cursor:grabbing}
+
+/* ── Idle: arrow. Same silhouette as cursors/arrow.svg (M6 4L26 9…),
+   drawn inline so it can animate out on lock. ── */
+.hud-arrow{
+  position:absolute;left:0;top:0;
+  width:26px;height:26px;
+  transition:opacity .16s ease,transform .22s cubic-bezier(.2,.7,.3,1);
+  transform-origin:4px 4px;
+}
+.hud-arrow path{
+  fill:rgba(10,21,36,.92);
+  stroke:rgba(0,212,255,.9);
+  stroke-width:1.6;
+  stroke-linejoin:round;
+  paint-order:stroke fill;
+}
+.hud-cursor.is-locked .hud-arrow{opacity:0;transform:scale(.6)}
+
+/* ── Locked: compact HUD target ── */
+.hud-ring{
+  position:absolute;left:0;top:0;
+  width:32px;height:32px;margin:-16px 0 0 -16px;
+  border-radius:50%;
+  border:1px solid rgba(0,212,255,.62);
+  background:rgba(6,14,26,.3);
+  box-shadow:0 0 6px rgba(0,212,255,.18),inset 0 0 6px rgba(0,212,255,.08);
+  opacity:0;transform:scale(.75);
+}
+.hud-tick{position:absolute;background:rgba(0,212,255,.85);opacity:0}
+.hud-tick.t-n{top:-13px;left:0;width:1px;height:5px;margin-left:-.5px}
+.hud-tick.t-s{top:8px;left:0;width:1px;height:5px;margin-left:-.5px}
+.hud-tick.t-w{left:-13px;top:0;height:1px;width:5px;margin-top:-.5px}
+.hud-tick.t-e{left:8px;top:0;height:1px;width:5px;margin-top:-.5px}
+/* Centre pip — reads as the crosshair's aim point */
+.hud-pip{
+  position:absolute;left:0;top:0;
+  width:3px;height:3px;margin:-1.5px 0 0 -1.5px;
+  border-radius:50%;background:rgba(0,212,255,.95);
+  opacity:0;
+}
+
+.hud-cursor.is-locked .hud-ring{
+  opacity:1;transform:scale(1) rotate(0deg);
+  animation:hudAcquire .46s cubic-bezier(.16,.84,.34,1) both;
+}
+.hud-cursor.is-locked .hud-tick,
+.hud-cursor.is-locked .hud-pip{
+  opacity:1;animation:hudTicks .46s cubic-bezier(.16,.84,.34,1) both;
+}
+
+/* Acquire: up from 75%, unwind a 16deg rotation, one glow bump, settle.
+   Plays once per entry — JS removes .is-locked on leave, which resets
+   the keyframes so it can replay on a later entry. */
+@keyframes hudAcquire{
+  0%  {opacity:0;transform:scale(.75) rotate(16deg);
+       box-shadow:0 0 0 rgba(0,212,255,0),inset 0 0 0 rgba(0,212,255,0)}
+  55% {opacity:1;
+       box-shadow:0 0 13px rgba(0,212,255,.42),inset 0 0 8px rgba(0,212,255,.16)}
+  100%{opacity:1;transform:scale(1) rotate(0deg);
+       box-shadow:0 0 6px rgba(0,212,255,.2),inset 0 0 6px rgba(0,212,255,.09)}
+}
+@keyframes hudTicks{
+  0%{opacity:0}60%{opacity:1}100%{opacity:.85}
+}
+
+/* Belt and braces — the JS never builds it in these conditions, but if
+   it somehow exists, hide it and restore the native cursor. */
+@media(prefers-reduced-motion:reduce){
+  .hud-cursor{display:none!important}
+  html.hud-on,html.hud-on *{cursor:auto}
+}
+@media(hover:none),(pointer:coarse),(max-width:1023px){
+  .hud-cursor{display:none!important}
+  html.hud-on,html.hud-on *{cursor:auto}
+}

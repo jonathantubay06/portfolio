@@ -1,0 +1,14 @@
+/* ═══════════════════════════════════════
+   PORTFOLIO FILTERS
+═══════════════════════════════════════ */
+.pf-filters{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:2rem}
+.pf-btn{
+  background:transparent;border:1px solid var(--border);
+  color:var(--muted);padding:.45rem 1.1rem;border-radius:var(--radius-pill);
+  font-size:.8rem;font-weight:600;cursor:pointer;letter-spacing:.04em;
+  transition:all var(--transition-fast);
+}
+.pf-btn:hover{border-color:var(--cyan);color:var(--cyan)}
+.pf-btn.active{background:var(--cyan);border-color:var(--cyan);color:#03080f}
+.proj-card.hidden{display:none}
+

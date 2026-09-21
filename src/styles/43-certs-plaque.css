@@ -1,0 +1,19 @@
+/* ═══════════════════════════════════════
+   CERTIFICATIONS PLAQUE
+   One rendered object anchoring the certifications block, matching the
+   service icons in tone. Purely decorative: float runs only while the
+   Experience section is on screen (.inview, set by main.js), and it is
+   dropped entirely below 900px so phones fetch nothing.
+   ═══════════════════════════════════════ */
+.certs-inline{position:relative}
+.certs-plaque{
+  position:absolute;right:0;top:-6px;
+  width:76px;height:auto;
+  filter:saturate(.7) brightness(.92) drop-shadow(0 8px 14px rgba(0,0,0,.5));
+  pointer-events:none;z-index:0;
+}
+.inview .certs-plaque{animation:plaqueFloat 8s ease-in-out infinite}
+@keyframes plaqueFloat{0%,100%{translate:0 0}50%{translate:0 -6px}}
+
+@media(max-width:900px){.certs-plaque{display:none}}
+@media(prefers-reduced-motion:reduce){.certs-plaque{animation:none!important}}

@@ -1,0 +1,28 @@
+/* ═══════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════ */
+.btn{
+  display:inline-flex;align-items:center;gap:.45rem;
+  padding:.85rem 2rem;font-family:var(--font-body);font-size:.88rem;
+  font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  text-decoration:none;border-radius:var(--radius-sm);cursor:pointer;
+  transition:all .28s;border:none;
+  position:relative;overflow:hidden; /* needed for ripple effect */
+}
+/* ── 6. Button click ripple ── */
+.btn-ripple{
+  position:absolute;border-radius:50%;
+  width:120px;height:120px;
+  background:rgba(255,255,255,.28);
+  transform:translate(-50%,-50%) scale(0);
+  animation:btn-ripple .55s linear forwards;
+  pointer-events:none;
+}
+@keyframes btn-ripple{
+  to{transform:translate(-50%,-50%) scale(4);opacity:0}
+}
+.btn-p{background:linear-gradient(135deg,#0e7aff,#00d4ff);color:#000;box-shadow:0 4px 18px rgba(0,212,255,.28)}
+.btn-p:hover{box-shadow:0 7px 26px rgba(0,212,255,.48);transform:translateY(-2px)}
+.btn-g{background:transparent;color:var(--cyan);border:1px solid rgba(0,212,255,.5);box-shadow:0 0 10px rgba(0,212,255,.08)}
+.btn-g:hover{background:rgba(0,212,255,.07);border-color:var(--cyan);transform:translateY(-2px)}
+

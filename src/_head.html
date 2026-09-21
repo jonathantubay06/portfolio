@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="description" content="Jonathan Tubay — Shopify & WordPress (ACF/Gutenberg) developer, Figma-to-production builds, and workflow automation with Zapier & Airtable. Philippines-based."/>
+<link rel="canonical" href="https://jonathantubay.com/"/>
+
+<!-- Set theme before first paint: saved choice wins, otherwise respect OS preference.
+     Runs synchronously so style.css's [data-theme="light"] rules apply with zero flash. -->
+<script>
+(function(){
+  var t = localStorage.getItem('jt-theme');
+  if (!t) t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  if (t === 'light') document.documentElement.setAttribute('data-theme','light');
+})();
+</script>
+
+<!-- Open Graph -->
+<meta property="og:title" content="Jonathan Tubay — Shopify & WordPress Developer | Automation"/>
+<meta property="og:description" content="Shopify & WordPress (ACF/Gutenberg) developer in the Philippines — Figma-to-production builds and workflow automation with Zapier & Airtable."/>
+<meta property="og:type" content="website"/>
+<meta property="og:locale" content="en_US"/>
+<meta property="og:url" content="https://jonathantubay.com/"/>
+<meta property="og:image" content="https://jonathantubay.com/og-preview.jpg"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="630"/>
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Jonathan Tubay — Shopify & WordPress Developer | Automation"/>
+<meta name="twitter:description" content="Shopify & WordPress (ACF/Gutenberg) developer in the Philippines — Figma-to-production builds and workflow automation with Zapier & Airtable."/>
+<meta name="twitter:image" content="https://jonathantubay.com/og-preview.jpg"/>
+
+<!-- Theme color for mobile browsers -->
+<meta name="theme-color" content="#060e1a"/>
+<meta name="color-scheme" content="dark"/>
+
+<!-- Favicon -->
+<link rel="icon" type="image/png" href="./favicon.png" sizes="32x32"/>
+<link rel="apple-touch-icon" href="./favicon.png"/>
+<title>Jonathan Tubay — Shopify & WordPress Developer | Automation</title>
+
+<!-- DNS + TCP warmup before any request fires -->
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="dns-prefetch" href="https://fonts.googleapis.com"/>
+<link rel="dns-prefetch" href="https://fonts.gstatic.com"/>
+<!-- Marquee brand icons served from Simple Icons CDN -->
+<link rel="preconnect" href="https://cdn.simpleicons.org"/>
+<link rel="dns-prefetch" href="https://cdn.simpleicons.org"/>
+
+<!-- Non-blocking font load: media trick loads async, then swaps to all -->
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      media="print" onload="this.media='all'"/>
+<!-- Fallback for no-JS -->
+<noscript>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"/>
+</noscript>
+
+<!-- Preload Orbitron 900 — used for hero name above the fold; preloading eliminates
+     the flash of unstyled text (FOUT) that would otherwise occur while the font loads -->
+
+<!-- Preload hero background — largest above-the-fold image, critical for LCP -->
+
+<!-- Inline critical CSS: renders the hero skeleton instantly before style.css downloads.
+     Only above-the-fold essentials — full styles are in style.css below. -->
+<style>
+/* Critical: body base so there's no white flash */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#060e1a;--cyan:#00d4ff;--text:#e8f4ff;--font-head:'Orbitron','Arial Black',sans-serif;--font-body:'Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,system-ui,sans-serif}
+html{overflow-x:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--font-body);opacity:0;animation:page-fadein .5s ease .05s forwards}
+@keyframes page-fadein{to{opacity:1}}
+/* Critical nav — visible immediately on load */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:.9rem 2rem;background:transparent}
+/* Critical hero skeleton */
+.hero{min-height:100svh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:6rem 1.5rem 3rem;position:relative;overflow:hidden}
+h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;color:#fff;line-height:1.08}
+.glow{color:var(--cyan)}
+</style>
+
+<!-- Full stylesheet — loads after the critical inline above -->
+<link rel="stylesheet" href="./style.css"/>
+
+<!-- Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Person",
+      "@id": "https://jonathantubay.com/#person",
+      "name": "Jonathan Tubay",
+      "jobTitle": "eCommerce & Automation Specialist",
+      "description": "I launch Shopify stores, WordPress sites, and Softr apps — then automate everything with Zapier, Airtable, and n8n.",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Las Piñas City",
+        "addressRegion": "Metro Manila",
+        "addressCountry": "PH"
+      },
+      "email": "jonatsbuilds@gmail.com",
+      "telephone": "+639175291657",
+      "sameAs": [
+        "https://www.linkedin.com/in/jonathantubay/"
+      ],
+      "url": "https://jonathantubay.com",
+      "knowsAbout": ["Shopify", "Shopify Plus", "WordPress", "WooCommerce", "Softr", "Airtable", "Zapier", "n8n", "eCommerce", "Workflow Automation", "Web Development", "Philippines Freelancer", "eCommerce Developer Philippines", "Shopify Developer Philippines"]
+    },
+    {
+      "@type": "ProfessionalService",
+      "@id": "https://jonathantubay.com/#business",
+      "name": "Jonats Web Development Services",
+      "legalName": "Jonats Web Development Services",
+      "founder": { "@id": "https://jonathantubay.com/#person" },
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Las Piñas City",
+        "addressRegion": "Metro Manila",
+        "addressCountry": "PH"
+      },
+      "email": "jonatsbuilds@gmail.com",
+      "url": "https://jonathantubay.com"
+    }
+  ]
+}
+</script>
+
+<!-- Styles moved to style.css -->
+</head>
+<body>
+<!-- ═══════════════════════════════════════════════════════════════
+     index.html — Jonathan Tubay Portfolio
+     ─────────────────────────────────────────────────────────────
+     PAGE STRUCTURE (in DOM order)
+       #scroll-bar     Fixed 3px cyan progress bar (top of viewport)
+       .noise-overlay  Full-page SVG grain texture (z-index 1, 2.8%)
+       <nav>           Fixed top bar — logo, links, theme toggle, CTA
+       .nav-drawer     Mobile slide-down menu (hidden by default)
+       .hero  #main    Full-viewport intro section
+       .built-wrap     Scrolling tech-stack marquee (aria-hidden)
+       #services       Services 2-col grid + process steps
+       #work           Portfolio: accomplishments, filter tabs, 5 cards
+       .testi-bg       Testimonial carousel (3-up, draggable)
+       .tools-bg       Skills / tools chip grid
+       #experience     Timeline + grouped cert badges
+       #contact        2-stage contact: cards → collapsible form
+       <footer>        Copyright + nav links
+       .proj-modal ×5  Project detail modals (hidden until opened)
+       #egg-overlay    Easter egg terminal (triggered by typing "jt")
+       #avail-pill     "Available" status pill (fixed bottom-right)
+       #back-to-top    Scroll-to-top button with SVG progress ring
+       main.js         Critical JS (theme, nav, modals, carousel…)
+       effects.js      Deferred visual FX (cursor, spotlight, clock…)
+     ─────────────────────────────────────────────────────────────
+     SCRIPTS: main.js runs immediately; effects.js uses `defer`
+     so it never blocks parsing or first paint.
+═══════════════════════════════════════════════════════════════ -->
+<a href="#main" class="skip-link">Skip to main content</a>
+<div id="scroll-bar" aria-hidden="true"></div><!-- width driven by JS scroll handler -->
+<div class="noise-overlay" aria-hidden="true"></div><!-- SVG grain at 2.8% opacity -->
+
