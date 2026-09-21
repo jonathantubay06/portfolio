@@ -65,12 +65,69 @@ function copy(rel) {
   return 1;
 }
 
+/* ── sitemap ──────────────────────────────────────────────────────────
+ * Generated here rather than sed-stamped, for two reasons found in the
+ * 2026-09-21 Search Console review:
+ *
+ *  1. The sitemap listed /case-studies/moev.html while that page's own
+ *     canonical says /case-studies/moev. Google follows the sitemap URL,
+ *     finds a canonical pointing elsewhere, and reports "Alternate page
+ *     with proper canonical tag" — the URL never gets indexed. URLs here
+ *     must match each page's canonical exactly.
+ *
+ *  2. The old script rewrote every lastmod to today on every deploy, even
+ *     when nothing changed. Google's guidance is that an inaccurate
+ *     lastmod is ignored, so the signal was wasted. Dates now come from
+ *     the last commit that actually touched each page's sources.
+ *
+ * changefreq and priority are omitted: Google has stated for years that
+ * it ignores both.
+ */
+const { execSync } = require('child_process');
+
+function lastChanged(paths){
+  try {
+    const out = execSync(`git log -1 --format=%cs -- ${paths.join(' ')}`,
+                         { cwd: ROOT, encoding: 'utf8', stdio: ['ignore','pipe','ignore'] }).trim();
+    if (out) return out;
+  } catch { /* shallow clone or no git — fall through */ }
+  // Fallback: newest mtime among the sources
+  const t = paths
+    .filter(p => fs.existsSync(path.join(ROOT, p)))
+    .map(p => fs.statSync(path.join(ROOT, p)).mtime.getTime());
+  return new Date(t.length ? Math.max(...t) : Date.now()).toISOString().slice(0, 10);
+}
+
+const SITE = 'https://jonathantubay.com';
+const PAGES = [
+  { loc: '/',                     sources: ['src/sections', 'src/_head.html'] },
+  { loc: '/case-studies/moev',    sources: ['case-studies/moev.html'] },
+];
+
+function buildSitemap(){
+  const NL = String.fromCharCode(10);
+  const urls = PAGES.map(p => [
+    '  <url>',
+    '    <loc>' + SITE + p.loc + '</loc>',
+    '    <lastmod>' + lastChanged(p.sources) + '</lastmod>',
+    '  </url>'
+  ].join(NL)).join(NL);
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    urls,
+    '</urlset>',
+    ''
+  ].join(NL);
+}
+
 // ── build ────────────────────────────────────────────────────────────
 fs.rmSync(DIST, { recursive: true, force: true });
 fs.mkdirSync(DIST, { recursive: true });
 
 const outputs = {
-  'index.html': buildHtml(),
+  'index.html':  buildHtml(),
+  'sitemap.xml': buildSitemap(),
   'style.css':  concat('styles', manifest.styles),
   'main.js':    concat('scripts/main', manifest.main),
   'effects.js': concat('scripts/effects', manifest.effects),
@@ -89,7 +146,7 @@ for (const [name, content] of Object.entries(outputs)) {
 // build internals on the public site.
 const STATIC = [
   'img', 'cursors', 'case-studies',
-  'favicon.png', 'og-preview.jpg', 'robots.txt', 'sitemap.xml',
+  'favicon.png', 'og-preview.jpg', 'robots.txt',
   'humans.txt', '404.html',
 ];
 let copied = 0;
@@ -106,8 +163,9 @@ console.log('built dist/');
 for (const [name, content] of Object.entries(outputs)) {
   const parts = name === 'index.html'
     ? lines(read(path.join(SRC, '_order.txt'))).length
-    : manifest[name.replace(/\.(css|js)$/, '').replace('style', 'styles')].length;
-  console.log(`  ${name.padEnd(12)}${kb(Buffer.byteLength(content))}  from ${parts} partials`);
+    : (manifest[name.replace(/\.(css|js)$/, '').replace('style', 'styles')] || {}).length;
+  const from = parts === undefined ? 'generated' : `from ${parts} partials`;
+  console.log(`  ${name.padEnd(12)}${kb(Buffer.byteLength(content))}  ${from}`);
 }
 console.log(`  ${'static'.padEnd(12)}${String(copied).padStart(4)} files`);
 

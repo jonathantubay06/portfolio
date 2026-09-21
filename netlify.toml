@@ -2,7 +2,7 @@
   # build.js assembles src/ into dist/. Publishing dist rather than "."
   # means only built output ships — internal working folders can no longer
   # leak just because a .gitignore line was missed.
-  command = "bash scripts/update-sitemap.sh && node build.js"
+  command = "node build.js"
   publish = "dist"
 
 # ── Caching ──────────────────────────────────────────────
