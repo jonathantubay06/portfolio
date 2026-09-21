@@ -78,12 +78,14 @@
 
   <!-- Certs inline -->
   <div class="certs-inline r">
-    <!-- Decorative: one rendered object anchoring the certifications block,
-         matching the service icons. Lazy, empty alt, aria-hidden, intrinsic
-         dimensions so it reserves space. Hidden below 900px. -->
-    <img class="certs-plaque" src="img/exp-plaque.webp" alt="" aria-hidden="true"
-         width="300" height="428" loading="lazy" decoding="async">
-    <div class="certs-inline-label">Certifications</div>
+    <!-- Decorative object anchoring the certifications block. It sits as a
+         flex item on the label row rather than absolutely positioned, so it
+         cannot overlap the cards below at any size — an earlier absolute
+         version landed on top of the first group and its count badge. -->
+    <div class="certs-inline-label">Certifications
+      <img class="certs-plaque" src="img/exp-plaque.webp" alt="" aria-hidden="true"
+           width="300" height="428" loading="lazy" decoding="async">
+    </div>
     <div class="certs-groups">
 
       <!-- Workato -->

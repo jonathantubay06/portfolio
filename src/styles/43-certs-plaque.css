@@ -1,17 +1,25 @@
 /* ═══════════════════════════════════════
    CERTIFICATIONS PLAQUE
-   One rendered object anchoring the certifications block, matching the
-   service icons in tone. Purely decorative: float runs only while the
-   Experience section is on screen (.inview, set by main.js), and it is
-   dropped entirely below 900px so phones fetch nothing.
+   A rendered object anchoring the certifications block, matching the
+   service icons in tone.
+
+   It is a flex item on .certs-inline-label (already display:flex) rather
+   than an absolutely-positioned overlay. The first version used
+   position:absolute; right:0; top:-6px and landed on top of the Workato
+   card and its count badge — the cards extend to that same edge, so there
+   was never clear space there. As a flex item with margin-left:auto it is
+   laid out, not floated over, and cannot collide at any size.
    ═══════════════════════════════════════ */
-.certs-inline{position:relative}
 .certs-plaque{
-  position:absolute;right:0;top:-6px;
-  width:76px;height:auto;
+  margin-left:auto;          /* pushes to the right end of the label row */
+  width:52px;height:auto;
+  flex-shrink:0;
   filter:saturate(.7) brightness(.92) drop-shadow(0 8px 14px rgba(0,0,0,.5));
-  pointer-events:none;z-index:0;
+  pointer-events:none;
 }
+/* The label row is short; let the plaque hang without stretching it. */
+.certs-inline-label{align-items:center;min-height:52px}
+
 .inview .certs-plaque{animation:plaqueFloat 8s ease-in-out infinite}
 @keyframes plaqueFloat{0%,100%{translate:0 0}50%{translate:0 -6px}}
 
