@@ -333,6 +333,15 @@ h1{
 /* Hero particle canvas */
 
 /* Glitch on name hover */
+/* Both halves of the name are width-locked by the scramble script while it
+   runs. overflow:hidden clips a scrambled string that measures wider than
+   the final text instead of letting it push the line box around;
+   vertical-align:top is declared with it because overflow:hidden moves an
+   inline-block's baseline to its bottom margin edge, which would drop the
+   text by the font's descender. Both are set permanently so nothing about
+   the box changes when the lock goes on or comes off. */
+.glow,
+.gname-tail{display:inline-block;overflow:hidden;vertical-align:top}
 .glitch-name{cursor:default}
 .glitch-name:hover .glow,
 .glitch-name.glitch-auto .glow{animation:glitch .5s linear}

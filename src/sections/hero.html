@@ -19,8 +19,12 @@
   </div>
 
   <!-- .glitch-name triggers CSS glitch keyframe on hover and every 3s via main.js -->
-  <!-- "Jonathan" is in a <span> so the cyan glow colour is preserved during the text scramble -->
-  <h1 class="glitch-name"><span class="glow">Jonathan</span> Tubay</h1>
+  <!-- Both halves are spans: "Jonathan" so the cyan glow survives the text
+       scramble, "Tubay" so the scramble can lock its width too. Random
+       characters have different advance widths in Orbitron, and an
+       unlocked box re-wrapped the H1 on every animation frame — see
+       src/scripts/effects/01-1-text-scramble.js. -->
+  <h1 class="glitch-name"><span class="glow">Jonathan</span> <span class="gname-tail">Tubay</span></h1>
   <!-- #typingRole text is filled by the typing animation loop in main.js -->
   <p class="hero-sub"><span id="typingRole"></span><span class="typing-cursor" aria-hidden="true">|</span></p>
   <p class="hero-desc">
