@@ -28,6 +28,11 @@ function animateCounter(el, target, duration) {
 const statNums    = document.querySelectorAll('.stat-num');
 let countersRun   = false; // one-shot flag — counters should only animate once
 
+// Reduced motion: the markup already holds the final values, so skipping
+// the animation shows the right numbers immediately. This was missing —
+// every other decorative motion on the site is gated and this was not.
+if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) countersRun = true;
+
 const counterIO = new IntersectionObserver(entries => {
   // threshold:0.5 — wait until the stat strip is half-visible before starting,
   // so the numbers don't finish counting before the user even sees them

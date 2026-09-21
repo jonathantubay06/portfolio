@@ -19,9 +19,20 @@
 }
 .result-item:hover{border-color:rgba(0,212,255,.25);transform:translateY(-2px)}
 .result-icon{font-size:1.8rem}
+/* nowrap and tabular-nums both exist for the count-up in
+   src/scripts/main/20-results-strip-counters.js.
+
+   tabular-nums gives every digit the same advance width, so the number
+   does not jitter as it ticks. nowrap is the important one: without it
+   "180+ videos" could sit on one line while "0+ videos" sits on one too
+   but at some viewport widths the longer string wraps, which changes the
+   card's height mid-animation and moves the whole page below it. The JS
+   also pins the measured width; this is the cheaper static half of the
+   same guarantee. */
 .result-num{
   font-family:var(--font-head);font-size:1.15rem;font-weight:700;
   color:var(--cyan);letter-spacing:.03em;
+  white-space:nowrap;font-variant-numeric:tabular-nums;
 }
 .result-label{font-size:.85rem;color:var(--muted);line-height:1.5}
 
