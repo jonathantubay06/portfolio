@@ -10,6 +10,7 @@
   .thumb-ss .t-urlbar{opacity:0;pointer-events:none}
   /* Disable 3D tilt on touch — mousemove doesn't fire, avoids stuck transforms */
   .proj-card{transform:none!important;box-shadow:none!important}
+  .proj-sheen{display:none}
   /* Slightly tighter overlay gradient so the screenshot top is still visible */
   .t-overlay{background:linear-gradient(to top,rgba(2,8,20,.96) 0%,rgba(2,8,20,.55) 55%,transparent 100%)}
 }

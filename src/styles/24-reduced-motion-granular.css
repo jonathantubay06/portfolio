@@ -22,6 +22,7 @@
   .testi-track{transition:none}
   #back-to-top{transition:none}
   .proj-card:hover{transform:none}
+  .proj-sheen{display:none}
   .tc:hover{transform:none}
   .svc-row:hover{transform:none}
   .cert-group:hover{transform:none}
