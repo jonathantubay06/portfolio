@@ -41,7 +41,8 @@
   "38-new-features-15-feature-enhancement-pass.css",
   "39-ui-ux-enhancements.css",
   "40-results-strip-key-metrics-between-portfo.css",
-  "41-trust-bar-business-credentials-above-con.css"
+  "41-trust-bar-business-credentials-above-con.css",
+  "42-hud-cursor.css"
  ],
  "main": [
   "00-preamble.js",
@@ -91,6 +92,7 @@
   "22-15-side-dot-navigation.js",
   "23-16-keyboard-shortcuts.js",
   "24-17-copy-phone-button.js",
-  "25-18-section-label-entry-flash.js"
+  "25-18-section-label-entry-flash.js",
+  "26-hud-lock-on-cursor.js"
  ]
 }
