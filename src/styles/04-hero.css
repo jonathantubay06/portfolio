@@ -60,6 +60,62 @@
   }
   @keyframes heroFloat{0%,100%{translate:0 0}50%{translate:0 -7px}}
 
+  /* ── Scroll-driven recede ──────────────────────────────────────────
+     The render scales down as the hero leaves the viewport, so it reads
+     as settling back into the page rather than sitting still while
+     everything moves past it. Native CSS scroll-driven animation: no JS,
+     no rAF, no scroll listener, and the browser runs it off the main
+     thread.
+
+     WHY SCALE AND NOT ROTATION. A rotation was the obvious choice and it
+     does not work on this element. Tested at 55deg — the plate's box goes
+     from 738x634 to 450x837, geometrically enormous — and it still could
+     not be distinguished from "something moved". The three-layer
+     mask-composite feather above erases the plate's left and right edges,
+     and converging edges are the only cue that reads as "this turned".
+     Scale needs no edges.
+
+     WHY A NAMED TIMELINE AND NOT view(). view() resolves to the nearest
+     ancestor scroll container of the subject, which for .hero-scene is
+     .hero itself (overflow:hidden, to clip these overlays). .hero never
+     scrolls, so the timeline was inert — reporting playState "running"
+     with a null currentTime the whole time. Declaring the timeline on
+     .hero instead resolves it to the page scroller.
+
+     WHY THE `exit` RANGE. The hero sits at the top of the document, so
+     `cover` is half unreachable: at scroll 0 the element already fills
+     the viewport, which is progress 0.5, and scrolling only reaches 1.0.
+     `exit` maps scroll 0 to progress 0 and one hero-height of scroll to
+     progress 1 — all of it reachable, and the resting state is identity,
+     so the hero at rest is pixel-identical to having no animation at all.
+
+     WHY heroFloat IS RE-DECLARED. animation-name is a longhand; setting
+     it replaces the name from the `animation` shorthand above, which
+     silently killed the idle float. Both names, with a matching value in
+     every other longhand, run a time-based and a scroll-based animation
+     side by side. They touch different properties — translate vs scale —
+     so they compose.
+
+     Under @supports so browsers without scroll-driven animations keep
+     exactly today's behaviour. prefers-reduced-motion is handled by
+     `.hero-scene{animation:none!important}` in
+     24-reduced-motion-granular.css, which overrides these longhands.
+     ────────────────────────────────────────────────────────────────── */
+  @supports (animation-timeline: view()) {
+    :root{ timeline-scope:--heroExit }
+    .hero{ view-timeline-name:--heroExit; view-timeline-axis:block }
+    .hero-scene{
+      animation-name:heroFloat,heroRecede;
+      animation-duration:9s,1ms;            /* 1ms is ignored on a scroll timeline */
+      animation-timing-function:ease-in-out,linear;
+      animation-iteration-count:infinite,1;
+      animation-fill-mode:none,both;
+      animation-timeline:auto,--heroExit;
+      animation-range:normal,exit 0% exit 100%;
+    }
+    @keyframes heroRecede{from{scale:1}to{scale:.86}}
+  }
+
   /* Width is the SOLE sizing driver so the element box always equals the
      drawn picture; object-fit:contain would letterbox and the mask would
      then feather transparent padding instead of the image's real edges.

@@ -25,10 +25,17 @@
 
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;overflow-x:hidden}
 
+/* No overflow-x here. html already sets overflow-x:hidden two rules up,
+   and the duplicate on body made body a scroll container that never
+   scrolls — measured: body scrollHeight equalled its clientHeight while
+   the real scroller was html. A CSS view timeline resolves to the nearest
+   ancestor scroll container, so the hero's scroll-driven animation bound
+   to body and its clock never advanced. Horizontal overflow is still
+   clipped at the viewport by the html rule. */
 body{
   background:var(--bg);color:var(--text);
   font-family:var(--font-body);font-size:clamp(15.5px,1.6vw,17px);
-  line-height:1.75;overflow-x:hidden;
+  line-height:1.75;
   opacity:0;animation:page-fadein .5s ease .05s forwards;
 }
 @keyframes page-fadein{to{opacity:1}}
