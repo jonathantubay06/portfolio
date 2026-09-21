@@ -461,6 +461,12 @@ const PREFERS_REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduc
    counter shared with the cursor ring loop).
 ══════════════════════════════════════ */
 (function(){
+  // Disabled 2026-09-21. The design audit scored cursor effects under
+  // "unobtrusive"; this ran a permanent requestAnimationFrame loop following
+  // the pointer purely for decoration. Kept rather than deleted so it can be
+  // restored if wanted.
+  return;
+
   if (PREFERS_REDUCED_MOTION) return; // decorative motion only — nothing here carries content
   if (window.matchMedia('(hover: none)').matches) return;
 
@@ -719,6 +725,10 @@ const PREFERS_REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduc
    Skipped on touch devices.
 ══════════════════════════════════════ */
 (function(){
+  // Disabled 2026-09-21 alongside the canvas cursor trail — two pointer-
+  // following decorations on one page. See the note on block 6.
+  return;
+
   if (window.matchMedia('(hover: none)').matches) return;
 
   let last = 0;

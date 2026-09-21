@@ -509,12 +509,7 @@ nav.scrolled{
 /* The heavy text-shadow existed to keep copy legible over the blurred
    background image. That image is gone, so the shadow only muddied the
    type — this was the audit's "soft/blurred body copy" finding. */
-.hero-bg-img{
-  position:absolute;inset:0;z-index:0;
-  background:url('./hero-bg.webp') center center / cover no-repeat;
-  transform:scale(1.04);
-  filter:blur(1px) brightness(.35) saturate(.7);
-}
+
 .hero-overlay{
   position:absolute;inset:0;z-index:1;
   background:
