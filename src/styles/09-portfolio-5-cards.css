@@ -1,0 +1,64 @@
+/* ═══════════════════════════════════════
+   PORTFOLIO — 5 cards
+═══════════════════════════════════════ */
+.grid-portfolio{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem}
+.ptag-int{border-color:rgba(39,201,132,.35);color:#27c984}
+.ptag-feat{border-color:rgba(255,200,0,.4);color:#ffc800;background:rgba(255,200,0,.08)}
+.proj-card{
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:var(--radius);overflow:hidden;
+  transition:transform .15s ease,box-shadow .15s ease,border-color .2s ease;
+  display:flex;flex-direction:column;
+}
+.proj-card:hover{border-color:rgba(0,212,255,.5)}
+
+.proj-thumb{aspect-ratio:16/10;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0}
+
+/* Screenshot thumbnails */
+.thumb-ss{background:#080d1a}
+.thumb-ss .ss-img{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  object-fit:cover;object-position:top center;
+  transition:transform .5s ease;display:block;
+  z-index:1;
+}
+.proj-card:hover .thumb-ss .ss-img{transform:scale(1.05)}
+.thumb-ss .t-urlbar{
+  position:absolute;bottom:0;left:0;right:0;z-index:5;
+  background:rgba(8,13,26,.85);
+  border-top:1px solid rgba(255,255,255,.08);
+  transition:opacity .25s;
+}
+/* Hide URL bar when hover overlay is showing so buttons aren't covered */
+.proj-card:hover .t-urlbar{opacity:0;pointer-events:none}
+
+.t-urlbar{
+  position:absolute;bottom:0;left:0;right:0;z-index:3;
+  display:flex;align-items:center;gap:.5rem;padding:.35rem .7rem;
+  background:rgba(0,0,0,.7);
+  border-top:1px solid rgba(255,255,255,.05);
+}
+.t-dots{display:flex;gap:3px}
+.td{width:6px;height:6px;border-radius:50%}
+.td-r{background:#ff5f57}.td-y{background:#febc2e}.td-g{background:#28c840}
+.t-url{font-size:.58rem;color:rgba(255,255,255,.32);font-family:monospace;letter-spacing:.03em}
+
+.t-overlay{
+  position:absolute;inset:0;z-index:6; /* above urlbar (z-index:5) so buttons are always clickable */
+  background:linear-gradient(to top,rgba(2,8,20,.94) 0%,rgba(2,8,20,.55) 48%,transparent 100%);
+  display:flex;align-items:stretch;justify-content:flex-end;flex-direction:column;
+  padding:0 .85rem .85rem;
+  opacity:0;transition:opacity .3s;
+}
+.proj-card:hover .t-overlay{opacity:1}
+/* Keyboard parity: opacity:0 still leaves Details/Live Site focusable, so a
+   Tab into them must reveal the overlay rather than move focus to nothing. */
+.proj-card:focus-within .t-overlay{opacity:1}
+
+.proj-body{padding:1.35rem;display:flex;flex-direction:column;flex:1}
+.ptags{display:flex;flex-wrap:wrap;gap:.35rem;margin-bottom:.65rem}
+.ptag{font-size:.68rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:.18rem .6rem;border-radius:2px;border:1px solid var(--border);color:var(--muted2)}
+.ptag-c{border-color:rgba(0,212,255,.3);color:var(--cyan)}
+.proj-name{font-family:var(--font-head);font-size:.95rem;font-weight:700;color:#fff;margin-bottom:.35rem;margin-top:auto;line-height:1.35}
+.proj-desc{font-size:.88rem;color:var(--muted2);line-height:1.8;margin-bottom:.9rem}
+

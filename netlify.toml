@@ -1,6 +1,9 @@
 [build]
-  command = "bash scripts/update-sitemap.sh"
-  publish = "."
+  # build.js assembles src/ into dist/. Publishing dist rather than "."
+  # means only built output ships — internal working folders can no longer
+  # leak just because a .gitignore line was missed.
+  command = "bash scripts/update-sitemap.sh && node build.js"
+  publish = "dist"
 
 # ── Caching ──────────────────────────────────────────────
 # Netlify's default for static files is `max-age=0,must-revalidate`, which

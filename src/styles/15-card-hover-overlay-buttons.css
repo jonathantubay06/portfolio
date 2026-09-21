@@ -1,0 +1,21 @@
+/* ═══════════════════════════════════════
+   CARD HOVER OVERLAY BUTTONS
+═══════════════════════════════════════ */
+.t-overlay-actions{display:flex;gap:.4rem;width:100%}
+.btn-modal-open{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:.3rem;
+  padding:.52rem .6rem;font-size:.66rem;font-weight:700;letter-spacing:.07em;
+  background:var(--cyan);color:#000;border:none;border-radius:7px;cursor:pointer;
+  text-transform:uppercase;transition:all .2s;
+}
+.btn-modal-open:hover{background:#fff;transform:translateY(-1px);box-shadow:0 4px 18px rgba(0,212,255,.4)}
+.btn-modal-site{
+  display:flex;align-items:center;justify-content:center;gap:.3rem;
+  padding:.52rem .65rem;font-size:.66rem;font-weight:700;letter-spacing:.07em;
+  background:rgba(255,255,255,.09);color:rgba(255,255,255,.9);
+  border:1px solid rgba(255,255,255,.28);border-radius:7px;
+  text-decoration:none;text-transform:uppercase;white-space:nowrap;
+  cursor:pointer;transition:all .2s;backdrop-filter:blur(4px);
+}
+.btn-modal-site:hover{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.6);color:#fff;transform:translateY(-1px)}
+

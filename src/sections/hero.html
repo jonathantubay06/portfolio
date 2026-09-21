@@ -1,0 +1,94 @@
+<!-- ══ HERO ══ -->
+<!-- Two columns at >=1024px: copy left, workstation render right.
+     Stacks to a single centred column below that.
+
+     The previous build layered eleven decorative systems here (blurred
+     background image, particle canvas, aurora blobs, orbit rings, dot
+     grid, mouse spotlight, floating code tokens...). The 2026-09-20
+     design audit scored that 0/3 on both "unobtrusive" and "as little
+     design as possible", and the body copy had to be blurred to stay
+     readable over it. Those layers are gone; one render replaces them.
+
+     Decorative overlays sit inside .hero-art, which is aria-hidden. -->
+<section class="hero" aria-label="Introduction">
+
+  <div class="hero-copy">
+  <div class="hero-eyebrow">
+    <span class="avail-dot" aria-hidden="true"></span><!-- pulsing green availability dot -->
+    Available for Freelance Projects
+  </div>
+
+  <!-- .glitch-name triggers CSS glitch keyframe on hover and every 3s via main.js -->
+  <!-- "Jonathan" is in a <span> so the cyan glow colour is preserved during the text scramble -->
+  <h1 class="glitch-name"><span class="glow">Jonathan</span> Tubay</h1>
+  <!-- #typingRole text is filled by the typing animation loop in main.js -->
+  <p class="hero-sub"><span id="typingRole"></span><span class="typing-cursor" aria-hidden="true">|</span></p>
+  <p class="hero-desc">
+    I build Shopify stores, WordPress sites, and workflow automations that typically save businesses 5–15 hours a week. From zero to live in weeks, not months — based in the Philippines, working worldwide.
+  </p>
+
+  <div class="platforms" role="list" aria-label="Platforms">
+    <span class="pbadge" role="listitem">🛒 Shopify</span>
+    <span class="pbadge" role="listitem">🌐 WordPress</span>
+    <span class="pbadge" role="listitem">🧩 Softr</span>
+    <span class="pbadge" role="listitem">📊 Airtable</span>
+    <span class="pbadge" role="listitem">🔗 Zapier</span>
+    <span class="pbadge" role="listitem">⚡ n8n</span>
+  </div>
+
+  <div class="hero-cta">
+    <a href="#work" class="btn btn-p">View My Work →</a>
+    <a href="#contact" class="btn btn-g">Get In Touch</a>
+  </div>
+
+  <!-- Stat strip: first 3 nums count up from 0 via main.js on scroll-in.
+       4th stat (#tz-time / #tz-label) is the world clock — updated by
+       effects.js every 7s cycling through PH, NY, London, LA, Sydney, Dubai, Vietnam -->
+  <div class="stat-strip" role="list" aria-label="Key stats">
+    <div class="stat-item" role="listitem"><div class="stat-num">12+</div><div class="stat-lbl">Yrs Experience</div></div>
+    <div class="stat-item" role="listitem"><div class="stat-num">10+</div><div class="stat-lbl">Live Projects</div></div>
+    <div class="stat-item" role="listitem"><div class="stat-num">11</div><div class="stat-lbl">Client &amp; LinkedIn Reviews</div></div>
+    <div class="stat-item" role="listitem"><div class="stat-num" id="tz-time">--:--</div><div class="stat-lbl" id="tz-label">🇵🇭 PH Time</div></div>
+  </div>
+
+  <!-- Scroll hint -->
+  <div class="scroll-hint" aria-hidden="true">
+    <span class="sh-bubble">Scroll to explore</span>
+  </div>
+  </div><!-- /.hero-copy -->
+
+  <!-- Decorative workstation render. Everything here is presentational:
+       aria-hidden, empty alt, nothing focusable. The SVG overlays share
+       the plate's own pixel space (1500x1288) so their coordinates were
+       measured from the image rather than eyeballed. -->
+  <div class="hero-art" id="heroStage" aria-hidden="true">
+    <div class="hero-scene" id="heroScene">
+      <div class="hero-ambient"></div>
+      <img class="hero-plate" src="img/hero-plate.webp" alt=""
+           width="1500" height="1288" fetchpriority="high" decoding="async">
+
+      <div class="hero-fx">
+        <div class="fx-laptop"></div>
+        <div class="fx-tablet"></div>
+
+        <svg class="fx-svg" viewBox="0 0 1500 1288" aria-hidden="true">
+          <path class="fx-wire w1" d="M778,204 L795,210 L827,213 L860,216 L875,213 L891,200 L908,184 L923,183"/>
+          <path class="fx-wire w2" d="M1058,213 L1076,213 L1092,216 L1109,238 L1127,263 L1143,269 L1178,274 L1211,281"/>
+          <path class="fx-wire w3" d="M987,249 L990,285 L992,330"/>
+          <path class="fx-wire w4" d="M1290,361 L1290,397 L1290,431"/>
+
+          <circle class="fx-lamp n1" cx="1176" cy="514" r="26"/>
+          <circle class="fx-lamp n2" cx="1152" cy="614" r="24"/>
+          <circle class="fx-lamp n3" cx="1130" cy="715" r="26"/>
+          <circle class="fx-ping n1" cx="1176" cy="514" r="30"/>
+          <circle class="fx-ping n2" cx="1152" cy="614" r="28"/>
+          <circle class="fx-ping n3" cx="1130" cy="715" r="30"/>
+
+          <ellipse class="fx-pen" cx="1068" cy="991" rx="22" ry="13"
+                   transform="rotate(-25 1068 991)"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+

@@ -1,0 +1,102 @@
+<!-- ══ TESTIMONIALS ══ -->
+<!-- No .divider here — .testi-bg has its own ::before glow line at top -->
+<section class="testi-bg" id="testimonials" aria-label="Testimonials">
+  <div class="testi-inner">
+    <div class="sec-label">Social Proof</div>
+    <h2>What People <em>Say</em></h2>
+    <p class="sec-sub">Real feedback from clients and LinkedIn recommendations from colleagues and managers.</p>
+
+    <div class="testi-filters" role="group" aria-label="Filter testimonials">
+      <button class="testi-filter-btn active" data-filter="all">All</button>
+      <button class="testi-filter-btn" data-filter="client">Clients</button>
+      <button class="testi-filter-btn" data-filter="colleague">Colleagues</button>
+    </div>
+
+    <div class="testi-carousel">
+      <button class="testi-nav testi-prev" id="testiPrev" aria-label="Previous">&#8592;</button>
+      <button class="testi-nav testi-next" id="testiNext" aria-label="Next">&#8594;</button>
+
+      <!-- Thin progress bar depletes over 6s matching autoplay interval.
+           Reset by JS on every navigation (next/prev/dot click). -->
+      <div class="testi-timer" id="testiTimer" aria-hidden="true"></div>
+      <div class="testi-track-wrap" id="testiWrap" role="region" aria-label="Testimonials">
+        <div class="testi-track" id="testiTrack">
+
+          <!-- ★ FEATURED — most recent client testimonial, pinned first -->
+          <div class="tc tc-featured r" data-type="client">
+            <div class="tc-featured-tag">✦ Recent Client</div>
+            <div class="tc-stars">★★★★★</div>
+            <p class="tc-quote">"I had the pleasure of working with Jonathan during the process of setting up my website and eCommerce section for my paintings. He has been more than helpful throughout my journey, friendly and pleasant, a man of total integrity and entirely trustworthy. No question I posed was left unanswered and no changes or amendments were a problem. I would highly recommend Jonathan — the speed, efficiency and quality of his work, his constant feedback and pride in his job was clear. I am proud to have had him involved in my website development."</p>
+            <div class="tc-author"><div class="tc-av">DM</div><div><div class="tc-name">Deirdre Mcaree</div><div class="tc-role">Client · Deirdre P. Malcolm Art</div><div class="client-badge">✓ Direct Client</div></div></div>
+          </div>
+
+          <div class="tc tc-featured r" data-type="client">
+            <div class="tc-featured-tag">✦ Recent Client</div>
+            <div class="tc-stars">★★★★★</div>
+            <p class="tc-quote">"Working with Jonathan on our website was an excellent experience from start to finish. He was consistently professional, proactive in his approach, and always delivered on time. Throughout the process, he communicated clearly and made sure our needs were understood and met. The final website he presented exceeded our expectations — not only in design but also in functionality and overall user experience. Since launching, we've received great feedback and positive reviews from our clients and partners. We highly recommend Jonathan to anyone looking for a reliable and talented web developer."</p>
+            <div class="tc-author"><div class="tc-av">MO</div><div><div class="tc-name">Manuel Olondriz</div><div class="tc-role">Client · MOEV Solutions</div><div class="client-badge">✓ Direct Client</div></div></div>
+          </div>
+
+          <div class="tc r" data-type="colleague">
+            <div class="tc-stars">★★★★★</div>
+            <p class="tc-quote">"Jonathan is a great person to have in your team. He has the right attitude, is reliable and truly treats his teammates as family. He's highly regarded — please don't hesitate to contact me if you're after a referral."</p>
+            <div class="tc-author"><div class="tc-av">RF</div><div><div class="tc-name">Rodney Frost</div><div class="tc-role">Group CEO · Jonathan's mentor</div><div class="li-badge">in LinkedIn</div></div></div>
+          </div>
+
+          <div class="tc r" data-type="colleague">
+            <div class="tc-stars">★★★★★</div>
+            <p class="tc-quote">"I worked with Jonathan for a year and a half and found him to be a very eager and enjoyable person to work with. Always willing to learn and always up for a challenge."</p>
+            <div class="tc-author"><div class="tc-av">JC</div><div><div class="tc-name">Josh Cooper</div><div class="tc-role">IT Manager · Solution Delivery · Agile Master</div><div class="li-badge">in LinkedIn</div></div></div>
+          </div>
+
+          <div class="tc r" data-type="colleague">
+            <div class="tc-stars">★★★★★</div>
+            <p class="tc-quote">"Jonathan is a hardworking and dedicated developer. His communication and commitment are fantastic. He has a great nature and is very keen to help where he can. He is an asset."</p>
+            <div class="tc-author"><div class="tc-av">PM</div><div><div class="tc-name">Peter Miller</div><div class="tc-role">Senior ERP Implementation Lead · Microsoft Dynamics 365</div><div class="li-badge">in LinkedIn</div></div></div>
+          </div>
+
+          <div class="tc r" data-type="colleague">
+            <div class="tc-stars">★★★★★</div>
+            <p class="tc-quote">"Jonathan is an excellent person to work with. He was quick to take charge of his team when the opportunity presented itself. Always willing to help a helping hand and very adaptable."</p>
+            <div class="tc-author"><div class="tc-av">EC</div><div><div class="tc-name">Edlene Cervantes</div><div class="tc-role">Lead Project Manager · PMP®, CLSSGB</div><div class="li-badge">in LinkedIn</div></div></div>
+          </div>
+
+          <div class="tc r" data-type="colleague">
+            <div class="tc-stars">★★★★★</div>
+            <p class="tc-quote">"I was very impressed by how quickly Jonathan was able to add value — understanding the product almost immediately and suggesting improvements within the first few days. Always friendly, professional and easy to work with."</p>
+            <div class="tc-author"><div class="tc-av">KB</div><div><div class="tc-name">Katie Boland</div><div class="tc-role">Chief Engineer · CBA x15 Ventures · Client</div><div class="li-badge">in LinkedIn</div></div></div>
+          </div>
+
+          <div class="tc r" data-type="colleague">
+            <div class="tc-stars">★★★★★</div>
+            <p class="tc-quote">"Jonathan is a very competent and diligent engineer. A good team player who always takes the initiative to lead. Has a fun and easy going attitude and is a pleasure to work with. I highly recommend him."</p>
+            <div class="tc-author"><div class="tc-av">DB</div><div><div class="tc-name">Dinusha Bodhinayake</div><div class="tc-role">Senior Software Engineer · NodeJS / TypeScript</div><div class="li-badge">in LinkedIn</div></div></div>
+          </div>
+
+          <div class="tc r" data-type="colleague">
+            <div class="tc-stars">★★★★★</div>
+            <p class="tc-quote">"Jonathan has solid work ethic. He consistently demonstrated his passion for problem solving. I have no doubts in his technical skills."</p>
+            <div class="tc-author"><div class="tc-av">CJ</div><div><div class="tc-name">Carmela Joyce Tolentino</div><div class="tc-role">Training Manager · Groworx Philippines</div><div class="li-badge">in LinkedIn</div></div></div>
+          </div>
+
+          <div class="tc r" data-type="colleague">
+            <div class="tc-stars">★★★★★</div>
+            <p class="tc-quote">"Jojo is a ray of sunshine in the team. His positivity is contagious. He is focused and result-oriented, always ready to roll up his sleeves and blow everyone away with his amazing work."</p>
+            <div class="tc-author"><div class="tc-av">ML</div><div><div class="tc-name">Mikie Lim</div><div class="tc-role">Online Retail · Marketplaces · Managed Jonathan directly</div><div class="li-badge">in LinkedIn</div></div></div>
+          </div>
+
+          <div class="tc r" data-type="colleague">
+            <div class="tc-stars">★★★★★</div>
+            <p class="tc-quote">"It was a pleasure to work with Jonathan, who led the offshore support team for our product! He brought great energy and leadership to the role every single day."</p>
+            <div class="tc-author"><div class="tc-av">TT</div><div><div class="tc-name">Trish Talob</div><div class="tc-role">Strategic Designer · Same team</div><div class="li-badge">in LinkedIn</div></div></div>
+          </div>
+
+        </div><!-- /testi-track -->
+      </div><!-- /testi-track-wrap -->
+
+      <div class="testi-dots" id="testiDots"></div>
+      <div class="sr-only" id="testi-status" aria-live="polite" aria-atomic="true"></div>
+    </div><!-- /testi-carousel -->
+  </div>
+</section>
+

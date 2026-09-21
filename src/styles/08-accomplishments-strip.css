@@ -1,0 +1,20 @@
+/* ═══════════════════════════════════════
+   ACCOMPLISHMENTS STRIP
+═══════════════════════════════════════ */
+.acc-strip{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;
+  margin-bottom:2rem;
+}
+.acc-item{
+  padding:1.1rem 1.2rem;
+  background:linear-gradient(135deg,rgba(14,122,255,.08),rgba(0,212,255,.04));
+  border:1px solid rgba(0,212,255,.2);
+  border-radius:var(--radius);text-align:center;
+}
+.acc-num{
+  font-family:var(--font-head);font-size:1.6rem;font-weight:900;
+  color:var(--cyan);text-shadow:0 0 16px rgba(0,212,255,.5);
+  display:block;margin-bottom:.3rem;
+}
+.acc-lbl{font-size:.82rem;color:var(--muted2);line-height:1.5}
+

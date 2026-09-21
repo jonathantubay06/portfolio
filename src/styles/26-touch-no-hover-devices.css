@@ -1,0 +1,30 @@
+/* ═══════════════════════════════════════
+   TOUCH / NO-HOVER DEVICES
+   Hover overlay never fires on phones & tablets —
+   always show it so Details/Live Site are tappable
+═══════════════════════════════════════ */
+@media (hover: none) {
+  /* Always show the card overlay so touch users can tap Details */
+  .t-overlay{opacity:1}
+  /* Always hide URL bar — it's behind the always-visible overlay */
+  .thumb-ss .t-urlbar{opacity:0;pointer-events:none}
+  /* Disable 3D tilt on touch — mousemove doesn't fire, avoids stuck transforms */
+  .proj-card{transform:none!important;box-shadow:none!important}
+  /* Slightly tighter overlay gradient so the screenshot top is still visible */
+  .t-overlay{background:linear-gradient(to top,rgba(2,8,20,.96) 0%,rgba(2,8,20,.55) 55%,transparent 100%)}
+}
+
+/* ═══════════════════════════════════════
+   EXTRA SMALL (<=400px) — very small phones
+═══════════════════════════════════════ */
+@media(max-width:400px){
+  .hero{padding:2.5rem .85rem 4rem}
+  .sec{padding:3rem .9rem}
+  .modal-inner{width:100%;border-radius:12px 12px 0 0;position:fixed;bottom:0;top:auto;transform:translateY(100%)}
+  .proj-modal.open .modal-inner{transform:translateY(0)}
+  .proj-modal{align-items:flex-end}
+  .modal-screenshot{aspect-ratio:16/7}
+  .btn-modal-open,.btn-modal-site{font-size:.6rem;padding:.4rem .45rem}
+  .cbadge{font-size:.65rem;padding:.28rem .55rem}
+}
+

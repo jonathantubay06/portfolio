@@ -21,3 +21,11 @@ DESIGN-IS-*/
 sessions-summary.md
 CLAUDE.md
 AGENTS.md
+
+# Build output — assembled by build.js, published by Netlify.
+# The flat files are GENERATED; edit src/ instead.
+dist/
+/index.html
+/style.css
+/main.js
+/effects.js

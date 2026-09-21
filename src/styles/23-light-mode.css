@@ -1,0 +1,239 @@
+/* ═══════════════════════════════════════
+   LIGHT MODE
+═══════════════════════════════════════ */
+[data-theme="light"]{
+  --bg:#faf8f5;
+  --navy:#f2efe9;
+  --surface:#ffffff;
+  --text:#1c2333;
+  --muted:#5a6880;
+  --muted2:#3d4f63;
+  --border:rgba(0,100,180,0.14);
+  --border2:rgba(0,100,180,0.2);
+}
+[data-theme="light"] body{background:#faf8f5;color:#1c2333}
+[data-theme="light"] nav{background:rgba(250,248,245,0.85)}
+[data-theme="light"] nav.scrolled{background:rgba(250,248,245,0.97);box-shadow:0 2px 20px rgba(0,0,0,.08)}
+[data-theme="light"] .nav-links a{color:#3d4f63}
+[data-theme="light"] .nav-links a:hover{color:var(--cyan)}
+[data-theme="light"] .nav-logo{color:#1c2333}
+[data-theme="light"] .sec{background:#faf8f5}
+[data-theme="light"] .sec-label{color:#7a90a8}
+[data-theme="light"] .proj-card{background:#fff;border-color:rgba(0,100,180,0.14)}
+[data-theme="light"] .proj-card:hover{box-shadow:0 24px 56px rgba(0,100,180,.14)}
+[data-theme="light"] .proj-name{color:#1c2333}
+[data-theme="light"] .proj-desc{color:#5a6880}
+[data-theme="light"] .ptag{color:#3d4f63;border-color:rgba(0,100,180,.18)}
+[data-theme="light"] .svc-row{background:rgba(240,237,233,0.7);border-color:rgba(0,100,180,.12)}
+[data-theme="light"] .svc-title-sm{color:#1c2333}
+[data-theme="light"] .svc-desc-sm{color:#5a6880}
+[data-theme="light"] .acc-strip{background:#f0ede8;border-color:rgba(0,100,180,.12)}
+[data-theme="light"] .acc-num{color:var(--cyan)}
+[data-theme="light"] .acc-lbl{color:#3d4f63}
+/* Light mode depth-fade: same structure as dark but with warm tones */
+[data-theme="light"] .testi-bg{background:linear-gradient(180deg,rgba(240,237,232,.9) 0%,#f0ede8 8%,#f0ede8 92%,rgba(240,237,232,.9) 100%)}
+[data-theme="light"] .tc{background:#fff;border-color:rgba(0,100,180,.12)}
+[data-theme="light"] .tc-quote{color:rgba(28,35,51,.82)}
+[data-theme="light"] .tc-name{color:#1c2333}
+[data-theme="light"] .tc-role{color:#5a6880}
+[data-theme="light"] .tools-bg{background:linear-gradient(180deg,rgba(240,237,232,.9) 0%,#f0ede8 8%,#f0ede8 92%,rgba(240,237,232,.9) 100%)}
+[data-theme="light"] .pi-num{color:var(--cyan)}
+[data-theme="light"] .pi-title{color:#1c2333}
+[data-theme="light"] .tl-role{color:#3d4f63}
+[data-theme="light"] .tl-highlight{color:#5a6880}
+
+[data-theme="light"] .thanks-card{background:#fff;border-color:rgba(0,212,255,.25)}
+[data-theme="light"] .thanks-quote{color:#3d4f63}
+[data-theme="light"] .thanks-name{color:#1c2333}
+[data-theme="light"] .thanks-role{color:#5a6880}
+[data-theme="light"] footer{background:#f0ede8;border-top-color:rgba(0,100,180,.12)}
+[data-theme="light"] .nav-drawer{background:#faf8f5}
+[data-theme="light"] .nav-drawer a{color:#1c2333}
+[data-theme="light"] .pf-btn{border-color:rgba(0,100,180,.2);color:#3d4f63}
+[data-theme="light"] .pf-btn.active{background:var(--cyan);color:#fff;border-color:var(--cyan)}
+[data-theme="light"] h2{color:#1c2333}
+/* Hero always stays dark-on-dark — never override its text */
+[data-theme="light"] .hero,
+[data-theme="light"] .hero *:not(.pbadge){color:inherit}
+[data-theme="light"] .hero{color:#e8f4ff}
+[data-theme="light"] .hero .hero-sub{color:rgba(232,244,255,.75)}
+[data-theme="light"] .hero .hero-desc{color:rgba(232,244,255,.7)}
+[data-theme="light"] .hero .hero-eyebrow{color:rgba(232,244,255,.6)}
+[data-theme="light"] .stat-strip{background:transparent;border-color:rgba(232,244,255,.15)}
+[data-theme="light"] .stat-item{background:rgba(3,8,15,.45);border-color:rgba(232,244,255,.1)}
+[data-theme="light"] .stat-num{color:var(--cyan)}
+[data-theme="light"] .stat-lbl{color:rgba(232,244,255,.55)}
+[data-theme="light"] .svc-title-sm{color:#1c2333}
+[data-theme="light"] .pi-title{color:#1c2333}
+[data-theme="light"] .proj-name{color:#1c2333}
+[data-theme="light"] .tc-name{color:#1c2333}
+[data-theme="light"] .tl-co{color:#1c2333}
+[data-theme="light"] .hero-sub{color:rgba(28,35,51,.75)}
+[data-theme="light"] .pbadge{background:rgba(0,100,180,.08);border-color:rgba(0,100,180,.2);color:#3d4f63}
+
+/* ── Certifications ── */
+[data-theme="light"] .cert-group{background:rgba(0,100,180,.03);border-color:rgba(0,100,180,.14)}
+[data-theme="light"] .cert-group:hover{background:rgba(0,100,180,.06);border-color:rgba(0,100,180,.3);box-shadow:0 6px 28px rgba(0,100,180,.1)}
+[data-theme="light"] .cert-group-name{color:#5a6880}
+[data-theme="light"] .cert-group:hover .cert-group-name{color:#3d4f63}
+/* Left accent bar: use brand-blue in light mode instead of cyan */
+[data-theme="light"] .cert-group::before{background:linear-gradient(180deg,rgba(0,100,180,.8),rgba(0,100,180,.25))}
+[data-theme="light"] .cbadge{color:#3d4f63;background:rgba(0,100,180,.04);border-color:rgba(0,100,180,.18)}
+[data-theme="light"] .cbadge:hover{color:var(--cyan);background:rgba(0,212,255,.08);border-color:rgba(0,212,255,.35);box-shadow:0 3px 12px rgba(0,100,180,.1)}
+[data-theme="light"] .cbadge-static:hover{color:#3d4f63;background:rgba(0,100,180,.04);border-color:rgba(0,100,180,.18);box-shadow:none}
+/* Divider: slightly softer in light mode */
+[data-theme="light"] .divider,.divider::before{opacity:.7}
+
+/* ── Contact info values (ci-val has hardcoded light-blue text) ── */
+[data-theme="light"] .ci-val{color:#1c2333}
+[data-theme="light"] .ci-val a{color:var(--cyan)}
+[data-theme="light"] .ci-row{background:#fff;border-color:rgba(0,100,180,.14)}
+[data-theme="light"] .c-opt{background:#fff;border-color:rgba(0,100,180,.14)}
+[data-theme="light"] .c-info-intro{color:#5a6880}
+
+[data-theme="light"] .fg input,
+[data-theme="light"] .fg textarea,
+[data-theme="light"] .fg select{background:#fff;border-color:rgba(0,100,180,.2);color:#1c2333}
+[data-theme="light"] .fg input::placeholder,
+[data-theme="light"] .fg textarea::placeholder{color:#8a9ab0}
+[data-theme="light"] .fg label{color:#3d4f63}
+[data-theme="light"] .stage2-line{background:rgba(0,100,180,.15)}
+
+/* ── Modal close button (white icon on white bg in light mode) ── */
+[data-theme="light"] .modal-close{color:#3d4f63}
+[data-theme="light"] .modal-close:hover{color:var(--cyan)}
+[data-theme="light"] .modal-desc{color:#5a6880}
+[data-theme="light"] .modal-stack-label{color:#5a6880}
+[data-theme="light"] .modal-problem{background:rgba(239,68,68,.06);border-color:rgba(239,68,68,.2)}
+[data-theme="light"] .modal-result{background:rgba(34,197,94,.06);border-color:rgba(34,197,94,.2)}
+[data-theme="light"] .modal-label{color:#5a6880}
+[data-theme="light"] .badge-role{background:rgba(0,100,180,.08);color:var(--blue);border-color:rgba(0,100,180,.22)}
+
+/* ── Back to top (dark bg on light page) ── */
+[data-theme="light"] #back-to-top{background:rgba(250,248,245,.95);border-color:var(--cyan);box-shadow:0 0 14px rgba(0,212,255,.2),0 4px 14px rgba(0,0,0,.1)}
+
+/* ═══════════════════════════════════════
+   RESPONSIVE — TABLET MID (<=768px)
+   Hide floating code tokens — they crowd the
+   hero on portrait tablets and smaller iPads
+═══════════════════════════════════════ */
+@media(max-width:768px){
+  .hero-code-float{display:none}
+}
+
+/* ═══════════════════════════════════════
+   RESPONSIVE — TABLET (<=900px)
+═══════════════════════════════════════ */
+@media(max-width:900px){
+  .nav-links{display:none}
+  .nav-cta{display:none} /* already in the mobile drawer — hide in the top bar */
+  .nav-toggle{display:flex}
+  nav{padding:.85rem 1.2rem}
+  .testi-track .tc{flex:0 0 calc((100% - 1.25rem) / 2)}
+  .testi-prev{left:-16px}
+  .testi-next{right:-16px}
+  .grid-portfolio{grid-template-columns:repeat(2,1fr)}
+  .svc-compact{grid-template-columns:1fr}
+  .acc-strip{grid-template-columns:1fr}
+  .c-layout{grid-template-columns:1fr}
+  .sec{padding:4rem 1.5rem}
+  .hero{padding:5rem 1.2rem 2.5rem}
+  .process-inline{flex-wrap:wrap;gap:.4rem}
+  .pi-arrow{display:none}
+  .cert-group-header{flex-wrap:wrap}
+  /* Testimonials: shrink nav arrows on tablet */
+  .testi-prev,.testi-next{width:32px;height:32px;font-size:.85rem}
+  /* Timeline: tighter on tablet */
+  .tl-head{flex-direction:column;gap:.2rem}
+  /* Contact info rows stack tidier */
+  .c-info{gap:.75rem}
+  /* Cert group: no lift transform on touch/tablet — hover is unreliable */
+  .cert-group:hover{transform:none}
+  /* Hero fade: slightly shorter on tablet */
+  .hero::after{height:100px}
+  /* Depth-fade sections: slightly reduced for smaller screens */
+  .testi-bg::before,.testi-bg::after,
+  .tools-bg::before,.tools-bg::after,
+  .built-wrap::before,.built-wrap::after{opacity:.8}
+}
+
+/* ═══════════════════════════════════════
+   RESPONSIVE — MOBILE (<=600px)
+═══════════════════════════════════════ */
+@media(max-width:600px){
+  .testi-track .tc{flex:0 0 100%}
+  .testi-track{gap:.75rem}
+  .testi-prev{left:-10px}
+  .testi-next{right:-10px}
+  .grid-portfolio{grid-template-columns:1fr}
+  .proj-body{padding:1rem}
+  .svc-compact{grid-template-columns:1fr;gap:.5rem}
+  .acc-strip{grid-template-columns:1fr;gap:.7rem}
+  .process-inline{flex-direction:column;gap:.5rem}
+  .pi-arrow{display:none}
+  .stat-strip{display:grid;grid-template-columns:repeat(2,1fr);flex-wrap:wrap;max-width:100%}
+  .stat-item{flex:none;border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
+  .stat-item:nth-child(2){border-right:none}
+  .stat-item:nth-child(3){border-bottom:none}
+  .stat-item:last-child{border-right:none;border-bottom:none}
+  .c-options{flex-direction:column;align-items:stretch}
+  .c-opt{flex-direction:row;align-items:center;gap:.9rem;min-width:auto}
+  .c-opt-ico{font-size:1.4rem}
+  .hero-cta{flex-direction:column;align-items:center}
+  .hero{padding:3rem 1rem 4.5rem}
+  .btn{width:100%;max-width:280px;justify-content:center}
+  nav{padding:.8rem 1.1rem}
+  footer{flex-direction:column;align-items:flex-start;gap:.5rem;padding:1rem 1.2rem}
+  .f-links{gap:.8rem}
+  .platforms{gap:.4rem;justify-content:center}
+  .pbadge{font-size:.65rem;padding:.28rem .65rem}
+  .stat-strip{grid-template-columns:repeat(2,1fr);gap:0}
+  .scroll-hint{display:none}
+  .start-btn{width:100%;max-width:320px;justify-content:center}
+  .timeline{padding-left:1.4rem}
+  .tl-marker{left:-1.95rem}
+  /* Card overlay on mobile */
+  .t-overlay{padding:0 .6rem .6rem}
+  .btn-modal-open,.btn-modal-site{font-size:.62rem;padding:.45rem .5rem}
+  /* Modal on mobile */
+  .modal-screenshot{aspect-ratio:4/3}
+  .modal-content{padding:1rem 1rem 1.5rem}
+  .modal-title{font-size:1.1rem}
+  .modal-impact{grid-template-columns:1fr;gap:.4rem}
+  /* Certs on mobile */
+  .cert-group{padding:.8rem 1rem}
+  .cert-group:hover{transform:none;box-shadow:none} /* no hover lift on mobile */
+  .cert-group::before{display:none} /* hide left accent bar on mobile — no hover */
+  .cbadge{font-size:.68rem;padding:.3rem .65rem}
+  .cbadge:hover{transform:none;box-shadow:none} /* no scale on mobile */
+  .cert-group-header{flex-wrap:wrap}
+  /* Testi dots: larger touch targets on mobile */
+  .testi-dot{width:9px;height:9px;padding:6px;box-sizing:content-box}
+  /* Hero bottom fade: shorter on mobile */
+  .hero::after{height:80px}
+  /* Divider: keep thin line but reduce glow on mobile */
+  .divider::before{width:70%;height:14px}
+  /* Built track on mobile */
+  .built-track{gap:1.5rem}
+  /* Marquee: smaller text on mobile */
+  .built-item{font-size:.7rem}
+  .built-icon{width:16px;height:16px}
+  /* Section label smaller */
+  .sec-label{font-size:.66rem;letter-spacing:.16em}
+  /* Timeline: tighter */
+  .tl-head{flex-direction:column;gap:.15rem}
+  .tl-date{font-size:.68rem}
+  /* Contact: full-width fields */
+  .fg input,.fg textarea,.fg select{padding:.7rem .85rem}
+  /* Special thanks tighter */
+  .thanks-section{padding:3.5rem 1rem 3rem}
+  /* Footer links wrap */
+
+  /* Floating code tokens hidden on mobile (already JS-guarded, this is CSS backup) */
+  .hero-code-float{display:none}
+  /* Scroll hint hidden on mobile */
+  .scroll-hint{display:none}
+  /* World clock smaller */
+  #tz-time{font-size:1.1rem}
+}
+

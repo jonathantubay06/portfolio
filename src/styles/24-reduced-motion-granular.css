@@ -1,0 +1,30 @@
+/* ═══════════════════════════════════════
+   REDUCED MOTION — granular
+═══════════════════════════════════════ */
+@media(prefers-reduced-motion:reduce){
+  .svc-ico-3d{animation:none!important;transform:none!important}
+
+  /* Hero render: freeze the plate and every overlay. */
+  .hero-scene,.hero-ambient,.fx-laptop::before,.fx-laptop::after,
+  .fx-tablet::before,.fx-wire,.fx-lamp,.fx-ping,.fx-pen{
+    animation:none!important;transform:none!important;
+  }
+  .fx-svg,.fx-laptop,.fx-tablet{display:none}
+
+  *,*::before,*::after{
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.01ms!important;
+    scroll-behavior:auto!important;
+  }
+  body{opacity:1;animation:none}
+  .r{opacity:1;transform:none;animation:none}
+  .testi-track{transition:none}
+  #back-to-top{transition:none}
+  .proj-card:hover{transform:none}
+  .tc:hover{transform:none}
+  .svc-row:hover{transform:none}
+  .cert-group:hover{transform:none}
+  .cbadge:hover{transform:none}
+}
+

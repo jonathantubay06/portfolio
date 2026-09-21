@@ -1,0 +1,18 @@
+/* ═══════════════════════════════════════
+   BACK-TO-TOP PROGRESS RING
+═══════════════════════════════════════ */
+.btt-ring{
+  position:absolute;inset:0;
+  width:100%!important;height:100%!important;
+  transform:rotate(-90deg);
+  pointer-events:none;overflow:visible;
+  stroke-width:unset!important;
+}
+#back-to-top .btt-track{fill:none;stroke:rgba(0,212,255,.12);stroke-width:2}
+#back-to-top .btt-progress{
+  fill:none;stroke:var(--cyan);stroke-width:2;
+  stroke-linecap:round;
+  stroke-dasharray:113.1;stroke-dashoffset:113.1;
+  transition:stroke-dashoffset .1s linear;
+}
+

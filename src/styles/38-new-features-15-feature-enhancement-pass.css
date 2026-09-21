@@ -1,0 +1,136 @@
+/* ═══════════════════════════════════════
+   NEW FEATURES — 15-feature enhancement pass
+   ─────────────────────────────────────────────────────────────
+   1.  decoding="async"    (HTML only — no CSS needed)
+   2.  Aurora background blobs
+   3.  Testimonial countdown bar
+   4.  Animated MOEV border
+   5.  Services expand bullets
+   6.  Tool chip stagger        (JS-driven, CSS provides states)
+   7.  Timeline expand
+   8.  Hero scroll parallax     (JS-driven, CSS provides states)
+   9.  Infinite carousel        (already implemented)
+   10. Book-a-call pill
+   11. Live project badge
+   12. Contact response note
+   13. Reactive canvas          (JS-driven)
+   14. Cursor sparkle trail     (JS-driven, CSS provides keyframe)
+   15. Quick-pick service buttons
+═══════════════════════════════════════════════════════════════ */
+
+/* ── 2. Aurora hero background blobs ───────────────────────────
+   Three blurred colour orbs drift slowly behind the hero.
+   Heavily blurred + low opacity = ambient atmosphere, not noise.
+   Animations are offset so they never sync up (feels organic).
+   Hidden on mobile — saves battery and avoids distraction.
+──────────────────────────────────────────────────────────────── */
+
+/* Blob 1 — cyan, top-left, large */
+
+/* Blob 2 — indigo/purple, bottom-right */
+
+/* Blob 3 — blue, mid-centre — lightest of the three */
+
+/* ── 3. Testimonial countdown bar ───────────────────────────────
+   2px cyan line across the top of the carousel.
+   Depletes left→right over 6s in sync with autoplay.
+   JS resets the animation on every slide change.
+──────────────────────────────────────────────────────────────── */
+.testi-timer{
+  position:relative;height:2px;
+  background:rgba(0,212,255,.1);
+  border-radius:2px;
+  margin-bottom:.75rem;
+  overflow:hidden;
+}
+.testi-timer::after{
+  content:'';
+  position:absolute;inset:0;right:100%;
+  background:var(--cyan);
+  border-radius:2px;
+  animation:testi-countdown 6s linear forwards;
+}
+.testi-timer.running::after{animation:testi-countdown 6s linear forwards}
+@keyframes testi-countdown{
+  from{right:100%}
+  to{right:0}
+}
+
+/* ── 4. Featured testimonial — subtle static highlight ──────────
+   No spinning animation — just a soft cyan glow that makes the
+   card feel premium without being distracting.
+──────────────────────────────────────────────────────────────── */
+.tc-featured{
+  border-color:rgba(0,212,255,.4);
+  box-shadow:0 0 0 1px rgba(0,212,255,.1),0 8px 32px rgba(0,212,255,.1);
+}
+
+/* ── 5. Services expand bullets ─────────────────────────────────
+   Hidden bullet list inside each service row.
+   Revealed on hover (desktop) or touch/click (mobile via JS).
+   max-height transition ensures smooth slide-open.
+──────────────────────────────────────────────────────────────── */
+.svc-bullets{
+  list-style:none;padding:0;margin:0;
+  max-height:0;overflow:hidden;
+  transition:max-height .32s ease, opacity .28s ease, margin .28s ease;
+  opacity:0;margin-top:0;
+}
+.svc-row:hover .svc-bullets,
+.svc-row.svc-open .svc-bullets{
+  max-height:120px;opacity:1;margin-top:.55rem;
+}
+.svc-bullets li{
+  font-size:.75rem;color:var(--muted);padding:.18rem 0;
+  display:flex;align-items:center;gap:.45rem;
+}
+.svc-bullets li::before{
+  content:'→';color:var(--cyan);font-size:.7rem;flex-shrink:0;
+}
+[data-theme="light"] .svc-bullets li{color:#5a6880}
+/* On touch devices, hover won't fire — JS adds .svc-open on tap */
+@media(max-width:900px){
+  .svc-row:hover .svc-bullets{max-height:0;opacity:0;margin-top:0}
+}
+
+/* ── 6. Chip stagger entrance ───────────────────────────────────
+   Start state: invisible and slightly below.
+   JS adds .chip-in with a per-chip delay when section enters view.
+──────────────────────────────────────────────────────────────── */
+.chip.chip-hidden{opacity:0;transform:translateY(12px)}
+.chip.chip-in{
+  animation:chip-enter .38s cubic-bezier(.25,.8,.25,1) forwards;
+}
+@keyframes chip-enter{
+  to{opacity:1;transform:translateY(0)}
+}
+
+/* ── 7. Timeline expand ─────────────────────────────────────────
+   Hidden bullet list inside each timeline item.
+   .tl-open toggled by effects.js on click/Enter/Space.
+   .tl-expand-hint toggles ↓/↑ arrow text.
+──────────────────────────────────────────────────────────────── */
+.tl-content{cursor:pointer;user-select:none}
+.tl-expand{
+  list-style:none;padding:0;margin:0;
+  max-height:0;overflow:hidden;
+  transition:max-height .32s ease, opacity .28s ease, margin .28s ease;
+  opacity:0;margin-top:0;
+}
+.tl-content.tl-open .tl-expand{
+  max-height:120px;opacity:1;margin-top:.6rem;
+}
+.tl-expand li{
+  font-size:.75rem;color:var(--muted2);padding:.2rem 0;
+  display:flex;align-items:flex-start;gap:.4rem;line-height:1.4;
+}
+.tl-expand li::before{content:'▸';color:var(--cyan);font-size:.65rem;margin-top:.15rem;flex-shrink:0}
+.tl-expand-hint{
+  display:inline-block;font-size:.65rem;color:var(--muted);
+  margin-top:.4rem;transition:color .2s;letter-spacing:.04em;
+}
+.tl-content:hover .tl-expand-hint{color:var(--cyan)}
+.tl-content.tl-open .tl-expand-hint::after{content:' ↑ Hide'}
+.tl-content:not(.tl-open) .tl-expand-hint::after{content:''}
+[data-theme="light"] .tl-expand li{color:#5a6880}
+

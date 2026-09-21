@@ -1,0 +1,14 @@
+/* ═══════════════════════════════════════
+   NEON SVG CURSORS — arrow default, hand on links
+   ═══════════════════════════════════════ */
+body{
+  cursor: url('cursors/arrow.svg') 4 4, auto;
+}
+a, button, [role="button"], label, input, select, textarea, .btn, .pf-btn, .proj-card{
+  cursor: pointer;
+}
+/* Keep native cursor on touch */
+@media(hover:none){
+  body, a, button{ cursor: auto }
+}
+

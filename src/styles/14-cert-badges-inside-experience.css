@@ -1,0 +1,97 @@
+/* ═══════════════════════════════════════
+   CERT BADGES (inside Experience)
+═══════════════════════════════════════ */
+/* Replaces the plain border-top with the same animated cyan glow
+   line used by .divider — keeps the visual language consistent */
+.certs-inline{
+  margin-top:2.5rem;padding-top:2rem;
+  border-top:none;
+  position:relative;
+}
+.certs-inline::before{
+  content:'';position:absolute;top:0;left:0;right:0;
+  height:2px;
+  background:linear-gradient(90deg,transparent 0%,rgba(0,212,255,.0) 20%,rgba(0,212,255,.9) 50%,rgba(0,212,255,.0) 80%,transparent 100%);
+  animation:energize 3s ease-in-out infinite;
+}
+.certs-inline-label{
+  font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:1.2rem;display:flex;align-items:center;gap:.5rem;
+}
+.certs-inline-label::before{content:'//';opacity:.4;font-family:var(--font-head)}
+
+/* Grouped certs */
+.certs-groups{display:flex;flex-direction:column;gap:1.2rem}
+.cert-group{
+  padding:1rem 1.2rem;
+  background:rgba(0,212,255,.02);
+  border:1px solid var(--border);
+  border-radius:12px;
+  position:relative;overflow:hidden;
+  transition:border-color .28s,box-shadow .28s,transform .28s,background .28s;
+}
+/* Left accent bar — appears on hover like a neon edge light */
+.cert-group::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;
+  width:3px;border-radius:12px 0 0 12px;
+  background:linear-gradient(180deg,var(--cyan),rgba(0,212,255,.3));
+  opacity:0;transition:opacity .28s;
+}
+.cert-group:hover{
+  border-color:rgba(0,212,255,.32);
+  box-shadow:0 6px 32px rgba(0,212,255,.1),inset 0 0 0 1px rgba(0,212,255,.06);
+  transform:translateY(-2px);
+  background:rgba(0,212,255,.04);
+}
+.cert-group:hover::before{opacity:1}
+.cert-group:hover .cert-group-name{color:rgba(232,244,255,.85)}
+.cert-group-header{display:flex;align-items:center;gap:.6rem;margin-bottom:.8rem}
+.cert-group-logo{width:20px;height:20px;object-fit:contain;filter:brightness(.9)}
+.cert-group-name{font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);transition:color .28s}
+.cert-group-count{
+  font-size:.65rem;font-weight:700;padding:.1rem .45rem;
+  background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.2);
+  border-radius:99px;color:var(--cyan);margin-left:auto;
+}
+
+/* Count badge pops in when the group scrolls into view */
+@keyframes count-pop{
+  0%  {transform:scale(.5);opacity:0}
+  70% {transform:scale(1.2)}
+  100%{transform:scale(1);opacity:1}
+}
+.cert-group.on .cert-group-count{animation:count-pop .5s cubic-bezier(.34,1.56,.64,1) both}
+.cert-group.on:nth-child(2) .cert-group-count{animation-delay:.12s}
+.cert-group.on:nth-child(3) .cert-group-count{animation-delay:.24s}
+.cert-group.on:nth-child(4) .cert-group-count{animation-delay:.36s}
+
+/* Badges */
+.certs-badges{display:flex;flex-wrap:wrap;gap:.5rem}
+.cbadge{
+  display:flex;align-items:center;gap:.45rem;
+  padding:.38rem .85rem;
+  background:rgba(0,212,255,.04);border:1px solid var(--border2);
+  border-radius:var(--radius-pill);font-size:.77rem;font-weight:500;
+  color:rgba(232,244,255,.75);transition:all .22s;
+  text-decoration:none;cursor:pointer;position:relative;overflow:hidden;
+}
+.cbadge:hover{background:rgba(0,212,255,.1);border-color:rgba(0,212,255,.35);color:var(--cyan);transform:scale(1.04) translateY(-1px);box-shadow:0 3px 14px rgba(0,212,255,.12)}
+.cbadge:hover .cbadge-view{opacity:1;max-width:60px;margin-left:.3rem}
+.cbadge:hover .cbadge-year{opacity:0;max-width:0;margin-left:0}
+.cbadge-year{font-size:.68rem;opacity:.4;transition:all .2s;max-width:40px;overflow:hidden;white-space:nowrap}
+.cbadge-view{font-size:.68rem;color:var(--cyan);opacity:0;max-width:0;overflow:hidden;white-space:nowrap;transition:all .22s}
+
+/* Honors */
+.cbadge.honors{border-color:rgba(251,191,36,.25);background:rgba(251,191,36,.04)}
+.cbadge.honors:hover{border-color:rgba(251,191,36,.5);background:rgba(251,191,36,.08);color:#fbbf24}
+.cbadge.honors:hover .cbadge-view{color:#fbbf24}
+
+/* Static badges — text-only credentials, no external link to hover toward */
+.cbadge-static{cursor:default}
+.cbadge-static:hover{background:rgba(0,212,255,.04);border-color:var(--border2);color:rgba(232,244,255,.75);transform:none;box-shadow:none}
+.honors-tag{
+  font-size:.62rem;font-weight:700;letter-spacing:.05em;
+  background:rgba(251,191,36,.15);color:#fbbf24;
+  padding:.05rem .35rem;border-radius:4px;white-space:nowrap;
+}
+

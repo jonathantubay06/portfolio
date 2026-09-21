@@ -1,0 +1,17 @@
+<!-- ══ EASTER EGG TERMINAL ══ -->
+<!-- Hidden overlay triggered by typing "jt" anywhere on the page (not in a form).
+     Handled by effects.js. Lines are injected by JS with staggered delays.
+     Close via the button, Escape key, or clicking outside the terminal. -->
+<div id="egg-overlay" role="dialog" aria-modal="true" aria-label="Easter egg" aria-hidden="true">
+  <div id="egg-terminal">
+    <div class="egg-bar">
+      <span class="egg-bar-dot" style="background:#ff5f57"></span><!-- red macOS dot -->
+      <span class="egg-bar-dot" style="background:#ffbd2e"></span><!-- yellow macOS dot -->
+      <span class="egg-bar-dot" style="background:#28c840"></span><!-- green macOS dot -->
+      <span class="egg-bar-title">jonathan.exe</span>
+    </div>
+    <div id="egg-lines"></div><!-- terminal lines injected here by effects.js -->
+    <button id="egg-close" aria-label="Close">[ Close ]</button>
+  </div>
+</div>
+
