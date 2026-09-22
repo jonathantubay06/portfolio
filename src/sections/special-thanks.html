@@ -139,19 +139,20 @@
                a visitor who does not know yet is never blocked. A required
                budget field reads as a filter and loses the serious leads who
                simply have not priced the work. -->
-          <!-- Budget field held back until the bands exist. A select whose only
-               option is "Not sure yet" is worse than no field: it asks a
-               question, accepts one answer, and tells the visitor the form was
-               not finished. Fill the options and un-comment.
-
+          <!-- Priced in USD rather than PHP: the hero says "working
+               worldwide", and an overseas client reading pesos has to go
+               convert before they can answer. A local client reading dollars
+               does not - the number is still legible to them. -->
           <div class="fg">
             <label for="f-budget">Budget Range</label>
             <select id="f-budget" name="budget">
               <option>Not sure yet</option>
-              TODO(human): the budget bands
+              <option>Under $500</option>
+              <option>$500 – $1,500</option>
+              <option>$1,500 – $5,000</option>
+              <option>$5,000+</option>
             </select>
           </div>
-          -->
           <div class="fg">
             <label for="f-when">Timeline</label>
             <select id="f-when" name="timeline">
