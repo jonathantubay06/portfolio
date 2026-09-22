@@ -123,6 +123,41 @@ function buildSitemap(){
   ].join(NL);
 }
 
+/* ── analytics beacon ─────────────────────────────────────────────────
+ * Cloudflare Web Analytics. Cookieless and storing no personal data, so
+ * it needs no consent banner — which is the whole reason it was chosen
+ * over Google Analytics for a site whose visitors arrive from anywhere.
+ *
+ * Injected here rather than pasted into each page because the site has
+ * four independent HTML entry points: the assembled index, the 404, the
+ * confirmation page and the case studies. Pasting would mean four copies
+ * of the token and, eventually, one page that quietly stops reporting
+ * after an edit. /thanks/ is the one that would hurt most to miss — it is
+ * the only evidence a visitor became an enquiry.
+ *
+ * The token is not a secret. It ships in the page source by design and
+ * identifies the site, not the account.
+ *
+ * type="module" is implicitly deferred, so this never blocks rendering
+ * even though it sits in the markup just before </body>.
+ */
+const CF_TOKEN = '716f0221784b40f8adcbb337bdcb1f93';
+const BEACON =
+  '<!-- Cloudflare Web Analytics -->' +
+  '<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js"' +
+  ' data-cf-beacon=\'{"token": "' + CF_TOKEN + '"}\'><\/script>' +
+  '<!-- End Cloudflare Web Analytics -->';
+
+/** Put the beacon immediately before </body>. Idempotent: a page that
+ *  already carries the token comes back untouched, so a build run over an
+ *  existing dist tree can never inject it twice. */
+function withBeacon(html) {
+  if (html.includes('cloudflareinsights.com')) return html;
+  const i = html.lastIndexOf('</body>');
+  if (i === -1) throw new Error('no </body> to anchor the analytics beacon to');
+  return html.slice(0, i) + BEACON + html.slice(i);
+}
+
 // ── build ────────────────────────────────────────────────────────────
 fs.rmSync(DIST, { recursive: true, force: true });
 fs.mkdirSync(DIST, { recursive: true });
@@ -173,7 +208,7 @@ function rehash(markup, prefix, { require: mustExist = true } = {}) {
 }
 
 const outputs = {
-  'index.html': rehash(minify.html(buildHtml()), './'),
+  'index.html': withBeacon(rehash(minify.html(buildHtml()), './')),
   'sitemap.xml': buildSitemap(),
   [HASHED['style.css']]: styleCss,
   [HASHED['main.js']]: mainJs,
@@ -205,7 +240,23 @@ for (const item of STATIC) copied += copy(item);
 for (const f of fs.readdirSync(path.join(DIST, 'case-studies'))) {
   if (!f.endsWith('.html')) continue;
   const p = path.join(DIST, 'case-studies', f);
-  fs.writeFileSync(p, rehash(minify.html(fs.readFileSync(p, 'utf8')), '../'));
+  fs.writeFileSync(p, withBeacon(rehash(minify.html(fs.readFileSync(p, 'utf8')), '../')));
+}
+
+// The remaining standalone pages — 404.html and thanks/index.html — are
+// copied verbatim rather than assembled, so they need the beacon stamped in
+// after the copy too. Walking dist rather than naming files means a page
+// added to STATIC later is covered without anyone remembering to come here.
+for (const rel of ['404.html', 'thanks']) {
+  const abs = path.join(DIST, rel);
+  if (!fs.existsSync(abs)) continue;
+  const files = fs.statSync(abs).isDirectory()
+    ? fs.readdirSync(abs).map(f => path.join(abs, f))
+    : [abs];
+  for (const f of files) {
+    if (!f.endsWith('.html')) continue;
+    fs.writeFileSync(f, withBeacon(fs.readFileSync(f, 'utf8')));
+  }
 }
 
 // Google Search Console verification file, if present
