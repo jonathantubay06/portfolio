@@ -1,0 +1,165 @@
+/* ═══════════════════════════════════════
+   INTERACTION FEEDBACK
+
+   Three additions from the 2026-09-22 interaction audit. The site had
+   plenty of ambient motion — aurora, grain, particles, cursor trail —
+   and almost no motion that answers the visitor. Ambient makes a page
+   feel alive before you touch it; this makes it feel responsive to you.
+
+   Everything here is transform/opacity/scale only, so it stays on the
+   compositor. Nothing writes box-shadow, filter or anything else that
+   forces paint on a pointer event.
+═══════════════════════════════════════ */
+
+/* ── A · CTA feedback ──────────────────────────────────────────────
+   .is-mag is set by effects.js while a pointer is inside a CTA. It
+   kills the transform transition for the duration.
+
+   Without this, every frame's transform write STARTS A NEW transition
+   on top of the previous one — the .btn rule carries transition:all
+   .28s, so a moving pointer stacks roughly sixty overlapping 280ms
+   interpolations a second. That is both slower and visibly mushier
+   than no transition at all. The shipped magnetic script had exactly
+   this bug on the hero buttons; it is the same mistake the project
+   card tilt was rewritten to fix.
+
+   The press squash uses `scale` rather than folding a scale() into the
+   transform string. scale is a separate property that composes AFTER
+   transform, so the pull (transform) and the squash (scale) have one
+   writer each and never overwrite each other. */
+.btn.is-mag,
+.qp-btn.is-mag,
+.btn-modal-open.is-mag,
+.btn-modal-site.is-mag,
+#book-pill.is-mag,
+.mobile-cta-bar .btn.is-mag{transition:none}
+
+/* No transition-property declaration here, deliberately.
+
+   The first draft set `transition-property:scale` on these buttons to
+   give the press release a springy curve. That overrides the
+   `transition:all .28s` they already carry, which silently kills the
+   existing hover transitions — .btn-p:hover's translateY(-2px) and its
+   box-shadow would both have started snapping instead of easing. This
+   file loads after 05-buttons.css, so the override would have won.
+
+   `all` already covers `scale`, so the release is smooth without any
+   new declaration. A sprung release is not worth breaking every hover
+   state on the site to get.
+
+   Measured on the built stylesheet:
+     .btn            transition:all .28s
+     .qp-btn         transition:all .22s
+     .btn-modal-open transition:all .2s
+     .btn-modal-site transition:all .2s
+     .pf-btn         transition:all var(--transition-fast)
+
+   #book-pill is the one exception: it lists its properties explicitly
+   and scale is not among them, so the squash would release by snapping.
+   Appending to that list is safe because the list is re-stated in full. */
+#book-pill{
+  transition:opacity .4s ease,
+             transform .4s cubic-bezier(.25,.8,.25,1),
+             box-shadow .25s ease,
+             background .25s ease,
+             scale .22s cubic-bezier(.34,1.56,.64,1);
+}
+
+/* The shorthand sets transition-property:scale for the duration of the
+   press, which suppresses the hover transitions while held — that is
+   wanted, since the squash should land immediately. Removing the class
+   restores the element's own transition. */
+.is-press{scale:.96;transition:scale .09s ease-out}
+
+/* ── B · process strip sequence ────────────────────────────────────
+   .process-inline already carries .r, so main.js adds .on when the
+   section scrolls in. Staggering the children off that class means no
+   second IntersectionObserver and no new script — the sequence rides
+   the reveal machinery that is already there.
+
+   Steps and arrows alternate in the DOM (step, arrow, step, arrow...),
+   so nth-child walks both: 1,3,5,7 are .pi-step and 2,4,6 are
+   .pi-arrow. 130ms apart reads as a sequence without anyone waiting
+   for it — the last item lands at 780ms.
+
+   The arrows use scaleX from their left edge, which is why they read as
+   drawing rather than fading in. */
+.process-inline>.pi-step,
+.process-inline>.pi-arrow{
+  opacity:0;
+  transition:opacity .45s ease,
+             translate .45s cubic-bezier(.2,.7,.3,1),
+             scale .4s ease;
+}
+.process-inline>.pi-step{translate:0 10px}
+.process-inline>.pi-arrow{scale:0 1;transform-origin:left center}
+
+.process-inline.on>.pi-step{opacity:1;translate:0 0}
+.process-inline.on>.pi-arrow{opacity:1;scale:1 1}
+
+.process-inline.on>:nth-child(1){transition-delay:0ms}
+.process-inline.on>:nth-child(2){transition-delay:130ms}
+.process-inline.on>:nth-child(3){transition-delay:260ms}
+.process-inline.on>:nth-child(4){transition-delay:390ms}
+.process-inline.on>:nth-child(5){transition-delay:520ms}
+.process-inline.on>:nth-child(6){transition-delay:650ms}
+.process-inline.on>:nth-child(7){transition-delay:780ms}
+
+/* Each number flashes as its step lands, so the eye is pulled along the
+   row instead of just noticing it has filled in. text-shadow is a paint
+   property, which is fine here: it runs once, on four small elements,
+   and never on a pointer event. */
+.process-inline.on .pi-num{animation:piFlash .5s ease-out both}
+.process-inline.on>:nth-child(3) .pi-num{animation-delay:260ms}
+.process-inline.on>:nth-child(5) .pi-num{animation-delay:520ms}
+.process-inline.on>:nth-child(7) .pi-num{animation-delay:780ms}
+@keyframes piFlash{
+  0%  {text-shadow:0 0 0 rgba(0,212,255,0)}
+  35% {text-shadow:0 0 14px rgba(0,212,255,.9)}
+  100%{text-shadow:0 0 0 rgba(0,212,255,0)}
+}
+
+/* Below 900px the arrows are display:none and the strip wraps or
+   stacks, so a left-to-right draw has nothing to draw along. Steps
+   still stagger; the arrow rules simply have no targets. */
+
+/* ── C · service icon tilt ─────────────────────────────────────────
+   The icons already bob (svcFloat, gated on .inview) and already lift
+   on row hover. This replaces the fixed hover pose with one that
+   follows the cursor, so they read as objects being turned rather than
+   images that jump.
+
+   perspective on the row rather than the icon: the icon is the thing
+   being rotated, and an element cannot supply its own perspective.
+
+   The bob writes `translate`; the tilt writes `transform`. Separate
+   properties, composed in a fixed order (translate, rotate, scale,
+   transform), so the float keeps running underneath the tilt instead
+   of being cancelled by it. */
+.svc-row{perspective:600px}
+.svc-row.is-tilting .svc-ico-3d{transition:none}
+
+/* ── reduced motion ────────────────────────────────────────────────
+   24-reduced-motion-granular.css already crushes every duration to
+   .01ms, which handles the transitions. What it cannot do is undo the
+   rest states: a .pi-step left at opacity:0 would stay invisible, and
+   an .is-press would stay squashed. Those need explicit resets.
+
+   The tilt and pull scripts bail out entirely under reduced motion, so
+   nothing here is fighting live JS. */
+@media(prefers-reduced-motion:reduce){
+  .process-inline>.pi-step,
+  .process-inline>.pi-arrow{
+    opacity:1!important;translate:none!important;scale:none!important;
+    transition:none!important;
+  }
+  .process-inline.on .pi-num{animation:none!important}
+  .is-press{scale:none!important}
+  .svc-row{perspective:none}
+}
+
+/* Touch: the pull script bails out on (hover: none), so .is-mag is never
+   applied there and needs no handling. The press squash is deliberately
+   kept — a tap has no hover state to confirm it landed, so visible
+   acknowledgement does more work on a phone than anywhere else. It
+   needs no extra rules either; .is-press carries its own transition. */

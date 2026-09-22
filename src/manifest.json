@@ -44,7 +44,8 @@
     "40-results-strip-key-metrics-between-portfo.css",
     "41-trust-bar-business-credentials-above-con.css",
     "42-hud-cursor.css",
-    "43-certs-plaque.css"
+    "43-certs-plaque.css",
+    "44-interaction-feedback.css"
   ],
   "main": [
     "00-preamble.js",
@@ -92,6 +93,7 @@
     "23-16-keyboard-shortcuts.js",
     "24-17-copy-phone-button.js",
     "25-18-section-label-entry-flash.js",
-    "26-hud-lock-on-cursor.js"
+    "26-hud-lock-on-cursor.js",
+    "27-service-icon-tilt.js"
   ]
 }
