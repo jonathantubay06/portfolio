@@ -5,7 +5,7 @@ function handleSubmit(e) {
   e.preventDefault(); // stop native browser form submission
   const form = e.target;
   const btn  = form.querySelector('button[type="submit"]');
-  const orig = btn.textContent; // save original label to restore after success/error
+  const orig = btn.textContent; // restored only on failure - success navigates away
 
   /* Quick client-side validation — show errors before even hitting the network */
   const nameField  = form.querySelector('#f-name');
@@ -63,17 +63,19 @@ function handleSubmit(e) {
     if (!res.ok) throw new Error('Network response was not ok');
   })
   .then(() => {
-    btn.textContent   = 'Message Sent! \u2713'; // ✓ checkmark
-    announceForm('Message sent. Jonathan usually replies within 24 hours.');
-    btn.style.background = 'linear-gradient(135deg,#27c984,#00d4ff)'; // success green-to-cyan
-
-    // Reset after 3.5s — long enough to read the success state, not so long it feels stuck
-    setTimeout(() => {
-      btn.textContent      = orig;
-      btn.style.background = '';
-      btn.disabled         = false;
-      form.reset();
-    }, 3500);
+    // Hand the visitor to a real URL rather than mutating this one.
+    //
+    // The old behaviour flipped the button to "Message Sent!" and reset it
+    // after 3.5s. Two costs: anyone who glanced away came back to an empty
+    // form with no evidence it had sent, and there was no URL change for an
+    // analytics goal or conversion pixel to fire on - the submission was
+    // invisible to every measurement tool.
+    //
+    // assign() rather than replace(): Back should return to the form, which
+    // is what someone who realises they left out a detail will reach for.
+    btn.textContent = 'Sent ✓';
+    announceForm('Message sent. Taking you to the confirmation page.');
+    window.location.assign('/thanks/');
   })
   .catch(() => {
     // Something went wrong — re-enable so user can try again

@@ -104,7 +104,13 @@
              event, which made the custom validation in handleSubmit()
              unreachable. Taking validation over in JS keeps required/type as
              semantics for assistive tech while we announce failures ourselves. -->
-        <form class="c-form" name="contact" method="POST" novalidate data-netlify="true" data-netlify-honeypot="bot-field">
+        <!-- action="/thanks/": Netlify redirects there after a native POST, and
+     the JS handler navigates there too. A distinct URL is the only thing
+     an analytics goal, a conversion pixel or a bookmark can key off -
+     the previous inline "Message Sent" button label reset itself after
+     3.5 seconds, so a visitor who looked away saw an empty form and no
+     evidence anything had happened. -->
+        <form class="c-form" name="contact" method="POST" action="/thanks/" novalidate data-netlify="true" data-netlify-honeypot="bot-field">
           <!-- Netlify hidden fields -->
           <input type="hidden" name="form-name" value="contact"/>
           <p style="display:none"><input name="bot-field"/></p>
@@ -121,6 +127,39 @@
               <option>Project Management Support</option>
               <option>Ops / Technical Team Lead</option>
               <option>Something else</option>
+            </select>
+          </div>
+          <!-- Budget and timeline are the two answers that decide whether a
+               reply is a scoping conversation or a polite decline, and asking
+               for them here costs one tap each. Without them every enquiry
+               starts with the same two questions and burns a full reply
+               cycle - often the one where the lead goes cold.
+
+               Both are optional and both lead with a neutral first option, so
+               a visitor who does not know yet is never blocked. A required
+               budget field reads as a filter and loses the serious leads who
+               simply have not priced the work. -->
+          <!-- Budget field held back until the bands exist. A select whose only
+               option is "Not sure yet" is worse than no field: it asks a
+               question, accepts one answer, and tells the visitor the form was
+               not finished. Fill the options and un-comment.
+
+          <div class="fg">
+            <label for="f-budget">Budget Range</label>
+            <select id="f-budget" name="budget">
+              <option>Not sure yet</option>
+              TODO(human): the budget bands
+            </select>
+          </div>
+          -->
+          <div class="fg">
+            <label for="f-when">Timeline</label>
+            <select id="f-when" name="timeline">
+              <option>Not sure yet</option>
+              <option>ASAP - this week</option>
+              <option>Within a month</option>
+              <option>1-3 months out</option>
+              <option>Just exploring options</option>
             </select>
           </div>
           <div class="fg"><label for="f-msg">Tell Me More</label><textarea id="f-msg" name="message" placeholder="Brief description of your project, timeline, and budget..." autocomplete="off"></textarea></div>

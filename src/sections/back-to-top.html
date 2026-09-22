@@ -19,9 +19,14 @@
 <a href="#contact" id="avail-pill" aria-label="Available for projects">
   <span class="avail-pill-dot"></span>Available for Projects
 </a>
-<!-- Email pill: appears after 800px scroll. Labelled "Email me" because the
-     href is a mailto — "Book a Call" promised a calendar that does not exist. -->
-<a href="mailto:jonatsbuilds@gmail.com?subject=Let%27s%20Connect" id="book-pill" aria-label="Email Jonathan about a project">
-  ✉️ Email Me
+<!-- Contact pill: appears after 800px scroll.
+
+     Points at the contact FORM, not a mailto. A mailto: on a phone with no
+     mail app configured does nothing at all - the tap silently fails and the
+     visitor reads that as a broken site. This pill floats over every screen
+     after the hero, so it was the most-tapped dead end on the page. The form
+     works everywhere and is the only path that produces a tracked lead. -->
+<a href="#contact" id="book-pill" aria-label="Go to the contact form">
+  ✉️ Get In Touch
 </a>
 

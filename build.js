@@ -192,7 +192,7 @@ for (const [name, content] of Object.entries(outputs)) {
 // script is tooling rather than site content. Shipping either would put
 // build internals on the public site.
 const STATIC = [
-  'img', 'cursors', 'case-studies', 'fonts',
+  'img', 'cursors', 'case-studies', 'fonts', 'thanks',
   'favicon.png', 'og-preview.jpg', 'robots.txt',
   'humans.txt', '404.html',
 ];
