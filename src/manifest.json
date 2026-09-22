@@ -45,7 +45,8 @@
     "41-trust-bar-business-credentials-above-con.css",
     "42-hud-cursor.css",
     "43-certs-plaque.css",
-    "44-interaction-feedback.css"
+    "44-interaction-feedback.css",
+    "45-typographic-scale.css"
   ],
   "main": [
     "00-preamble.js",

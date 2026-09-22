@@ -1,0 +1,189 @@
+/* ═══════════════════════════════════════
+   TYPOGRAPHIC SCALE
+
+   From the 2026-09-22 comparison against sentryxp.com. Measured, not
+   eyeballed:
+
+                        sentryxp        here (before)
+     h1 size            93px            80px max
+     h1 weight          600             900
+     h1 tracking        -4.2px          +0.02em
+     h2 size            58px            37px max
+     h1 : body ratio    7.8 : 1         5 : 1
+     section padding    141px           80px
+     total JS           12.9 KB         52 KB
+
+   The finding that mattered: their site runs on 12.9 KB of vanilla JS
+   using the same techniques already in use here — IntersectionObserver,
+   rAF, matchMedia, prefers-reduced-motion, pointermove — and feels more
+   premium anyway. The difference is not motion. It is scale and space.
+
+   So this file adds no animation. It enlarges the display type, tightens
+   its tracking, drops its weight, and opens up the section rhythm.
+
+   Loaded last so it overrides 04-hero.css and 06-section-shared.css
+   without editing them; the original values stay readable in place.
+═══════════════════════════════════════ */
+
+/* ── display type ──────────────────────────────────────────────────
+   Weight 900 → 800 and positive → negative tracking.
+
+   Heavy weight WITH positive tracking is the techy/gaming register.
+   Lighter weight with tight tracking is the premium-consultancy one.
+   That single pair of properties carries most of the difference in feel
+   between the two sites.
+
+   Tracking is -0.015em, NOT the -0.045em sentryxp uses. Their display
+   face is Inter Tight, a grotesque that tolerates being packed. Orbitron
+   is a wide geometric face whose letterforms are drawn with air built
+   in; pulling it in that far collides the counters and reads as broken
+   rather than tight. -0.015em is as far as Orbitron goes before the
+   squares start touching.
+
+   Size tops out at 5.75rem (92px at the root size), which lands within
+   a pixel of their 93px. The vw term is raised to 7.6 so the clamp
+   actually reaches its ceiling at common desktop widths instead of
+   stopping short. */
+h1{
+  font-size:clamp(2.1rem,7.6vw,5.75rem);
+  font-weight:800;
+  letter-spacing:-.015em;
+  line-height:1.02;
+}
+
+/* Section headings were the biggest single gap: 37px against their
+   58px. Their h2 is nearly as large as this site's h1 was, which is why
+   the page read busier and smaller — nothing established a second level
+   of hierarchy, so the ambient effects competed with the content for
+   attention instead of sitting behind it.
+
+   3.4rem = 54.4px. Deliberately short of their 58px: Orbitron sets
+   wider than Inter Tight at the same size, so matching the number would
+   overshoot the apparent size. */
+h2{
+  font-size:clamp(1.7rem,4.6vw,3.4rem);
+  font-weight:800;
+  letter-spacing:-.01em;
+  line-height:1.06;
+}
+
+/* The contact headline carried an inline clamp of 1.8/5vw/3.2rem, set
+   when the global h2 ceiling was 2.3rem — it existed to make that one
+   heading bigger than the rest. With h2 now topping out at 3.4rem the
+   inline rule would make it SMALLER than every other section heading,
+   which is backwards for the closing call to action.
+
+   The inline style cannot be overridden from a stylesheet without
+   !important, so that is what this is for. It is the one place in the
+   file that needs it. */
+.contact-stage1 h2{
+  font-size:clamp(1.9rem,5.4vw,3.9rem)!important;
+}
+
+/* ── section rhythm ────────────────────────────────────────────────
+   80px → 120px. Space is what signals confidence; packed sections make
+   every effect feel like it is shouting over the copy.
+
+   Not the full 141px: this page has fourteen sections against their
+   fourteen but carries far more content per section, and 141px each
+   side would add roughly 1700px of scrolling for no gain. 120px lands
+   most of the effect for two thirds of the height.
+
+   The horizontal padding is unchanged — 1.5rem is already correct and
+   the max-width:1120px in 06-section-shared.css does the real work. */
+.sec{padding:7.5rem 1.5rem}
+
+/* Slightly more air under the section subheading, so the new heading
+   size does not end up crowding the copy it introduces. */
+.sec-sub{margin-bottom:3.2rem}
+
+/* ── responsive ────────────────────────────────────────────────────
+   Two existing breakpoints already reduce .sec padding — one in
+   23-light-mode.css (a tablet block that has drifted into the wrong
+   file) and one in 26-touch-no-hover-devices.css for phones under
+   400px. Both are more specific about nothing and simply later or
+   earlier in the cascade, so the values are restated here at the same
+   breakpoints to keep the scale proportional rather than letting
+   desktop grow while tablet stays put. */
+@media(max-width:900px){
+  .sec{padding:5.5rem 1.5rem}
+  .sec-sub{margin-bottom:2.6rem}
+}
+
+/* Phones. The clamp minimums already handle type; this is only about
+   not wasting vertical space on a small screen, where scrolling cost is
+   felt far more than breathing room is appreciated. */
+@media(max-width:600px){
+  .sec{padding:4.25rem 1.2rem}
+  h1{line-height:1.06}   /* 1.02 is too tight once the name wraps */
+  h2{line-height:1.12}
+}
+
+@media(max-width:400px){
+  .sec{padding:3.5rem .9rem}
+}
+
+/* ── short-viewport guard ──────────────────────────────────────────
+   Above 1024px the hero is a grid with align-content:center inside a
+   min-height:100svh box, and its padding-block is deliberately tight
+   (clamp(1.5rem,3vh,2.5rem)) because clearance from the 71px fixed nav
+   comes from the centring, not from padding.
+
+   That means the clearance is a function of how tall the centred column
+   is. Measured at 1440x900: 17px of clearance before this change, 9px
+   after — still clear, but the margin halved, and on a short laptop
+   (1280x720, or any browser with several toolbars) the column already
+   grew taller than the viewport and the eyebrow slid under the nav.
+
+   Confirmed pre-existing: production at 1280x720 overlaps by 47px
+   without any of these changes. Raising the padding is not the fix,
+   since that would push the content off-centre on tall screens. The
+   Two wrong attempts are worth recording, because both looked right.
+
+   1. Shrink h1 on short viewports. Measured at 1280x720 the overlap
+      stayed at exactly 37px with h1 down from 92px to 70px. The hero is
+      817px tall there against a 720px viewport — eyebrow, h1 over two
+      lines, role, description, platform chips, CTAs and the stat strip
+      need more than 720px at that width no matter what the heading does.
+
+   2. Raise padding-block symmetrically. Measured 88px/88px applied, and
+      the eyebrow stayed at top:34px — ABOVE its own padding edge.
+
+   Attempt 2 is what identified the real mechanism. align-content:center
+   distributes free space, and when content is TALLER than the box the
+   free space is negative: the track overflows equally past both edges,
+   outside the padding box. Padding cannot contain overflow it sits
+   inside of. This is the well-known centring-overflow trap, and the
+   keyword that exists for it is `safe` — it falls back to `start`
+   alignment precisely when centring would cause overflow, so tall
+   viewports still centre and short ones align to the top where the
+   padding does apply.
+
+   An unsupported `safe center` makes the declaration invalid and the
+   earlier `align-content:center` continues to win, so this cannot make
+   an old browser worse than it already is. */
+@media(min-width:1024px){
+  .hero{
+    align-content:safe center;
+    padding-block:max(5.5rem,clamp(1.5rem,3vh,2.5rem));
+  }
+}
+
+/* Below 1024px the hero is not a grid, so `safe` has nothing to do and
+   the overlap is the simpler kind: the nav is 60px tall and fixed, while
+   .hero's padding-top is 48px at <=600px and 40px at <=400px. The
+   eyebrow therefore starts 12-20px INSIDE the nav.
+
+   Measured identically on production at 375x812 — eyebrow top 40px,
+   nav bottom 60px, overlap 20px — so this is pre-existing and not
+   something the larger type introduced. It is visible rather than
+   theoretical because the nav background is transparent
+   (rgba(0,0,0,0)), so the eyebrow shows through it and collides with
+   the logo instead of being hidden behind a solid bar.
+
+   5rem clears the 60px nav with 20px to spare. The bottom padding is
+   left alone: these rules set all four sides, so only the top is
+   restated. */
+@media(max-width:1023px){
+  .hero{padding-top:5rem}
+}
