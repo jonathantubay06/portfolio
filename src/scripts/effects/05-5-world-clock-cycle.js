@@ -1,79 +1,69 @@
-/* ── 5. WORLD CLOCK CYCLE ──────────────
-   Rotates through global timezones every 7s
-   — shows clients in any region that you're
-   available in their time. Both the clock
-   and the city label swap together with a
-   quick fade so the transition feels smooth.
+/* ── 5. MANILA CLOCK ───────────────────
+   Hero stat #4. Was a world clock that cycled through seven cities every
+   7s ("7:41 PM · London"), which told a visitor nothing about Jonathan
+   and showed flag emoji that Windows renders as two letters ("GB").
+
+   Now it answers the question a remote client actually has, "if I write
+   now, when will he see it?":
+     2:41 PM
+     ● Manila · Online now
+       7h ahead of you
+   The status is green inside working hours and grey outside them; the
+   last line is worked out from the visitor's own timezone.
+
+   Manila is UTC+8 all year (no daylight saving), so the offset is a
+   constant rather than something to look up.
 ══════════════════════════════════════ */
 (function(){
   const timeEl  = document.getElementById('tz-time');
   const labelEl = document.getElementById('tz-label');
   if (!timeEl || !labelEl) return;
 
-  // Zones ordered: PH first (home), then major client markets
-  const zones = [
-    { tz: 'Asia/Manila',        flag: '🇵🇭', city: 'PH Time'  },
-    { tz: 'America/New_York',   flag: '🇺🇸', city: 'New York' },
-    { tz: 'Europe/London',      flag: '🇬🇧', city: 'London'   },
-    { tz: 'America/Los_Angeles',flag: '🇺🇸', city: 'LA Time'  },
-    { tz: 'Australia/Sydney',   flag: '🇦🇺', city: 'Sydney'   },
-    { tz: 'Asia/Dubai',         flag: '🇦🇪', city: 'Dubai'    },
-    { tz: 'Asia/Ho_Chi_Minh',  flag: '🇻🇳', city: 'Vietnam'  },
-  ];
+  const TZ = 'Asia/Manila';
+  const MANILA_UTC_OFFSET_H = 8;
+  // Working hours, Manila time, Monday to Friday. Edit here if they change.
+  const WORK = { start: 9, end: 18 };
 
-  let zoneIdx = 0;
-  let seconds = 0; // counts up each tick; zone rotates every ZONE_SECS ticks
-  const ZONE_SECS = 7;
+  const fmtTime  = new Intl.DateTimeFormat('en-US', { timeZone: TZ, hour: 'numeric', minute: '2-digit' });
+  const fmtParts = new Intl.DateTimeFormat('en-US', { timeZone: TZ, hour: 'numeric', hourCycle: 'h23', weekday: 'short' });
 
-  function getTime(tz) {
-    const d    = new Date(new Date().toLocaleString('en-US', { timeZone: tz }));
-    const h    = d.getHours();
-    const m    = d.getMinutes().toString().padStart(2, '0');
-    const ampm = h >= 12 ? 'PM' : 'AM';
-    return `${(h % 12) || 12}:${m} ${ampm}`;
+  function relative() {
+    // getTimezoneOffset is minutes BEHIND UTC, hence the minus.
+    const diff = MANILA_UTC_OFFSET_H - (-new Date().getTimezoneOffset() / 60);
+    if (diff === 0) return 'Same time as you';
+    const abs = Math.abs(diff);
+    const h = Math.floor(abs), m = Math.round((abs - h) * 60);
+    const amount = (h ? h + 'h' : '') + (m ? (h ? ' ' : '') + m + 'm' : '');
+    return amount + (diff > 0 ? ' ahead of you' : ' behind you');
   }
 
-  function switchZone() {
-    // Fade out → swap content → fade in
-    timeEl.style.transition  = labelEl.style.transition = 'opacity .3s';
-    timeEl.style.opacity     = labelEl.style.opacity    = '0';
-    setTimeout(() => {
-      const z = zones[zoneIdx];
-      timeEl.textContent  = getTime(z.tz);
-      labelEl.textContent = `${z.flag} ${z.city}`;
-      timeEl.style.opacity = labelEl.style.opacity = '1';
-    }, 320);
-  }
-
-  // Single interval does everything — no timer leaks
-  const z0 = zones[0];
-  timeEl.textContent  = getTime(z0.tz);
-  labelEl.textContent = `${z0.flag} ${z0.city}`;
-
-  let clockId = setInterval(tick, 1000);
+  // Built once; tick() only swaps text and one class.
+  labelEl.textContent = '';
+  const status = document.createElement('span');
+  status.className = 'tz-status';
+  const dot = document.createElement('span');
+  dot.className = 'tz-dot';
+  dot.setAttribute('aria-hidden', 'true');
+  const statusText = document.createElement('span');
+  status.append(dot, statusText);
+  const rel = document.createElement('span');
+  rel.className = 'tz-rel';
+  rel.textContent = relative();
+  labelEl.append(status, rel);
 
   function tick() {
-    seconds++;
-    // Rotate zone every ZONE_SECS seconds
-    if (seconds % ZONE_SECS === 0) {
-      zoneIdx = (zoneIdx + 1) % zones.length;
-      switchZone();
-    } else {
-      // Just update the clock for the current zone — no fade needed
-      timeEl.textContent = getTime(zones[zoneIdx].tz);
-    }
+    const now = new Date();
+    timeEl.textContent = fmtTime.format(now);
+    const p = {};
+    fmtParts.formatToParts(now).forEach(x => { p[x.type] = x.value; });
+    const hour = parseInt(p.hour, 10);
+    const weekday = p.weekday !== 'Sat' && p.weekday !== 'Sun';
+    const online = weekday && hour >= WORK.start && hour < WORK.end;
+    status.classList.toggle('is-online', online);
+    statusText.textContent = online ? 'Manila · Online now' : 'Manila · Away';
   }
 
-  // Pause the clock when the tab is hidden — saves CPU/battery on background tabs
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-      clearInterval(clockId);
-    } else {
-      // Sync immediately on return so the time isn't stale
-      timeEl.textContent = getTime(zones[zoneIdx].tz);
-      clockId = setInterval(tick, 1000);
-    }
-  });
+  tick();
+  // Align to the minute boundary, then tick once a minute.
+  setTimeout(() => { tick(); setInterval(tick, 60000); }, (60 - new Date().getSeconds()) * 1000);
 })();
-
-

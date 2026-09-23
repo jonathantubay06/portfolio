@@ -1,0 +1,270 @@
+/* ═══════════════════════════════════════
+   PROJECT CARDS — 3D
+
+   Added 2026-09-23. Builds on two fixes made in the same change:
+   21-reveal-animation.css no longer locks card transforms with
+   !important, and card-filter-in no longer fills forwards. Until both
+   landed, the pointer tilt in 05-project-card-3d-tilt.js wrote its
+   transform every frame and never rendered — so "add 3D" was partly
+   "turn on the 3D that was already there".
+
+   Three additions, all transform/opacity:
+
+     1. Depth layers. While a card tilts, the screenshot rises 36px toward
+        the viewer and the text 18px, so the card reads as a stack of
+        planes turning together instead of one flat sheet.
+     2. A 3D entrance: cards stand up from a backward lean as they scroll
+        in, replacing the flat slide-and-scale.
+     (A third, two-column featured cards, was replaced by the showcase
+     rows in 47-work-layout.css.)
+═══════════════════════════════════════ */
+
+/* ── 1 · depth layers ──────────────────────────────────────────────
+   preserve-3d lets the children keep their own Z inside the card's
+   transform. It CANNOT coexist with overflow:hidden — any overflow other
+   than visible forces the element to flatten its children into its own
+   plane, which would silently cancel every translateZ below.
+
+   So the clip moves down a level. The card was only clipping to round
+   the screenshot's top corners; .proj-thumb is already overflow:hidden,
+   so it takes the radius itself and the card can go visible. */
+.proj-card{
+  overflow:visible;
+  transform-style:preserve-3d;
+}
+.proj-thumb{border-radius:var(--radius) var(--radius) 0 0}
+
+.proj-thumb,.proj-body{
+  transition:transform .45s cubic-bezier(.2,.7,.3,1);
+}
+
+/* translateZ only has a visible effect under perspective, and the tilt
+   script supplies that: its transform begins perspective(700px), which
+   projects every preserve-3d descendant. At rest there is no perspective,
+   so these would be invisible anyway — keying them to .is-tilting just
+   makes that explicit and keeps idle cards on a single layer.
+
+   At 700px perspective, 36px of Z scales the screenshot by
+   700 / (700 - 36) = 1.054, and the parallax against the text is what
+   sells the depth once the card turns. */
+.proj-card.is-tilting .proj-thumb{transform:translateZ(36px)}
+.proj-card.is-tilting .proj-body{transform:translateZ(18px)}
+
+/* The card's own transition. .r (from 21-reveal-animation.css) loads later
+   than 09-portfolio-5-cards.css and replaces its transition list with
+   opacity/transform at 1s, so both the entrance and the settle back after
+   a tilt were running at a full second. One curve now serves both: fast
+   off the mark, long gentle landing. .is-tilting still strips transform
+   from the list while the pointer is inside, so per-frame writes land
+   immediately. */
+.proj-card.r{
+  transition:opacity .8s cubic-bezier(.16,1,.3,1),
+             transform .8s cubic-bezier(.16,1,.3,1),
+             box-shadow .25s ease,border-color .2s ease;
+}
+/* Must out-rank the rule above. .proj-card.is-tilting in
+   09-portfolio-5-cards.css is (0,2,0), the same as .proj-card.r, and this
+   file loads later — so without this the .8s transform transition would
+   come back during the tilt and every frame's write would start a fresh
+   interpolation on top of the last. */
+.proj-card.r.is-tilting{transition:box-shadow .25s ease,border-color .2s ease}
+
+/* ── 2 · 3D entrance ───────────────────────────────────────────────
+   Replaces translateY(60px) scale(.95). The card starts leaning back
+   16deg and stands up as it arrives. perspective() is inside the
+   transform rather than on .grid-portfolio: a parent perspective would
+   put one vanishing point at the grid's centre, so the outer columns
+   would rise at visibly different angles from the middle one. */
+.proj-card.r{transform:perspective(1100px) rotateX(16deg) translateY(56px) scale(.97)}
+
+/* ── LIVE badge legibility ─────────────────────────────────────────
+   The badge was 15% green over whatever the screenshot has in that
+   corner. Over Toolmart's white header that is green on near-white, and
+   it all but disappeared. A dark translucent backing keeps the same
+   green identity while guaranteeing contrast over any screenshot.
+   It sits inside .proj-thumb, so it rides the screenshot's Z. */
+.card-live-badge{
+  background:rgba(3,8,15,.78);
+  -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  border-color:rgba(74,222,128,.45);
+  z-index:7;
+}
+
+/* ── reduced motion ────────────────────────────────────────────────
+   The tilt script already bails out, so .is-tilting never appears. The
+   entrance needs an explicit reset: 24-reduced-motion-granular.css
+   resets .r at (0,1,0), which loses to .proj-card.r at (0,2,0), so the
+   lean would otherwise sit there until .on arrived. */
+@media(prefers-reduced-motion:reduce){
+  .proj-card.r{transform:none}
+  .proj-thumb,.proj-body{transition:none}
+}
+
+/* ── 4 · screenshot as a floating 3D browser window ────────────────
+   Each screenshot sits on a lit stage as an inset browser window, angled
+   away in 3D, and turns to face the viewer on hover.
+
+   The window is .ss-win: the address bar (dots + domain) is its title
+   bar and the screenshot fills the rest. The bar used to be a strip laid
+   across the bottom of the whole thumbnail — once the screenshot became
+   an angled window, that strip cut straight through it (on MOEV it hid
+   the second line of the headline). As the window's own chrome it turns
+   with the window and never covers the content.
+
+   perspective on .thumb-ss, not preserve-3d: the thumb is overflow:hidden
+   (it clips the window's overhang and rounds the card's top corners),
+   and overflow flattens nested 3D contexts. A perspective property on
+   the clipping element still projects its direct child correctly.
+
+   The window deliberately overhangs the right and bottom edges. Cropped
+   by the frame it reads as larger than the stage, which is most of what
+   makes a mockup look expensive rather than pasted on. */
+.thumb-ss{
+  perspective:900px;
+  background:
+    radial-gradient(ellipse 70% 60% at 72% 18%,rgba(0,212,255,.20),transparent 62%),
+    radial-gradient(ellipse 60% 50% at 10% 100%,rgba(14,122,255,.14),transparent 60%),
+    repeating-linear-gradient(0deg,rgba(0,212,255,.045) 0 1px,transparent 1px 26px),
+    repeating-linear-gradient(90deg,rgba(0,212,255,.045) 0 1px,transparent 1px 26px),
+    linear-gradient(160deg,#0a1628 0%,#050a14 100%);
+}
+.thumb-ss .ss-win{
+  position:absolute;top:15%;left:13%;width:90%;height:92%;z-index:1;
+  display:flex;flex-direction:column;
+  border-radius:8px;overflow:hidden;
+  background:#0b1220;
+  border:1px solid rgba(255,255,255,.12);
+  /* Static, never animated: it falls down-left because the window leans
+     back and to the right, away from the cyan glow in the top corner. */
+  box-shadow:-18px 26px 44px rgba(0,0,0,.6),0 0 0 1px rgba(0,212,255,.08);
+  transform:rotateX(14deg) rotateY(-18deg) rotateZ(4deg);
+  transition:transform .7s cubic-bezier(.2,.7,.3,1);
+}
+/* Straighten and step toward the centre so it is not left hanging off
+   the corner once face-on. Measured to land fully inside the frame. */
+.proj-card:hover .thumb-ss .ss-win,
+.proj-card.is-tilting .thumb-ss .ss-win{
+  transform:rotateX(0) rotateY(0) rotateZ(0) translate(-7%,-10%) scale(1.02);
+}
+
+/* The bar as title bar. These undo the absolute bottom-strip rules in
+   09-portfolio-5-cards.css, including the hover rule that faded it out
+   to keep it off the overlay buttons — it no longer overlaps them. */
+.thumb-ss .ss-win .t-urlbar{
+  position:relative;inset:auto;flex:none;z-index:auto;
+  padding:.38rem .7rem;
+  background:rgba(12,18,32,.97);
+  border-top:none;border-bottom:1px solid rgba(255,255,255,.08);
+}
+.proj-card:hover .thumb-ss .ss-win .t-urlbar{opacity:1}
+
+/* The screenshot fills the window below the bar. The old flat hover zoom
+   (scale 1.05) is cancelled — the window turning is the hover now. */
+.thumb-ss .ss-win .ss-img{
+  position:relative;top:auto;left:auto;
+  width:100%;height:auto;flex:1;min-height:0;
+  object-fit:cover;object-position:top center;
+  transform:none;transition:none;
+}
+.proj-card:hover .thumb-ss .ss-win .ss-img{transform:none}
+
+/* Wide cards: the stage is 32:10, so the default 90%-wide window came out
+   a long thin letterbox showing only each site's header bar. A narrower,
+   taller window keeps a normal browser shape and shows the hero. */
+/* ── card body order ───────────────────────────────────────────────
+   Title, description, then tags pinned to the bottom. The title used to
+   carry margin-top:auto, which parked title and text at the foot of the
+   card and left a hole under the tags whenever a row-mate was taller —
+   most visible on the wide cards. Now titles line up directly under the
+   screenshots across a row, and the tags share a baseline instead. */
+.proj-body .proj-name{margin-top:0}
+.proj-body .ptags{margin-top:auto;margin-bottom:0;padding-top:.3rem}
+
+/* ── depth without overhang ────────────────────────────────────────
+   translateZ(36px) under the tilt's 700px perspective enlarges the thumb
+   by 700 / 664 = 1.054, so it poked past the card's edges and read as a
+   separate box floating off the card (seen on Deirdre). scale(.949) is
+   the inverse, so the projected footprint stays exactly the card's
+   width while the parallax against the text — the actual depth cue — is
+   untouched. Same for the body: 700 / 682 = 1.026, inverse .974. */
+.proj-card.is-tilting .proj-thumb{transform:translateZ(36px) scale(.949)}
+.proj-card.is-tilting .proj-body{transform:translateZ(18px) scale(.974)}
+
+@media(prefers-reduced-motion:reduce){
+  .thumb-ss .ss-win{transition:none}
+}
+
+
+/* ── 5 · modern preview treatment ──────────────────────────────────
+   Supersedes the look of section 4 (its geometry and title-bar plumbing
+   stay). Three things dated the previews:
+
+     - macOS traffic-light dots and a full address bar — the 2016-era
+       "browser mockup" shorthand. Modern product sites show the screen,
+       not the chrome.
+     - a cyan grid behind every window, regardless of the site in it.
+     - a compound 3-axis angle with rotateZ, which reads as a tossed
+       photo rather than a screen seen in perspective.
+
+   Now: one gentle perspective lean (no twist), the screenshot rising
+   from the bottom of the card and cropped by it, a hairline top
+   highlight instead of a border, and a soft glow in the site's own
+   accent colour. --glow is sampled from each screenshot at build time
+   and written onto the <article>, so Toolmart glows orange, the video
+   checker purple, Project Health green.
+
+   The address bar is kept but reduced to a compact centred domain pill,
+   the way current Safari/Arc render a tab — it still says where the
+   screenshot is from without the fake window furniture. */
+.proj-card{--glow:0,212,255}
+
+.thumb-ss{
+  perspective:1200px;
+  background:
+    radial-gradient(ellipse 75% 70% at 50% 110%,rgba(var(--glow),.34),transparent 70%),
+    radial-gradient(ellipse 60% 55% at 85% -10%,rgba(var(--glow),.16),transparent 65%),
+    linear-gradient(180deg,#070d18 0%,#0a1322 100%);
+}
+
+.thumb-ss .ss-win{
+  top:16%;left:8%;width:84%;height:100%;
+  border:none;border-radius:12px 12px 0 0;
+  background:#0b1220;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.14),          /* top edge catches light */
+    0 -1px 0 rgba(255,255,255,.06),
+    0 24px 60px -12px rgba(var(--glow),.45),      /* glow in the site's colour */
+    0 18px 40px rgba(0,0,0,.55);
+  transform-origin:50% 100%;
+  transform:rotateX(12deg) rotateY(-8deg);
+}
+.proj-card:hover .thumb-ss .ss-win,
+.proj-card.is-tilting .thumb-ss .ss-win{
+  /* Rises and squares up. Bottom-anchored origin, so it lifts out of the
+     card's floor instead of sliding sideways. */
+  transform:rotateX(0) rotateY(0) translateY(-7%);
+}
+
+/* Compact tab: no dots, domain in a centred pill with a lock glyph. */
+.thumb-ss .ss-win .t-urlbar{
+  justify-content:center;padding:.3rem .6rem;
+  background:rgba(13,20,34,.92);
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.thumb-ss .ss-win .t-dots{display:none}
+.thumb-ss .ss-win .t-url{
+  display:inline-flex;align-items:center;gap:.3rem;
+  padding:.12rem .6rem;border-radius:99px;
+  background:rgba(255,255,255,.06);
+  color:rgba(255,255,255,.55);font-size:.56rem;letter-spacing:.02em;
+}
+.thumb-ss .ss-win .t-url::before{
+  content:'';width:6px;height:7px;flex:none;
+  border:1.3px solid currentColor;border-radius:1.5px;
+  box-shadow:0 -3px 0 -1.3px currentColor;   /* shackle of the lock */
+  opacity:.8;
+}
+
+/* Wide cards: same language, centred. */
+/* The hover border matches the glow too, instead of cyan on every card. */
+.proj-card:hover{border-color:rgba(var(--glow),.55)}

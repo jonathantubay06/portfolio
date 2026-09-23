@@ -1,0 +1,204 @@
+/* ═══════════════════════════════════════
+   WORK SECTION LAYOUT
+
+   Replaces the single grid of ten identical cards (2026-09-24). That
+   grid gave every project the same weight, so a prospect hiring for a
+   store had to read past uptime dashboards to find stores, and the
+   figures that prove the work lived in a separate results strip.
+
+   Three tiers, each with a different job:
+
+     Freelance    — MOEV and Deirdre, the clients Jonathan took on
+                    directly. Large alternating rows: big 3D screenshot on
+                    one side, story, figure and actions on the other.
+     More builds  — client stores led at SentryX, plus this site. The
+                    standard card, three across.
+     The toolkit  — monitoring and AI agents, as compact tiles.
+
+   Every card carries an origin label (Freelance / Built at SentryX /
+   Personal). The work is real either way; the label
+   says whose client it was, which is the honest version of a portfolio
+   that mixes freelance and employed work.
+
+   The filter buttons are gone: the tiers now do that sorting, and the
+   filters were what had Deirdre's Squarespace site under "WordPress".
+═══════════════════════════════════════ */
+
+/* ── group headings ───────────────────────────────────────────── */
+.work-group{margin:3.6rem 0 1.5rem}
+.acc-strip+.work-group{margin-top:3rem}
+.work-group-h{
+  font-family:var(--font-head);font-size:.8rem;font-weight:700;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--cyan);
+  display:flex;align-items:center;gap:.8rem;margin:0 0 .4rem;
+}
+/* A hairline running off to the right, so each tier reads as a band. */
+.work-group-h::after{
+  content:'';flex:1;height:1px;
+  background:linear-gradient(90deg,rgba(0,212,255,.35),transparent);
+}
+.work-group-sub{color:var(--muted2);font-size:.92rem;margin:0}
+
+/* ── origin label + figure (all tiers) ───────────────────────────── */
+.proj-origin{
+  align-self:flex-start;
+  font-size:.6rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  padding:.22rem .65rem;border-radius:99px;margin-bottom:.75rem;
+  border:1px solid;
+}
+.proj-origin-free    {color:#ffc800;border-color:rgba(255,200,0,.45);background:rgba(255,200,0,.08)}
+.proj-origin-sentry  {color:#8fb8ff;border-color:rgba(143,184,255,.35);background:rgba(143,184,255,.07)}
+.proj-origin-personal{color:#c4a5ff;border-color:rgba(196,165,255,.35);background:rgba(196,165,255,.07)}
+
+/* The figure sits on the project it belongs to. Coloured with the card's
+   own --glow, so Toolmart's reads orange and the video checker's purple. */
+.proj-metric{display:flex;align-items:baseline;flex-wrap:wrap;gap:.2rem .55rem;margin:.1rem 0 1rem}
+.proj-metric b{
+  font-family:var(--font-head);font-size:1.3rem;font-weight:800;letter-spacing:-.01em;
+  color:rgb(var(--glow));
+}
+.proj-metric span{font-size:.8rem;color:var(--muted2)}
+
+/* ── tier 1 · freelance showcase ────────────────────────────────── */
+.work-features{display:grid;gap:1.75rem}
+
+.proj-feature{
+  display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);
+  align-items:stretch;
+}
+.proj-feature .proj-thumb{
+  aspect-ratio:auto;min-height:340px;
+  border-radius:var(--radius) 0 0 var(--radius);
+}
+/* Alternate sides so two rows read as a sequence, not a repeat. */
+.proj-feature:nth-child(even) .proj-thumb{order:2;border-radius:0 var(--radius) var(--radius) 0}
+
+.proj-feature .proj-body{padding:2.4rem 2.4rem 2.2rem;justify-content:center}
+.proj-feature .proj-name{font-size:1.55rem;line-height:1.15;margin-bottom:.6rem}
+.proj-feature .proj-desc{font-size:1rem;line-height:1.75;margin-bottom:1.1rem}
+.proj-feature .proj-metric b{font-size:2.1rem}
+.proj-feature .ptags{margin-top:0}
+
+/* Actions live in the body here, visible without hovering. The overlay's
+   copy of them is not needed on these rows. */
+.proj-feature .t-overlay{display:none}
+.proj-actions{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:1.4rem}
+.proj-actions .btn-modal-open,
+.proj-actions .btn-modal-site{padding:.6rem 1.05rem;font-size:.72rem}
+.proj-actions .btn-modal-site{
+  color:var(--cyan);border-color:rgba(0,212,255,.4);background:rgba(0,212,255,.06);
+}
+
+/* The screenshot fills more of the larger stage. */
+.proj-feature .thumb-ss .ss-win{top:11%;left:7%;width:86%;height:104%}
+
+/* Scroll-linked 3D. The window starts leaning back and turned away, and
+   squares up as the row scrolls into place — the tilt is tied to scroll
+   position, so it moves exactly as fast as the reader does.
+
+   The timeline is named on the row, not taken from view() on the window:
+   .proj-thumb is overflow:hidden, which makes it a scroll container, and
+   an anonymous view() would bind to that box (which never scrolls) and
+   sit inert. A named timeline on the row resolves against the document
+   scroller instead. Same trap, and same fix, as the hero recede.
+
+   `rotate` and `translate` rather than `transform`: section 5 of
+   46-project-cards-3d.css sets the window's resting `transform`, and an
+   animation on the same property would replace it outright. The
+   individual properties compose with it instead, and the rest pose is
+   cleared below so the two do not stack. */
+.proj-feature .thumb-ss .ss-win{transform:none}
+.proj-feature:hover .thumb-ss .ss-win{transform:translateY(-3%)}
+
+@supports (animation-timeline:view()){
+  @media(prefers-reduced-motion:no-preference){
+    .proj-feature{view-timeline-name:--feat;view-timeline-axis:block}
+    .proj-feature .thumb-ss .ss-win{
+      animation:featSquareUp 1ms linear both;
+      animation-timeline:--feat;
+      animation-range:entry 5% cover 45%;
+    }
+    @keyframes featSquareUp{
+      from{rotate:1 -.9 0 24deg;translate:0 12%}
+      to  {rotate:1 -.9 0 0deg; translate:0 0}
+    }
+  }
+}
+/* No scroll timelines (older Safari, Firefox without the flag): a fixed
+   lean in the same direction, so the row still reads as 3D. */
+@supports not (animation-timeline:view()){
+  .proj-feature .thumb-ss .ss-win{transform:rotateX(10deg) rotateY(-8deg)}
+  .proj-feature:hover .thumb-ss .ss-win{transform:translateY(-3%)}
+}
+
+/* ── tier 2 · more builds ───────────────────────────────────────── */
+.work-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem}
+
+/* ── tier 3 · the toolkit ───────────────────────────────────────── */
+.work-tiles{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem}
+.proj-tile .proj-thumb{aspect-ratio:4/3}
+.proj-tile .proj-body{padding:1rem 1rem 1.1rem}
+.proj-tile .proj-origin{font-size:.52rem;padding:.18rem .5rem;margin-bottom:.55rem}
+.proj-tile .proj-name{font-size:.84rem;margin-bottom:.3rem}
+.proj-tile .proj-metric{margin:0}
+.proj-tile .proj-metric b{font-size:1.05rem}
+.proj-tile .proj-metric span{font-size:.72rem}
+/* A tile says one thing: its figure if it has one, otherwise two lines
+   of description. Tags are left to the details modal. */
+.proj-tile .ptags{display:none}
+.proj-tile .proj-desc{
+  font-size:.78rem;line-height:1.55;margin:0;
+  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;
+}
+.proj-tile .proj-desc:has(+ .proj-metric){display:none}
+.proj-tile .thumb-ss .ss-win .t-url{font-size:.5rem;padding:.08rem .45rem}
+.proj-tile .thumb-ss .ss-win .t-url::before{display:none}
+/* The overlay buttons do not fit a tile; the whole tile opens details. */
+.proj-tile .t-overlay{display:none}
+
+/* ── touch ──────────────────────────────────────────────────────────
+   26-touch-no-hover-devices.css pins .t-overlay at full opacity on touch,
+   which left a dark gradient permanently over the bottom of every
+   screenshot. The whole card now opens its details, and every modal has
+   its own "View Live Site" button, so the overlay has no job left there. */
+@media(hover:none){
+  .proj-card .t-overlay{display:none}
+}
+
+/* ── responsive ─────────────────────────────────────────────────── */
+@media(max-width:1100px){
+  .work-tiles{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:900px){
+  .proj-feature{grid-template-columns:1fr}
+  .proj-feature .proj-thumb,
+  .proj-feature:nth-child(even) .proj-thumb{
+    order:0;min-height:0;aspect-ratio:16/10;
+    border-radius:var(--radius) var(--radius) 0 0;
+  }
+  .proj-feature .proj-body{padding:1.6rem}
+  .proj-feature .proj-name{font-size:1.3rem}
+  .proj-feature .proj-metric b{font-size:1.7rem}
+  .work-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:600px){
+  .work-grid{grid-template-columns:1fr}
+  .work-tiles{grid-template-columns:repeat(2,1fr);gap:.75rem}
+  .work-group{margin:2.6rem 0 1.1rem}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .proj-feature .thumb-ss .ss-win{animation:none;transform:none}
+}
+
+/* Long addresses (github.com/JonatsTubay0908/edith-brain) wrapped the
+   domain pill onto two lines on the narrow toolkit tiles. One line,
+   truncated with an ellipsis instead. */
+.thumb-ss .ss-win .t-url{
+  display:inline-block;max-width:100%;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.thumb-ss .ss-win .t-urlbar{min-width:0}
+/* inline-block (needed for the ellipsis) drops the flex layout the lock
+   glyph relied on, so it becomes an inline box of its own. */
+.thumb-ss .ss-win .t-url::before{display:inline-block;vertical-align:-1px;margin-right:.3rem}

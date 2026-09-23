@@ -31,7 +31,11 @@
   if (!window.matchMedia('(hover: hover)').matches) return;
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
-  const cards = document.querySelectorAll('.proj-card');
+  // Showcase rows (.proj-feature) are excluded: at roughly 1000px wide a
+  // 7deg pointer tilt swings their far edge by ~60px, which reads as the
+  // row lurching rather than turning. They get a scroll-linked 3D
+  // entrance instead (47-work-layout.css).
+  const cards = document.querySelectorAll('.proj-card:not(.proj-feature)');
   if (!cards.length) return;
 
   const MAX_DEG = 7;    // noticeable tilt without making the text hard to read

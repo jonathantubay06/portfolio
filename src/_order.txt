@@ -4,7 +4,6 @@ hero
 tech-stack-marquee
 services
 portfolio
-results-strip
 testimonials
 experience
 special-thanks

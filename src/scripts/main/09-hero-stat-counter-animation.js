@@ -25,7 +25,10 @@ function animateCounter(el, target, duration) {
   requestAnimationFrame(tick);
 }
 
-const statNums    = document.querySelectorAll('.stat-num');
+// #tz-time is the live clock, not a count: "2:41 PM" contains digits, so
+// the counter used to parse it as 2 with the suffix ": PM" and leave
+// "2: PM" on screen until the clock's next tick.
+const statNums    = document.querySelectorAll('.stat-num:not(#tz-time)');
 let countersRun   = false; // one-shot flag — counters should only animate once
 
 // Reduced motion: the markup already holds the final values, so skipping

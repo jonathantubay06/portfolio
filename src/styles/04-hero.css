@@ -30,13 +30,20 @@
     padding-inline:max(clamp(1rem,4vw,3.5rem),calc((100% - 1640px) / 2));
   }
   .hero-copy{position:relative;z-index:5}
-  .hero-desc{margin-inline:0}
+  /* .hero prefix: the base .hero-desc{margin:0 auto} further down this
+     file has the same specificity and wins on order, which centred the
+     paragraph inside the column. Invisible while the column is under
+     600px wide; at 1920px it sat 45px right of the headline. */
+  .hero .hero-desc{margin-inline:0}
   .hero .hero-eyebrow,.hero .platforms,.hero .hero-cta,.hero .stat-strip{justify-content:flex-start}
   .hero .scroll-hint{display:none}
 }
 .hero-art{display:none}
 
-@media(min-width:1024px){
+/* Render + overlays. Was min-width:1024px; tablets (600-1023px) now show
+   the render under the copy too (sized in 51-hero-polish.css). Phones
+   under 600px still skip it: the <picture> hands them a 1x1 GIF. */
+@media(min-width:600px){
   .hero-art{
     display:flex;justify-content:center;
     position:relative;z-index:1;

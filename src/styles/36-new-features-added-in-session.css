@@ -47,7 +47,12 @@
   pointer-events:none; /* prevent clicks during hide */
 }
 .proj-card.filter-in{
-  animation:card-filter-in .35s cubic-bezier(.25,.8,.25,1) both;
+  /* backwards, not both. A filled animation beats inline styles, so
+     `both` held transform:scale(1) translateY(0) indefinitely after a
+     filter click - the tilt stayed dead on every re-shown card until the
+     next click removed .filter-in. The end keyframe equals the resting
+     state, so dropping the forward fill changes nothing visible. */
+  animation:card-filter-in .35s cubic-bezier(.25,.8,.25,1) backwards;
 }
 
 /* ── #7 Smooth theme cross-fade ────────────────────────────────

@@ -1,8 +1,8 @@
 <!-- ══ PORTFOLIO ══ -->
 <section class="sec" id="work">
   <div class="sec-label">Portfolio</div>
-  <h2>Live <em>Projects</em> & Internal <em>Tools</em></h2>
-  <p class="sec-sub">Client stores delivered end-to-end, plus ops tools I built to keep everything running.</p>
+  <h2>Selected <em>Work</em></h2>
+  <p class="sec-sub">Freelance builds for my own clients, plus the stores and tools I lead as Technology Lead at SentryX.</p>
 
   <!-- Accomplishments highlight -->
   <div class="acc-strip r">
@@ -11,27 +11,21 @@
     <div class="acc-item"><span class="acc-num">3</span><span class="acc-lbl">Shopify Plus & enterprise-scale builds completed</span></div>
   </div>
 
-  <!-- Filter tabs — data-filter must match data-category on each .proj-card.
-       JS in main.js toggles .hidden on non-matching cards. -->
-  <div class="pf-filters" role="group" aria-label="Filter projects">
-    <button class="pf-btn active" data-filter="all" aria-pressed="true">All</button>
-    <button class="pf-btn" data-filter="shopify" aria-pressed="false">Shopify</button>
-    <button class="pf-btn" data-filter="wordpress" aria-pressed="false">WordPress</button>
-    <button class="pf-btn" data-filter="tools" aria-pressed="false">Internal Tools</button>
+  <div class="work-group">
+    <h3 class="work-group-h">Freelance</h3>
+    <p class="work-group-sub">Clients I took on directly — scoped, built and launched solo.</p>
   </div>
+  <div class="work-features">
 
-  <div class="grid-portfolio">
-
-    <article class="proj-card r" data-category="wordpress" data-modal="modal-moev">
+    <article class="proj-card proj-feature r" data-modal="modal-moev" style="--glow:45,234,236">
       <div class="proj-thumb thumb-ss">
-        <img src="img/preview-moev.webp" alt="MOEV Solutions" class="ss-img" loading="lazy" decoding="async" width="1745" height="860"
-             srcset="img/preview-moev-360w.webp 360w, img/preview-moev-720w.webp 720w, img/preview-moev-1080w.webp 1080w, img/preview-moev.webp 1745w"
-             sizes="(min-width:1121px) 344px,(min-width:901px) 31vw,(min-width:601px) 47vw,calc(100vw - 3rem)">
-        <span class="card-live-badge" aria-label="Live site">● LIVE</span>
-        <div class="t-urlbar" aria-hidden="true">
-          <div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div>
-          <span class="t-url">moev.ph</span>
+        <div class="ss-win">
+          <div class="t-urlbar" aria-hidden="true"><div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div><span class="t-url">moev.ph</span></div>
+          <img src="img/preview-moev.webp" alt="MOEV Solutions" class="ss-img" loading="lazy" decoding="async" width="1920" height="1200"
+             srcset="img/preview-moev-360w.webp 360w, img/preview-moev-720w.webp 720w, img/preview-moev-1080w.webp 1080w, img/preview-moev.webp 1920w"
+             sizes="(min-width:901px) 580px,calc(100vw - 3rem)">
         </div>
+        <span class="card-live-badge" aria-label="Live site">● LIVE</span>
         <div class="t-overlay">
           <div class="t-overlay-actions">
             <button class="btn-modal-open" data-modal="modal-moev"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Details</button>
@@ -40,23 +34,25 @@
         </div>
       </div>
       <div class="proj-body">
-        <div class="ptags"><span class="ptag ptag-feat">Featured</span><span class="ptag ptag-c">WordPress</span><span class="ptag">EV / Clean Tech</span><span class="ptag">Philippines</span></div>
+        <span class="proj-origin proj-origin-free">Freelance</span>
         <div class="proj-name">MOEV Solutions</div>
         <p class="proj-desc">Full WordPress build for a Filipino EV charging startup — solo, end-to-end in 3 weeks.</p>
+        <div class="proj-metric"><b>3 weeks</b><span>solo launch, end to end</span></div>
+        <div class="ptags"><span class="ptag ptag-feat">Featured</span><span class="ptag ptag-c">WordPress</span><span class="ptag">EV / Clean Tech</span><span class="ptag">Philippines</span></div>
+        <div class="proj-actions"><button class="btn-modal-open" data-modal="modal-moev"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Details</button>
+            <a href="https://moev.ph/" target="_blank" rel="noopener noreferrer" class="btn-modal-site"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Live Site</a></div>
       </div>
     </article>
 
-    <!-- Deirdre P. Malcolm — Squarespace takeover + store + print-on-demand -->
-    <article class="proj-card r" data-category="wordpress" data-modal="modal-dpm">
+    <article class="proj-card proj-feature r" data-modal="modal-dpm" style="--glow:60,164,221">
       <div class="proj-thumb thumb-ss">
-        <img src="img/preview-Deirdre.webp" alt="Deirdre P. Malcolm Art" class="ss-img" loading="lazy" decoding="async" width="1899" height="952"
-             srcset="img/preview-Deirdre-360w.webp 360w, img/preview-Deirdre-720w.webp 720w, img/preview-Deirdre-1080w.webp 1080w, img/preview-Deirdre.webp 1899w"
-             sizes="(min-width:1121px) 344px,(min-width:901px) 31vw,(min-width:601px) 47vw,calc(100vw - 3rem)">
-        <span class="card-live-badge" aria-label="Live site">● LIVE</span>
-        <div class="t-urlbar" aria-hidden="true">
-          <div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div>
-          <span class="t-url">deirdre-p-malcolm-art.com</span>
+        <div class="ss-win">
+          <div class="t-urlbar" aria-hidden="true"><div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div><span class="t-url">deirdre-p-malcolm-art.com</span></div>
+          <img src="img/preview-Deirdre.webp" alt="Deirdre P. Malcolm Art" class="ss-img" loading="lazy" decoding="async" width="1920" height="1200"
+             srcset="img/preview-Deirdre-360w.webp 360w, img/preview-Deirdre-720w.webp 720w, img/preview-Deirdre-1080w.webp 1080w, img/preview-Deirdre.webp 1920w"
+             sizes="(min-width:901px) 580px,calc(100vw - 3rem)">
         </div>
+        <span class="card-live-badge" aria-label="Live site">● LIVE</span>
         <div class="t-overlay">
           <div class="t-overlay-actions">
             <button class="btn-modal-open" data-modal="modal-dpm"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Details</button>
@@ -65,46 +61,32 @@
         </div>
       </div>
       <div class="proj-body">
-        <div class="ptags"><span class="ptag ptag-c">Squarespace</span><span class="ptag">eCommerce</span><span class="ptag">Print-on-Demand</span></div>
+        <span class="proj-origin proj-origin-free">Freelance</span>
         <div class="proj-name">Deirdre P. Malcolm</div>
         <p class="proj-desc">Squarespace takeover + eCommerce + Prodigi print-on-demand for a UK artist.</p>
+        <div class="ptags"><span class="ptag ptag-c">Squarespace</span><span class="ptag">eCommerce</span><span class="ptag">Print-on-Demand</span></div>
+        <div class="proj-actions"><button class="btn-modal-open" data-modal="modal-dpm"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Details</button>
+            <a href="https://www.deirdre-p-malcolm-art.com/" target="_blank" rel="noopener noreferrer" class="btn-modal-site"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Live Site</a></div>
       </div>
     </article>
 
-    <article class="proj-card r" data-category="tools" data-modal="modal-portfolio">
-      <div class="proj-thumb thumb-ss">
-        <img src="img/preview-portfolio.webp" alt="This Portfolio" class="ss-img" loading="lazy" decoding="async" width="1900" height="936"
-             srcset="img/preview-portfolio-360w.webp 360w, img/preview-portfolio-720w.webp 720w, img/preview-portfolio-1080w.webp 1080w, img/preview-portfolio.webp 1900w"
-             sizes="(min-width:1121px) 344px,(min-width:901px) 31vw,(min-width:601px) 47vw,calc(100vw - 3rem)">
-        <span class="card-live-badge" aria-label="Live site">● LIVE</span>
-        <div class="t-urlbar" aria-hidden="true">
-          <div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div>
-          <span class="t-url">jonathantubay.com</span>
-        </div>
-        <div class="t-overlay">
-          <div class="t-overlay-actions">
-            <button class="btn-modal-open" data-modal="modal-portfolio"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Details</button>
-            <a href="https://jonathantubay.com/" target="_blank" rel="noopener noreferrer" class="btn-modal-site"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Live Site</a>
-          </div>
-        </div>
-      </div>
-      <div class="proj-body">
-        <div class="ptags"><span class="ptag ptag-feat">Personal</span><span class="ptag">HTML/CSS/JS</span><span class="ptag">Netlify</span></div>
-        <div class="proj-name">This Portfolio</div>
-        <p class="proj-desc">Hand-coded from scratch — zero frameworks, particle FX, full dark/light theme.</p>
-      </div>
-    </article>
+  </div>
 
-    <article class="proj-card r" data-category="shopify" data-modal="modal-toolmart">
+  <div class="work-group">
+    <h3 class="work-group-h">More builds</h3>
+    <p class="work-group-sub">Client stores I lead at SentryX, and this site.</p>
+  </div>
+  <div class="work-grid">
+
+    <article class="proj-card r" data-modal="modal-toolmart" style="--glow:221,119,60">
       <div class="proj-thumb thumb-ss">
-        <img src="img/preview-toolmart.webp" alt="Toolmart Houston" class="ss-img" loading="lazy" decoding="async" width="1740" height="854"
-             srcset="img/preview-toolmart-360w.webp 360w, img/preview-toolmart-720w.webp 720w, img/preview-toolmart-1080w.webp 1080w, img/preview-toolmart.webp 1740w"
+        <div class="ss-win">
+          <div class="t-urlbar" aria-hidden="true"><div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div><span class="t-url">toolmarthou.com</span></div>
+          <img src="img/preview-toolmart.webp" alt="Toolmart Houston" class="ss-img" loading="lazy" decoding="async" width="1920" height="1200"
+             srcset="img/preview-toolmart-360w.webp 360w, img/preview-toolmart-720w.webp 720w, img/preview-toolmart-1080w.webp 1080w, img/preview-toolmart.webp 1920w"
              sizes="(min-width:1121px) 344px,(min-width:901px) 31vw,(min-width:601px) 47vw,calc(100vw - 3rem)">
-        <span class="card-live-badge" aria-label="Live site">● LIVE</span>
-        <div class="t-urlbar" aria-hidden="true">
-          <div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div>
-          <span class="t-url">toolmarthou.com</span>
         </div>
+        <span class="card-live-badge" aria-label="Live site">● LIVE</span>
         <div class="t-overlay">
           <div class="t-overlay-actions">
             <button class="btn-modal-open" data-modal="modal-toolmart"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Details</button>
@@ -113,20 +95,21 @@
         </div>
       </div>
       <div class="proj-body">
-        <div class="ptags"><span class="ptag ptag-c">Shopify</span><span class="ptag">Wholesale</span><span class="ptag">B2B</span></div>
+        <span class="proj-origin proj-origin-sentry">Built at SentryX</span>
         <div class="proj-name">Toolmart Houston</div>
         <p class="proj-desc">B2B Shopify store with Zapier & Airtable automation for a Houston hardware retailer.</p>
+        <div class="proj-metric"><b>10+ hrs/week</b><span>saved via automation</span></div>
+        <div class="ptags"><span class="ptag ptag-c">Shopify</span><span class="ptag">Wholesale</span><span class="ptag">B2B</span></div>
       </div>
     </article>
 
-    <article class="proj-card r" data-category="shopify" data-modal="modal-kdl">
+    <article class="proj-card r" data-modal="modal-kdl" style="--glow:60,221,180">
       <div class="proj-thumb thumb-ss">
-        <img src="img/preview-kdl.webp" alt="Kingdomland Kids" class="ss-img" loading="lazy" decoding="async" width="1742" height="853"
-             srcset="img/preview-kdl-360w.webp 360w, img/preview-kdl-720w.webp 720w, img/preview-kdl-1080w.webp 1080w, img/preview-kdl.webp 1742w"
+        <div class="ss-win">
+          <div class="t-urlbar" aria-hidden="true"><div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div><span class="t-url">kingdomlandkids.com</span></div>
+          <img src="img/preview-kdl.webp" alt="Kingdomland Kids" class="ss-img" loading="lazy" decoding="async" width="1920" height="1200"
+             srcset="img/preview-kdl-360w.webp 360w, img/preview-kdl-720w.webp 720w, img/preview-kdl-1080w.webp 1080w, img/preview-kdl.webp 1920w"
              sizes="(min-width:1121px) 344px,(min-width:901px) 31vw,(min-width:601px) 47vw,calc(100vw - 3rem)">
-        <div class="t-urlbar" aria-hidden="true">
-          <div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div>
-          <span class="t-url">kingdomlandkids.com</span>
         </div>
         <div class="t-overlay">
           <div class="t-overlay-actions">
@@ -136,20 +119,52 @@
         </div>
       </div>
       <div class="proj-body">
-        <div class="ptags"><span class="ptag ptag-c">Shopify Plus</span><span class="ptag">Ongoing</span></div>
+        <span class="proj-origin proj-origin-sentry">Built at SentryX</span>
         <div class="proj-name">Kingdomland Kids</div>
         <p class="proj-desc">Conversion-focused Shopify Plus storefront for a children's media brand — ongoing.</p>
+        <div class="ptags"><span class="ptag ptag-c">Shopify Plus</span><span class="ptag">Ongoing</span></div>
       </div>
     </article>
 
-    <article class="proj-card r" data-category="tools" data-modal="modal-kdl-checker">
+    <article class="proj-card r" data-modal="modal-portfolio" style="--glow:48,168,233">
       <div class="proj-thumb thumb-ss">
-        <img src="img/preview-kdl-checker.webp" alt="KDL Video Health Checker" class="ss-img" loading="lazy" decoding="async" width="1740" height="853"
-             srcset="img/preview-kdl-checker-360w.webp 360w, img/preview-kdl-checker-720w.webp 720w, img/preview-kdl-checker-1080w.webp 1080w, img/preview-kdl-checker.webp 1740w"
+        <div class="ss-win">
+          <div class="t-urlbar" aria-hidden="true"><div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div><span class="t-url">jonathantubay.com</span></div>
+          <img src="img/preview-portfolio.webp" alt="This Portfolio" class="ss-img" loading="lazy" decoding="async" width="1920" height="1200"
+             srcset="img/preview-portfolio-360w.webp 360w, img/preview-portfolio-720w.webp 720w, img/preview-portfolio-1080w.webp 1080w, img/preview-portfolio.webp 1920w"
              sizes="(min-width:1121px) 344px,(min-width:901px) 31vw,(min-width:601px) 47vw,calc(100vw - 3rem)">
-        <div class="t-urlbar" aria-hidden="true">
-          <div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div>
-          <span class="t-url">kdlvideohealthchecker.netlify.app</span>
+        </div>
+        <span class="card-live-badge" aria-label="Live site">● LIVE</span>
+        <div class="t-overlay">
+          <div class="t-overlay-actions">
+            <button class="btn-modal-open" data-modal="modal-portfolio"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Details</button>
+            <a href="https://jonathantubay.com/" target="_blank" rel="noopener noreferrer" class="btn-modal-site"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>Live Site</a>
+          </div>
+        </div>
+      </div>
+      <div class="proj-body">
+        <span class="proj-origin proj-origin-personal">Personal</span>
+        <div class="proj-name">This Portfolio</div>
+        <p class="proj-desc">Hand-coded from scratch — zero frameworks, particle FX, full dark/light theme.</p>
+        <div class="ptags"><span class="ptag ptag-feat">Personal</span><span class="ptag">HTML/CSS/JS</span><span class="ptag">Netlify</span></div>
+      </div>
+    </article>
+
+  </div>
+
+  <div class="work-group">
+    <h3 class="work-group-h">The toolkit</h3>
+    <p class="work-group-sub">Monitoring and AI agents that keep the stores above running.</p>
+  </div>
+  <div class="work-tiles">
+
+    <article class="proj-card proj-tile r" data-modal="modal-kdl-checker" style="--glow:95,60,221">
+      <div class="proj-thumb thumb-ss">
+        <div class="ss-win">
+          <div class="t-urlbar" aria-hidden="true"><div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div><span class="t-url">kdlvideohealthchecker.netlify.app</span></div>
+          <img src="img/preview-kdl-checker.webp" alt="KDL Video Health Checker" class="ss-img" loading="lazy" decoding="async" width="1920" height="1200"
+             srcset="img/preview-kdl-checker-360w.webp 360w, img/preview-kdl-checker-720w.webp 720w, img/preview-kdl-checker-1080w.webp 1080w, img/preview-kdl-checker.webp 1920w"
+             sizes="(min-width:1121px) 210px,(min-width:901px) 19vw,(min-width:601px) 31vw,47vw">
         </div>
         <div class="t-overlay">
           <div class="t-overlay-actions">
@@ -159,20 +174,21 @@
         </div>
       </div>
       <div class="proj-body">
-        <div class="ptags"><span class="ptag ptag-int">Internal Tool</span><span class="ptag">Playwright</span><span class="ptag">Automation</span></div>
+        <span class="proj-origin proj-origin-sentry">Built at SentryX</span>
         <div class="proj-name">KDL Video Health Checker</div>
         <p class="proj-desc">Playwright automation monitoring 180+ videos with a real-time dashboard and push alerts.</p>
+        <div class="proj-metric"><b>180+ videos</b><span>monitored automatically</span></div>
+        <div class="ptags"><span class="ptag ptag-int">Internal Tool</span><span class="ptag">Playwright</span><span class="ptag">Automation</span></div>
       </div>
     </article>
 
-    <article class="proj-card r" data-category="tools" data-modal="modal-service-health">
+    <article class="proj-card proj-tile r" data-modal="modal-service-health" style="--glow:0,212,255">
       <div class="proj-thumb thumb-ss">
-        <img src="img/preview-service-health.webp" alt="Service Health Dashboard" class="ss-img" loading="lazy" decoding="async" width="1741" height="855"
-             srcset="img/preview-service-health-360w.webp 360w, img/preview-service-health-720w.webp 720w, img/preview-service-health-1080w.webp 1080w, img/preview-service-health.webp 1741w"
-             sizes="(min-width:1121px) 344px,(min-width:901px) 31vw,(min-width:601px) 47vw,calc(100vw - 3rem)">
-        <div class="t-urlbar" aria-hidden="true">
-          <div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div>
-          <span class="t-url">servicehealth-internal.netlify.app</span>
+        <div class="ss-win">
+          <div class="t-urlbar" aria-hidden="true"><div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div><span class="t-url">servicehealth-internal.netlify.app</span></div>
+          <img src="img/preview-service-health.webp" alt="Service Health Dashboard" class="ss-img" loading="lazy" decoding="async" width="1920" height="1200"
+             srcset="img/preview-service-health-360w.webp 360w, img/preview-service-health-720w.webp 720w, img/preview-service-health-1080w.webp 1080w, img/preview-service-health.webp 1920w"
+             sizes="(min-width:1121px) 210px,(min-width:901px) 19vw,(min-width:601px) 31vw,47vw">
         </div>
         <div class="t-overlay">
           <div class="t-overlay-actions">
@@ -182,20 +198,21 @@
         </div>
       </div>
       <div class="proj-body">
-        <div class="ptags"><span class="ptag ptag-int">Internal Tool</span><span class="ptag">Monitoring</span></div>
+        <span class="proj-origin proj-origin-sentry">Built at SentryX</span>
         <div class="proj-name">Service Health Dashboard</div>
         <p class="proj-desc">Real-time uptime monitor for 11 services with instant Slack degradation alerts.</p>
+        <div class="proj-metric"><b>11 services</b><span>tracked 24/7 with Slack alerts</span></div>
+        <div class="ptags"><span class="ptag ptag-int">Internal Tool</span><span class="ptag">Monitoring</span></div>
       </div>
     </article>
 
-    <article class="proj-card r" data-category="tools" data-modal="modal-project-health">
+    <article class="proj-card proj-tile r" data-modal="modal-project-health" style="--glow:60,221,120">
       <div class="proj-thumb thumb-ss">
-        <img src="img/preview-project-health.webp" alt="Project Health Monitor" class="ss-img" loading="lazy" decoding="async" width="1739" height="851"
-             srcset="img/preview-project-health-360w.webp 360w, img/preview-project-health-720w.webp 720w, img/preview-project-health-1080w.webp 1080w, img/preview-project-health.webp 1739w"
-             sizes="(min-width:1121px) 344px,(min-width:901px) 31vw,(min-width:601px) 47vw,calc(100vw - 3rem)">
-        <div class="t-urlbar" aria-hidden="true">
-          <div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div>
-          <span class="t-url">projecthealthmonitoring.netlify.app</span>
+        <div class="ss-win">
+          <div class="t-urlbar" aria-hidden="true"><div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div><span class="t-url">projecthealthmonitoring.netlify.app</span></div>
+          <img src="img/preview-project-health.webp" alt="Project Health Monitor" class="ss-img" loading="lazy" decoding="async" width="1920" height="1200"
+             srcset="img/preview-project-health-360w.webp 360w, img/preview-project-health-720w.webp 720w, img/preview-project-health-1080w.webp 1080w, img/preview-project-health.webp 1920w"
+             sizes="(min-width:1121px) 210px,(min-width:901px) 19vw,(min-width:601px) 31vw,47vw">
         </div>
         <div class="t-overlay">
           <div class="t-overlay-actions">
@@ -205,21 +222,20 @@
         </div>
       </div>
       <div class="proj-body">
-        <div class="ptags"><span class="ptag ptag-int">Internal Tool</span><span class="ptag">Playwright</span><span class="ptag">GitHub Actions</span></div>
+        <span class="proj-origin proj-origin-sentry">Built at SentryX</span>
         <div class="proj-name">Project Health Monitor</div>
         <p class="proj-desc">Playwright checks on GitHub Actions schedule — logs to Airtable, alerts via Slack & email.</p>
+        <div class="ptags"><span class="ptag ptag-int">Internal Tool</span><span class="ptag">Playwright</span><span class="ptag">GitHub Actions</span></div>
       </div>
     </article>
 
-    <!-- E.D.I.T.H. — AI Agent -->
-    <article class="proj-card r" data-category="tools" data-modal="modal-edith">
+    <article class="proj-card proj-tile r" data-modal="modal-edith" style="--glow:60,210,221">
       <div class="proj-thumb thumb-ss">
-        <img src="img/preview-edith.webp" alt="E.D.I.T.H. AI Agent" class="ss-img" loading="lazy" decoding="async" width="2048" height="1152"
+        <div class="ss-win">
+          <div class="t-urlbar" aria-hidden="true"><div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div><span class="t-url">github.com/JonatsTubay0908/edith-brain</span></div>
+          <img src="img/preview-edith.webp" alt="E.D.I.T.H. AI Agent" class="ss-img" loading="lazy" decoding="async" width="2048" height="1152"
              srcset="img/preview-edith-360w.webp 360w, img/preview-edith-720w.webp 720w, img/preview-edith-1080w.webp 1080w, img/preview-edith.webp 2048w"
-             sizes="(min-width:1121px) 344px,(min-width:901px) 31vw,(min-width:601px) 47vw,calc(100vw - 3rem)">
-        <div class="t-urlbar" aria-hidden="true">
-          <div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div>
-          <span class="t-url">github.com/JonatsTubay0908/edith-brain</span>
+             sizes="(min-width:1121px) 210px,(min-width:901px) 19vw,(min-width:601px) 31vw,47vw">
         </div>
         <div class="t-overlay">
           <div class="t-overlay-actions">
@@ -228,21 +244,20 @@
         </div>
       </div>
       <div class="proj-body">
-        <div class="ptags"><span class="ptag ptag-int">AI Agent</span><span class="ptag">Hermes</span><span class="ptag">Cloud</span></div>
+        <span class="proj-origin proj-origin-sentry">Built at SentryX</span>
         <div class="proj-name">E.D.I.T.H.</div>
         <p class="proj-desc">Every detail inspected, totally helpful — your cloud AI agent. 24/7 ops, automated QC, multi-platform.</p>
+        <div class="ptags"><span class="ptag ptag-int">AI Agent</span><span class="ptag">Hermes</span><span class="ptag">Cloud</span></div>
       </div>
     </article>
 
-    <!-- T.H.O.R. — AI Agent (Local) -->
-    <article class="proj-card r" data-category="tools" data-modal="modal-thor">
+    <article class="proj-card proj-tile r" data-modal="modal-thor" style="--glow:60,138,221">
       <div class="proj-thumb thumb-ss">
-        <img src="img/preview-thor.webp" alt="T.H.O.R. AI Agent" class="ss-img" loading="lazy" decoding="async" width="2048" height="1152"
+        <div class="ss-win">
+          <div class="t-urlbar" aria-hidden="true"><div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div><span class="t-url">edgexpert.local:8000 — Qwen3.6-27B</span></div>
+          <img src="img/preview-thor.webp" alt="T.H.O.R. AI Agent" class="ss-img" loading="lazy" decoding="async" width="2048" height="1152"
              srcset="img/preview-thor-360w.webp 360w, img/preview-thor-720w.webp 720w, img/preview-thor-1080w.webp 1080w, img/preview-thor.webp 2048w"
-             sizes="(min-width:1121px) 344px,(min-width:901px) 31vw,(min-width:601px) 47vw,calc(100vw - 3rem)">
-        <div class="t-urlbar" aria-hidden="true">
-          <div class="t-dots"><span class="td td-r"></span><span class="td td-y"></span><span class="td td-g"></span></div>
-          <span class="t-url">edgexpert.local:8000 — Qwen3.6-27B</span>
+             sizes="(min-width:1121px) 210px,(min-width:901px) 19vw,(min-width:601px) 31vw,47vw">
         </div>
         <div class="t-overlay">
           <div class="t-overlay-actions">
@@ -251,12 +266,13 @@
         </div>
       </div>
       <div class="proj-body">
-        <div class="ptags"><span class="ptag ptag-int">AI Agent</span><span class="ptag">Local</span><span class="ptag">On-Prem</span></div>
+        <span class="proj-origin proj-origin-sentry">Built at SentryX</span>
         <div class="proj-name">T.H.O.R.</div>
         <p class="proj-desc">Thunder-Heavy Operations Runner — the on-prem workhorse. Private, no per-token API cost.</p>
+        <div class="ptags"><span class="ptag ptag-int">AI Agent</span><span class="ptag">Local</span><span class="ptag">On-Prem</span></div>
       </div>
     </article>
 
   </div>
-</section>
 
+</section>

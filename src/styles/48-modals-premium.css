@@ -1,0 +1,292 @@
+/* ═══════════════════════════════════════
+   PROJECT MODALS — PREMIUM PASS (2026-09-24)
+
+   Layered over 16-project-modals.css. Behaviour lives in
+   17-project-modals.js; this file owns the look and every animation.
+
+   Fixed here:
+   - Horizontal scrollbar on MOEV: two .modal-cta links were each
+     width:100%, and the second added margin-left, so the content was
+     200% + 8px wide. The buttons now share a flex row.
+   - Page jumping sideways on open: see the scroll lock below.
+   - Nav bar buttons touching the modal edge (padding was 0 sideways).
+   - Grey system scrollbars inside the modal.
+   - The close button sitting on top of the screenshot's own content.
+
+   Everything is tinted by --glow, the site accent colour sampled from
+   each screenshot and written onto both the card and its modal, so a
+   project looks the same in both places.
+═══════════════════════════════════════ */
+
+/* ── scroll lock without the jump ──────────────────────────────────
+   scrollbar-gutter:stable reserves the scrollbar's width whether or not
+   it is showing. Locking <html> then removes the scrollbar without
+   giving its ~15px (on Windows) back to the page, so nothing behind the
+   modal moves. */
+html{scrollbar-gutter:stable}
+html.modal-open{overflow:hidden}
+
+.proj-modal{--glow:0,212,255;perspective:1400px}
+
+/* Swaps and view transitions need the modal fully visible in the same
+   frame, not partway through its fade. */
+.proj-modal.m-instant,
+.proj-modal.m-instant .modal-inner{transition:none!important}
+
+/* ── the panel ─────────────────────────────────────────────────────
+   Enters in 3D: it rises and tips forward from a slight backward lean,
+   hinged at its bottom edge, rather than scaling up flat. */
+.modal-inner{
+  width:min(900px,94vw);max-height:90vh;
+  border-top:2px solid rgb(var(--glow));
+  box-shadow:
+    0 40px 100px -20px rgba(var(--glow),.28),
+    0 32px 80px rgba(0,0,0,.65),
+    0 0 0 1px rgba(var(--glow),.08);
+  transform-origin:50% 100%;
+  transform:translateY(34px) rotateX(10deg) scale(.96);
+  transition:transform .55s cubic-bezier(.16,1,.3,1);
+  timeline-scope:--mscroll;
+}
+.proj-modal.open .modal-inner{transform:none}
+
+/* Frosted pill, readable over any screenshot. */
+.modal-close{
+  top:.9rem;right:.9rem;z-index:12;
+  width:38px;height:38px;
+  background:rgba(3,8,15,.55);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.16);
+  color:rgba(255,255,255,.85);
+  transition:background .2s,border-color .2s,color .2s,rotate .3s cubic-bezier(.34,1.56,.64,1);
+}
+.modal-close:hover{
+  background:rgba(var(--glow),.18);border-color:rgb(var(--glow));
+  color:#fff;rotate:90deg;
+}
+
+/* ── header: the screenshot as a 3D window on a lit stage ──────────── */
+.modal-screenshot{
+  aspect-ratio:16/6.4;
+  perspective:1400px;
+  background:
+    radial-gradient(ellipse 70% 90% at 50% 120%,rgba(var(--glow),.38),transparent 70%),
+    radial-gradient(ellipse 55% 60% at 88% -10%,rgba(var(--glow),.18),transparent 65%),
+    linear-gradient(180deg,#060c17 0%,#0a1322 100%);
+}
+/* A dark wash at the top, so the close pill never sits on bright
+   screenshot content. Above the window, below the pill. */
+.modal-screenshot::before{
+  content:'';position:absolute;inset:0 0 auto 0;height:34%;z-index:2;pointer-events:none;
+  background:linear-gradient(to bottom,rgba(3,8,15,.6),transparent);
+}
+.modal-screenshot::after{z-index:2}
+
+.mw{
+  position:absolute;left:9%;right:9%;top:13%;bottom:-32%;
+  border-radius:12px 12px 0 0;overflow:hidden;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.14),
+    0 30px 70px -10px rgba(var(--glow),.5),
+    0 20px 50px rgba(0,0,0,.6);
+  transform-origin:50% 100%;
+  /* --rx/--ry come from the pointer (17-project-modals.js). The short
+     linear transition smooths per-frame writes without the mush of a
+     long one restarting every frame. */
+  transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));
+  transition:transform .12s linear;
+}
+.mw img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
+
+/* Rises into place when the modal opens. `translate`, not `transform`:
+   the pointer lean owns `transform`, and the scroll lean below owns
+   `rotate` and `scale`, so the three never overwrite one another. */
+@keyframes mwIn{from{translate:0 22%}to{translate:0 0}}
+/* Tips back and recedes as the content scrolls up over it. */
+@keyframes mwBack{to{rotate:1 0 0 16deg;scale:.9}}
+
+.proj-modal.m-enter .mw{animation:mwIn .8s cubic-bezier(.16,1,.3,1) both}
+
+@supports (animation-timeline:scroll()){
+  /* .modal-content is the scroller and the window is its sibling, not
+     its descendant, so the timeline name is lifted to .modal-inner with
+     timeline-scope (set on the panel above). */
+  .modal-content{scroll-timeline:--mscroll block}
+  .mw{
+    animation:mwBack 1ms linear both;
+    animation-timeline:--mscroll;
+    animation-range:0px 260px;
+  }
+  /* Both at once. Every longhand is restated: animation-name alone
+     would replace the list and drop the scroll animation's timeline. */
+  .proj-modal.m-enter .mw{
+    animation-name:mwIn,mwBack;
+    animation-duration:.8s,1ms;
+    animation-timing-function:cubic-bezier(.16,1,.3,1),linear;
+    animation-fill-mode:both,both;
+    animation-iteration-count:1,1;
+    animation-timeline:auto,--mscroll;
+    animation-range:normal,0px 260px;
+  }
+}
+
+/* ── content ───────────────────────────────────────────────────────── */
+.modal-content{
+  padding:1.3rem 2.2rem 2rem;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(var(--glow),.45) transparent;
+}
+.modal-content::-webkit-scrollbar{width:8px}
+.modal-content::-webkit-scrollbar-track{background:transparent}
+.modal-content::-webkit-scrollbar-thumb{
+  background:rgba(var(--glow),.4);border-radius:8px;
+  border:2px solid transparent;background-clip:padding-box;
+}
+
+.mh{margin-bottom:1.5rem}
+.mh-row{display:flex;flex-wrap:wrap;align-items:center;gap:.45rem;margin-bottom:.75rem}
+.mh .proj-origin{margin-bottom:0}
+.mh .modal-title{font-size:1.8rem;line-height:1.1;margin:0 0 .4rem}
+.mh-sub{color:var(--muted2);font-size:.9rem;margin:0 0 1rem}
+.mh-metric{margin:0 0 1.1rem}
+.mh-metric b{font-size:2.3rem}
+.mh-metric span{font-size:.86rem}
+
+/* The buttons, near the top and side by side. */
+.mh-actions{display:flex;flex-wrap:wrap;gap:.6rem}
+.mh-actions .modal-cta{width:auto;flex:1 1 200px;margin:0}
+
+/* Problem → Result as a before/after, joined by an arrow that draws
+   itself from red to green. */
+.modal-impact{grid-template-columns:1fr 46px 1fr;gap:0;align-items:stretch;margin-bottom:1.1rem}
+.mi-arrow{
+  position:relative;align-self:center;height:2px;margin:0 7px;
+  background:linear-gradient(90deg,rgba(239,68,68,.75),rgba(34,197,94,.9));
+  transform-origin:left center;
+}
+.mi-arrow::after{
+  content:'';position:absolute;right:-2px;top:50%;
+  width:8px;height:8px;margin-top:-4px;
+  border-top:2px solid rgba(34,197,94,.9);border-right:2px solid rgba(34,197,94,.9);
+  rotate:45deg;
+}
+@keyframes miDraw{from{scale:0;opacity:0}to{scale:1;opacity:1}}
+.proj-modal.m-enter .mi-arrow{animation:miDraw .6s .5s cubic-bezier(.16,1,.3,1) both}
+
+.modal-problem,.modal-result{font-size:.86rem}
+.modal-desc{font-size:.92rem;color:var(--muted2)}
+
+.modal-stack span{
+  border-color:rgba(var(--glow),.25);color:rgb(var(--glow));background:rgba(var(--glow),.06);
+  transition:background .18s,border-color .18s,translate .2s cubic-bezier(.34,1.56,.64,1);
+}
+.modal-stack span:hover{background:rgba(var(--glow),.14);border-color:rgba(var(--glow),.5);translate:0 -2px}
+
+/* ── staggered entrance ─────────────────────────────────────────────
+   Header lines arrive one after another, then the blocks under them.
+   Restarted on every showing by toggling .m-enter in the script. */
+@keyframes mIn{from{opacity:0;translate:0 14px}}
+.proj-modal.m-enter .mh > *,
+.proj-modal.m-enter .modal-content > :not(.mh),
+.proj-modal.m-enter .modal-stack span{animation:mIn .55s cubic-bezier(.16,1,.3,1) both}
+.proj-modal.m-enter .mh > :nth-child(1){animation-delay:.08s}
+.proj-modal.m-enter .mh > :nth-child(2){animation-delay:.13s}
+.proj-modal.m-enter .mh > :nth-child(3){animation-delay:.18s}
+.proj-modal.m-enter .mh > :nth-child(4){animation-delay:.23s}
+.proj-modal.m-enter .mh > :nth-child(5){animation-delay:.28s}
+.proj-modal.m-enter .modal-content > :nth-child(2){animation-delay:.34s}
+.proj-modal.m-enter .modal-content > :nth-child(3){animation-delay:.40s}
+.proj-modal.m-enter .modal-content > :nth-child(4){animation-delay:.45s}
+.proj-modal.m-enter .modal-content > :nth-child(5){animation-delay:.50s}
+.proj-modal.m-enter .modal-stack span:nth-child(1){animation-delay:.52s}
+.proj-modal.m-enter .modal-stack span:nth-child(2){animation-delay:.56s}
+.proj-modal.m-enter .modal-stack span:nth-child(3){animation-delay:.60s}
+.proj-modal.m-enter .modal-stack span:nth-child(4){animation-delay:.64s}
+.proj-modal.m-enter .modal-stack span:nth-child(5){animation-delay:.68s}
+.proj-modal.m-enter .modal-stack span:nth-child(n+6){animation-delay:.72s}
+
+/* ── prev / next: in-place, directional ────────────────────────────── */
+@keyframes mFromNext{from{opacity:0;translate:48px 0}}
+@keyframes mFromPrev{from{opacity:0;translate:-48px 0}}
+.proj-modal.m-from-next .modal-content,
+.proj-modal.m-from-next .modal-screenshot{animation:mFromNext .45s cubic-bezier(.16,1,.3,1) both}
+.proj-modal.m-from-prev .modal-content,
+.proj-modal.m-from-prev .modal-screenshot{animation:mFromPrev .45s cubic-bezier(.16,1,.3,1) both}
+
+.modal-nav{
+  margin:0;padding:.8rem 1.4rem;
+  border-top:1px solid rgba(255,255,255,.07);
+  background:rgba(3,8,15,.45);
+}
+.modal-nav-btn{border-color:rgba(var(--glow),.35);color:rgb(var(--glow));border-radius:99px;padding:.45rem 1rem}
+.modal-nav-btn:hover:not(:disabled){background:rgba(var(--glow),.12);border-color:rgba(var(--glow),.6)}
+.modal-nav-btn:disabled{opacity:.28;cursor:default}
+.modal-nav-mid{display:flex;flex-direction:column;align-items:center;gap:.4rem}
+.modal-nav-count{font-family:var(--font-head);font-size:.66rem;letter-spacing:.14em;color:rgba(232,244,255,.45)}
+.modal-progress{
+  position:relative;width:130px;height:3px;border-radius:3px;overflow:hidden;
+  background:rgba(255,255,255,.08);
+}
+.modal-progress::after{
+  content:'';position:absolute;inset:0 auto 0 0;
+  width:calc(var(--p) * 100%);
+  background:rgb(var(--glow));box-shadow:0 0 10px rgba(var(--glow),.8);
+  border-radius:3px;
+}
+
+/* ── card → modal morph (View Transitions) ────────────────────────────
+   The card's screenshot and the modal header share a transition name
+   during the change, and the browser animates the box between them.
+   The two shapes differ (16:10 card, 16:6.4 header), so both snapshots
+   are cropped rather than squashed. */
+::view-transition-group(proj-hero){
+  animation-duration:.55s;
+  animation-timing-function:cubic-bezier(.16,1,.3,1);
+}
+::view-transition-old(proj-hero),
+::view-transition-new(proj-hero){height:100%;object-fit:cover;object-position:top}
+::view-transition-old(root),
+::view-transition-new(root){animation-duration:.35s}
+
+/* ── phones: a bottom sheet with a grab handle ─────────────────────────
+   Was bottom-sheet only below 400px. The handle signals the
+   swipe-down-to-close gesture the script now supports. */
+@media(max-width:600px){
+  .proj-modal{align-items:flex-end}
+  .modal-inner{
+    width:100%;max-height:92vh;border-radius:18px 18px 0 0;
+    transform:translateY(100%);
+  }
+  .modal-inner::before{
+    content:'';position:absolute;top:8px;left:50%;z-index:13;
+    width:40px;height:4px;margin-left:-20px;border-radius:4px;
+    background:rgba(255,255,255,.35);
+  }
+  .modal-screenshot{aspect-ratio:16/8.5}
+  .mw{left:6%;right:6%}
+  .modal-content{padding:1.1rem 1.15rem 1.4rem}
+  .mh .modal-title{font-size:1.4rem}
+  .mh-metric b{font-size:1.9rem}
+  /* Before/after stacks, and the arrow turns to point down. */
+  .modal-impact{grid-template-columns:1fr;gap:0}
+  .mi-arrow{
+    justify-self:center;width:2px;height:24px;margin:5px 0;
+    background:linear-gradient(180deg,rgba(239,68,68,.75),rgba(34,197,94,.9));
+    transform-origin:center top;
+  }
+  .mi-arrow::after{right:auto;left:50%;top:auto;bottom:-2px;margin:0 0 0 -4px;rotate:135deg}
+  .modal-nav{padding:.7rem 1rem}
+  .modal-progress{width:90px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .modal-inner{transform:none;transition:opacity .2s}
+  .mw,.proj-modal.m-enter .mw{animation:none;transform:none;transition:none}
+  .proj-modal.m-enter .mh > *,
+  .proj-modal.m-enter .modal-content > :not(.mh),
+  .proj-modal.m-enter .modal-stack span,
+  .proj-modal.m-enter .mi-arrow,
+  .proj-modal.m-from-next .modal-content,.proj-modal.m-from-next .modal-screenshot,
+  .proj-modal.m-from-prev .modal-content,.proj-modal.m-from-prev .modal-screenshot{animation:none}
+  .modal-close:hover{rotate:none}
+}

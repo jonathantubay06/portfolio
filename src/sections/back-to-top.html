@@ -12,21 +12,14 @@
   </svg>
 </a>
 
-<!-- ══ AVAILABLE PILL + BOOK A CALL PILL ══ -->
-<!-- Both slide in from the right after scrolling (effects.js).
-     Stacked vertically — Available on top, Book below.
-     Hidden on mobile (CSS) to avoid cluttering small screens. -->
-<a href="#contact" id="avail-pill" aria-label="Available for projects">
-  <span class="avail-pill-dot"></span>Available for Projects
+<!-- ══ AVAILABLE PILL ══ -->
+<!-- One pill, not two. There used to be an "Available for Projects" pill
+     and a "Get In Touch" pill stacked above this button, both linking to
+     #contact. Merged, it says both things in one target. Hidden while the
+     hero, the contact section or the footer is on screen (effects.js):
+     there it either is not needed yet or points at where you already are.
+     Points at the form, not a mailto: a mailto on a phone with no mail app
+     does nothing, which reads as a broken site. -->
+<a href="#contact" id="avail-pill">
+  <span class="avail-pill-dot" aria-hidden="true"></span>Available · Let's talk
 </a>
-<!-- Contact pill: appears after 800px scroll.
-
-     Points at the contact FORM, not a mailto. A mailto: on a phone with no
-     mail app configured does nothing at all - the tap silently fails and the
-     visitor reads that as a broken site. This pill floats over every screen
-     after the hero, so it was the most-tapped dead end on the page. The form
-     works everywhere and is the only path that produces a tracked lead. -->
-<a href="#contact" id="book-pill" aria-label="Go to the contact form">
-  ✉️ Get In Touch
-</a>
-

@@ -1,0 +1,142 @@
+/* ═══════════════════════════════════════
+   HERO POLISH + TECH STACK 3D (2026-09-24)
+
+   Tool chips   Real logos on raised brand-tinted tiles instead of emoji;
+                chips tilt toward the pointer, tiles rise on hover.
+   Clock        Manila time + online/away status + offset from the visitor
+                (05-5-world-clock-cycle.js).
+   Cursor light A soft glow follows the pointer across the render.
+   CTA link-up  Hovering "View My Work" lights the laptop screen;
+                hovering "Get In Touch" fires the automation nodes.
+   Name reveal  The headline tilts up into place once on load.
+   Tablets      The render now shows under the copy at 600-1023px.
+   Tech stack   Raised logo tiles on a scroll-reactive row that fades in
+                at the left and out at the right (29-tech-marquee-3d.js).
+═══════════════════════════════════════ */
+
+/* ── logo tiles (hero chips + tech stack) ────────────────────────────
+   Each logo sits on a small raised tile tinted in its brand colour: a
+   light top edge, a darker inner base and a brand-coloured drop shadow.
+   Colour shows at rest (softened) and goes full strength on hover; the
+   first version kept everything grey until hover, which read as
+   "disabled" on a page where everything else glows.
+   color-mix() needs Safari 16.2+; older browsers keep the plain
+   translucent tile declared first. */
+.ptile,.built-ico{
+  flex-shrink:0;display:grid;place-items:center;
+  width:26px;height:26px;border-radius:8px;
+  background:rgba(255,255,255,.07);
+  background:linear-gradient(145deg,
+    color-mix(in srgb,var(--brand) 42%,#0c1b2f),
+    color-mix(in srgb,var(--brand) 16%,#06101d));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.2),
+    inset 0 -2px 3px rgba(0,0,0,.35),
+    0 2px 4px rgba(0,0,0,.45),
+    0 6px 14px -4px var(--brand);
+  color:#fff;color:color-mix(in srgb,var(--brand) 30%,#fff);
+  opacity:.82;
+  transition:opacity .25s,scale .25s,translate .25s,box-shadow .25s,transform .25s;
+}
+.ptile svg,.built-ico svg{width:15px;height:15px;fill:currentColor}
+.ptile svg.gen,.built-ico svg.gen{fill:none;stroke:currentColor;stroke-width:1.9;stroke-linejoin:round}
+
+/* Zapier's logo file is the whole wordmark knocked out of a square; at
+   15px on a tile the letters vanish. Shown as its own orange square,
+   full tile size, instead of as a glyph on a tile. */
+.ptile:has(use[href="#ico-zapier"]),.built-ico:has(use[href="#ico-zapier"]){background:none;box-shadow:0 6px 14px -4px var(--brand)}
+.ptile svg:has(use[href="#ico-zapier"]),.built-ico svg:has(use[href="#ico-zapier"]){width:26px;height:26px;color:var(--brand)}
+
+/* Hero chips: the whole chip tilts toward the pointer (data-tilt,
+   28-soft-tilt.js) and the tile rises off it in 3D. */
+.pbadge[data-tilt]{transform-style:preserve-3d}
+.pbadge.is-soft-tilting{transition-property:background,border-color,color}
+.pbadge:hover .ptile{opacity:1;transform:translateZ(16px);scale:1.12;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.28),inset 0 -2px 3px rgba(0,0,0,.35),0 4px 8px rgba(0,0,0,.45),0 10px 22px -4px var(--brand)}
+.pbadge{padding-left:.5rem;transition:background .25s,border-color .25s,color .25s,transform .5s cubic-bezier(.16,1,.3,1)}
+@media(max-width:600px){
+  .ptile{width:22px;height:22px;border-radius:7px}
+  .ptile svg{width:13px;height:13px}
+  .ptile svg:has(use[href="#ico-zapier"]){width:22px;height:22px}
+}
+@media(prefers-reduced-motion:no-preference){
+  .pbadge{animation:pbIn .6s cubic-bezier(.16,1,.3,1) both;animation-delay:calc(.5s + var(--i,0) * 70ms)}
+  @keyframes pbIn{from{opacity:0;translate:0 10px;scale:.92}}
+}
+
+/* ── clock label ──────────────────────────────────────────────────── */
+.tz-status{display:inline-flex;align-items:center;gap:.35rem;transition:color .3s}
+.tz-dot{width:6px;height:6px;border-radius:50%;background:var(--muted);flex-shrink:0}
+.tz-status.is-online{color:#4ade80}
+.tz-status.is-online .tz-dot{background:#4ade80;animation:tzPulse 2.2s ease-out infinite}
+@keyframes tzPulse{0%{box-shadow:0 0 0 0 rgba(74,222,128,.55)}100%{box-shadow:0 0 0 6px rgba(74,222,128,0)}}
+.tz-rel{display:block;margin-top:.2rem;opacity:.7}
+
+/* ── cursor light ─────────────────────────────────────────────────── */
+.hero-light{
+  position:absolute;inset:0;z-index:3;pointer-events:none;
+  opacity:0;transition:opacity .5s ease;
+  background:radial-gradient(circle 190px at var(--mx,50%) var(--my,50%),rgba(130,225,255,.17),transparent 70%);
+  mix-blend-mode:screen;
+  /* Same falloff as the plate's feather, so the light never shows as a
+     rectangle over the page background. */
+  -webkit-mask-image:radial-gradient(72% 68% at 50% 46%,#000 40%,transparent 100%);
+          mask-image:radial-gradient(72% 68% at 50% 46%,#000 40%,transparent 100%);
+}
+.hero-scene.is-lit .hero-light{opacity:1}
+
+/* ── CTA hover lights the matching part of the render ─────────────── */
+.fx-laptop{transition:background-color .35s ease}
+.hero:has(.hero-cta .btn-p:hover) .fx-laptop,
+.hero:has(.hero-cta .btn-p:focus-visible) .fx-laptop{background-color:rgba(150,225,255,.13)}
+.hero:has(.hero-cta .btn-g:hover) .fx-lamp,
+.hero:has(.hero-cta .btn-g:focus-visible) .fx-lamp{animation-duration:1.8s}
+.hero:has(.hero-cta .btn-g:hover) .fx-ping,
+.hero:has(.hero-cta .btn-g:focus-visible) .fx-ping{animation-duration:1.8s}
+.hero:has(.hero-cta .btn-g:hover) .fx-wire,
+.hero:has(.hero-cta .btn-g:focus-visible) .fx-wire{animation-duration:2.2s}
+
+/* ── name reveal ──────────────────────────────────────────────────────
+   Rotation only, no opacity: the H1 is the page's largest paint (LCP),
+   and Chrome does not count an element while it is transparent, so a
+   fade-in would push the LCP time back by the length of the fade.
+   Individual `rotate`/`translate` properties, so the glitch keyframes
+   (which animate `transform` on .glow) still compose on top. */
+@media(prefers-reduced-motion:no-preference){
+  .hero-copy{perspective:900px}
+  .glitch-name{transform-origin:50% 100%;animation:nameIn .9s cubic-bezier(.16,1,.3,1) both}
+  .gname-tail{transform-origin:50% 100%;animation:nameIn .9s cubic-bezier(.16,1,.3,1) .12s both}
+  @keyframes nameIn{from{rotate:1 0 0 -38deg;translate:0 .18em}}
+}
+
+/* ── tablets: render under the copy ───────────────────────────────── */
+@media(min-width:600px) and (max-width:1023px){
+  .hero-art{width:100%;margin-top:1.5rem}
+  .hero-scene{--plate-w:min(86vw,520px)}
+}
+
+/* ── tech stack: 3D drum ──────────────────────────────────────────── */
+.built-item:hover .built-ico{opacity:1;scale:1.25;translate:0 -3px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.28),inset 0 -2px 3px rgba(0,0,0,.35),0 4px 8px rgba(0,0,0,.45),0 10px 22px -4px var(--brand)}
+.built-item:hover{color:#fff}
+
+/* Flat row, JS-driven (29-tech-marquee-3d.js). The edge fade is the
+   existing mask on .built-marquee; padding keeps the hover lift and tile
+   shadows from being clipped by its overflow:hidden. */
+.built-marquee.is-js{padding-block:.6rem}
+/* A slightly longer fade than the original 10%, so logos dissolve in
+   and out instead of appearing at a hard-ish line. */
+.built-marquee{
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);
+          mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);
+}
+.built-marquee.is-js .built-track{animation:none;will-change:transform}
+
+/* Reduced motion: one static, centred, wrapped row; the duplicate set
+   that only exists for the loop is hidden. */
+@media(prefers-reduced-motion:reduce){
+  .built-track{animation:none!important;flex-wrap:wrap;justify-content:center;white-space:normal;row-gap:1rem}
+  .built-track>.built-item:nth-of-type(n+13){display:none}
+  .built-marquee{-webkit-mask-image:none;mask-image:none}
+}
+

@@ -1,0 +1,112 @@
+/* ═══════════════════════════════════════
+   CONTACT, FLOATING BUTTONS, FOOTER, SIDE DOTS (2026-09-24)
+
+   Contact   The top of the section showed Email / Phone / LinkedIn cards
+             and a "Hide form" toggle; the form panel below repeated the
+             same three contacts. The toggle and the first set are gone:
+             heading, one line of copy, then the form beside the direct
+             contacts. Emoji icons are replaced with line icons (emoji
+             render differently on every OS; the Philippines flag showed
+             as the letters "PH" on Windows).
+
+   Floating  Two pills (Available for Projects + Get In Touch) stacked
+             over the back-to-top button, all three sitting on the footer
+             links. Now one pill, hidden over the hero, contact and footer
+             (11-12-available-pill.js).
+
+   Footer    The "Available for new projects — email" line repeated the
+             contact section right above it; removed. Legal line left,
+             links right, clear of the back-to-top button.
+
+   Side dots Bigger hit area (the 8px dot is drawn inside a 22px button),
+             and the active section's label shows beside its dot.
+═══════════════════════════════════════ */
+
+/* ── contact ──────────────────────────────────────────────────────── */
+/* The panel is always open now. Its max-height:1000px was an animation
+   cap for the old toggle and would clip the stacked layout on phones. */
+.stage2-wrap,.stage2-wrap.open{max-height:none;overflow:visible;opacity:1;transition:none}
+.stage2{padding-top:2rem}
+.contact-stage1{padding-bottom:0}
+
+.trust-badge{display:inline-flex;align-items:center;gap:.4rem}
+.trust-badge svg{width:14px;height:14px;fill:none;stroke:#34d399;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+
+.ci-ico svg{width:18px;height:18px;fill:none;stroke:var(--cyan);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ci-row:hover .ci-ico{border-color:rgba(0,212,255,.4);background:rgba(0,212,255,.12)}
+.c-opt-action{gap:.4rem}
+.c-opt-action svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+
+/* Grid items default to min-width:auto, so the longest <option> text
+   ("Workflow Automation (Zapier / n8n / Airtable)") set the form's
+   minimum width and pushed it 8px past a 320px screen. */
+.c-layout>*{min-width:0}
+.fg input,.fg textarea,.fg select{width:100%;max-width:100%;min-width:0;box-sizing:border-box}
+
+.frn-dot{width:7px;height:7px;border-radius:50%;background:#4ade80;box-shadow:0 0 0 3px rgba(74,222,128,.15);flex-shrink:0}
+
+/* Phones: the form's inputs keep 16px text, below which iOS Safari
+   zooms the page on focus and does not zoom back. */
+@media(max-width:768px){
+  .fg input,.fg textarea,.fg select{font-size:16px}
+  .form-submit-row{flex-wrap:wrap;gap:.75rem}
+  .form-submit-row .btn{width:100%!important;justify-content:center}
+}
+
+/* ── floating: one pill above back-to-top ─────────────────────────── */
+#avail-pill{bottom:5.4rem}
+#back-to-top,#avail-pill{right:max(1.8rem,env(safe-area-inset-right,0px))}
+/* On tablets the sticky CTA bar (39-ui-ux-enhancements.css, ≤768px)
+   occupies the bottom edge; lift the floating buttons above it. */
+@media(max-width:768px){
+  #back-to-top{bottom:calc(5rem + env(safe-area-inset-bottom,0px))}
+  #avail-pill{display:none}
+}
+
+/* ── footer ───────────────────────────────────────────────────────── */
+footer{padding:1.6rem 7rem 1.6rem 1.5rem;align-items:center}
+.f-links{flex-wrap:wrap;gap:.4rem 1.4rem}
+.f-links a{padding:.35rem 0}
+.f-links a:hover,.f-links a:focus-visible{color:var(--cyan)}
+@media(max-width:768px){
+  footer{flex-direction:column;align-items:flex-start;gap:.8rem;padding:1.4rem 1.2rem calc(6rem + env(safe-area-inset-bottom,0px))}
+}
+
+/* ── side dots ────────────────────────────────────────────────────── */
+#side-dots{right:.7rem;gap:.1rem}
+/* The button is the hit area (22px); the visible dot is ::before. */
+.sdot{
+  width:22px;height:22px;padding:0;border:none;border-radius:50%;
+  background:none;box-shadow:none;transform:none;
+  display:grid;place-items:center;
+}
+.sdot::before{
+  content:'';width:8px;height:8px;border-radius:50%;
+  background:rgba(0,212,255,.15);border:1px solid rgba(0,212,255,.35);
+  transition:background .25s,box-shadow .25s,transform .25s;
+}
+.sdot:hover,.sdot.active{background:none;box-shadow:none;transform:none}
+.sdot:hover::before{background:rgba(0,212,255,.5);transform:scale(1.2)}
+.sdot.active::before{background:var(--cyan);border-color:var(--cyan);box-shadow:0 0 10px rgba(0,212,255,.8);transform:scale(1.35)}
+/* Label: on hover for any dot, and resting beside the active one, so the
+   dots say where you are without needing a hover (touch laptops too). */
+.sdot::after{right:calc(100% + 4px)}
+.sdot.active::after{opacity:.85}
+.sdot:hover::after{opacity:1}
+/* Over the hero the resting label would sit on the headline. */
+#side-dots:has(.sdot:first-child.active) .sdot.active:not(:hover)::after{opacity:0}
+
+/* ── light theme ──────────────────────────────────────────────────── */
+[data-theme="light"] .ci-ico svg{stroke:#0a63b8}
+[data-theme="light"] .trust-badge svg{stroke:#059669}
+
+/* ── cross-device: no sideways pan ────────────────────────────────────
+   Timeline items reveal from ±50px (21-reveal-animation.css), which
+   overhangs the viewport while they slide in. html{overflow-x:hidden}
+   hides that on desktop, but iOS Safari ignores overflow-x on the root
+   for touch panning, so the page could wobble sideways mid-reveal.
+   overflow-x:clip trims the overhang without making a scroll container
+   (hidden would, and would break position:sticky and scroll timelines).
+   Browsers without clip ignore the declaration and behave as before. */
+body{overflow-x:clip}
+#experience,#services,#work{overflow-x:clip}

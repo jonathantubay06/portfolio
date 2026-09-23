@@ -1,0 +1,399 @@
+/* ═══════════════════════════════════════
+   PROOF SECTIONS — testimonials, experience, certifications, thanks
+   (redesign 2026-09-24)
+
+   What changed and why:
+
+   Results strip   Removed. Its four numbers now sit on the project cards
+                   they belong to (.proj-metric), where they prove
+                   something specific instead of floating between sections.
+
+   Testimonials    Still one row, so the section stays short, but a native
+                   scroll-snap rail instead of the autoplay carousel. The
+                   two direct clients lead in gold, each linking to its
+                   project; the LinkedIn recommendations lose the five stars
+                   they never had; long quotes clamp with Read full review, which opens the quote in a dialog.
+
+   Experience      Cards with a monogram per company and a rail that fills
+                   as you scroll. The current role shows its bullets; past
+                   roles keep them behind a real Details button (the old
+                   version made the whole card a click target with a
+                   hint on every item).
+
+   Certifications  A single column of full-width groups, mostly empty on
+                   the right. Now a 2x2 grid, with Business Registration
+                   running full width in green: it is the one group that
+                   matters to a client signing a contract, not a skill.
+
+   Thanks          Monogram avatar, ghost buttons (the solid button was
+                   louder than the site's own Contact CTA), soft tilt.
+
+   Motion rules shared with the project cards:
+   - The soft tilt (28-soft-tilt.js) writes `transform` inline, so the
+     reveal lock in 21-reveal-animation.css excludes [data-tilt].
+   - Scroll-driven motion uses `translate` / `rotate` / `scale`, never
+     `transform`, because .r.on still pins `transform:none!important` on
+     the timeline items and an !important declaration beats animations.
+═══════════════════════════════════════ */
+
+/* ── shared: soft tilt ─────────────────────────────────────────── */
+[data-tilt]{transform-style:flat}
+[data-tilt].r.on{
+  transition:opacity 1s cubic-bezier(.16,1,.3,1),
+             transform .6s cubic-bezier(.16,1,.3,1),
+             border-color .3s,box-shadow .3s,background .3s;
+}
+/* While the pointer is inside, frames must land immediately; easing
+   every rAF write makes the tilt trail the pointer. (0,3,0) beats the
+   rule above. */
+[data-tilt].r.is-soft-tilting{transition:border-color .3s,box-shadow .3s,background .3s}
+
+/* ═══ TESTIMONIALS ═══════════════════════════════════════════════ */
+.tq{
+  position:relative;margin:0;
+  display:flex;flex-direction:column;
+  padding:1.5rem 1.5rem 1.25rem;
+  background:linear-gradient(160deg,rgba(255,255,255,.035),rgba(255,255,255,.01));
+  border:1px solid var(--border);border-radius:16px;
+}
+.tq:hover{border-color:rgba(0,212,255,.3);box-shadow:0 14px 40px rgba(0,0,0,.35),0 0 0 1px rgba(0,212,255,.06)}
+/* One oversized quote mark per card, as texture rather than punctuation
+   (the quotes already carry their own opening mark). */
+.tq::before{
+  content:'\201C';position:absolute;top:.2rem;right:1.1rem;
+  font-family:Georgia,serif;font-size:5.5rem;line-height:1;
+  color:var(--cyan);opacity:.08;pointer-events:none;
+}
+.tq-quote{
+  margin:0 0 1.2rem;padding:0;border:none;
+  font-size:.9rem;line-height:1.75;font-style:normal;color:var(--muted2);
+}
+
+.tq-author{
+  display:flex;align-items:center;flex-wrap:wrap;gap:.7rem;
+  margin-top:auto;padding-top:1rem;border-top:1px solid var(--border);
+}
+.tq-av{
+  flex-shrink:0;width:40px;height:40px;border-radius:50%;
+  display:grid;place-items:center;
+  font-family:var(--font-head);font-size:.7rem;font-weight:800;letter-spacing:.04em;
+  color:#031018;background:linear-gradient(135deg,var(--cyan),var(--blue));
+}
+.tq-who{display:flex;flex-direction:column;min-width:0;flex:1}
+.tq-name{font-family:var(--font-head);font-size:.84rem;font-weight:700;color:#fff}
+.tq-role{font-size:.72rem;color:var(--muted);line-height:1.4}
+
+/* Client cards share the LinkedIn cards' size, padding and type, so the
+   row reads as one set; gold stays only where it carries meaning: the
+   Freelance chip, the stars, the avatar and the project button. */
+.tq-client:hover{border-color:rgba(255,200,0,.4);box-shadow:0 14px 40px rgba(0,0,0,.35),0 0 30px rgba(255,200,0,.05)}
+.tq-client::before{color:#ffc800}
+.tq-client .tq-av{background:linear-gradient(135deg,#ffc800,#ff8a00)}
+.tq-top{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem}
+.tq-top .proj-origin{margin:0}
+.tq-stars{color:#ffc800;letter-spacing:.18em;font-size:.82rem}
+
+/* Link to the project this client commissioned. Its own full-width line
+   under the name: sharing the name row squeezed the name and role into a
+   one-word-wide column. Resets the parts of .btn-modal-open
+   (15-card-hover-overlay-buttons.css) meant for the solid overlay
+   button: flex:1, cyan fill, uppercase. */
+.tq-proj.btn-modal-open{
+  flex:1 0 100%;margin:.1rem 0 0;
+  padding:.5rem .85rem;border-radius:99px;justify-content:center;
+  font-size:.7rem;letter-spacing:.03em;text-transform:none;
+  color:#ffc800;background:rgba(255,200,0,.06);border:1px solid rgba(255,200,0,.35);
+}
+.tq-proj.btn-modal-open:hover{background:rgba(255,200,0,.16);color:#ffe27a;box-shadow:0 4px 18px rgba(255,200,0,.18)}
+
+/* Source chip on the LinkedIn cards, the counterpart of the gold
+   "Freelance client" chip. */
+.tq-src{
+  display:inline-flex;align-items:center;gap:.35rem;
+  font-size:.58rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  padding:.2rem .6rem;border-radius:99px;
+  color:#4a9fe8;background:rgba(74,159,232,.08);border:1px solid rgba(74,159,232,.3);
+}
+
+/* ── the rail ──────────────────────────────────────────────────────
+   One row, kept to one row on purpose so the section stays short.
+   Native horizontal scroll with snap points: touch, trackpad and
+   keyboard work with no script at all; 21-testimonial-rail.js only adds
+   the arrows, counter and Read full review, which opens the quote in a dialog. */
+.testi-shell{margin-top:2.2rem}
+.testi-rail{
+  display:flex;gap:1.25rem;align-items:stretch;
+  overflow-x:auto;overscroll-behavior-x:contain;
+  scroll-snap-type:x mandatory;
+  scrollbar-width:none;
+  /* room for the hover shadow, which overflow-x:auto would clip */
+  padding:.4rem .2rem 1.6rem;margin:0 -.2rem -1.2rem;
+  /* fade both edges: the rail loops, so there is always more either way */
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 32px,#000 calc(100% - 48px),transparent);
+          mask-image:linear-gradient(90deg,transparent,#000 32px,#000 calc(100% - 48px),transparent);
+}
+.testi-rail::-webkit-scrollbar{display:none}
+.testi-rail:focus-visible{outline:2px solid var(--cyan);outline-offset:4px;border-radius:16px}
+.testi-rail .tq{flex:0 0 calc((100% - 2.5rem) / 3);scroll-snap-align:start}
+
+/* Long quotes are clamped so one essay does not set the row height;
+   the script adds Read more only where the clamp actually cut. */
+.tq-quote{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:7;overflow:hidden}
+.tq-readmore{
+  align-self:flex-start;margin:-.6rem 0 1rem;padding:0;display:inline-flex;gap:.3rem;
+  background:none;border:none;cursor:pointer;
+  font:600 .74rem/1.4 var(--font-body);color:var(--cyan);
+}
+.tq-client .tq-readmore{color:#ffc800}
+.tq-readmore span{transition:translate .2s}
+.tq-readmore:hover span{translate:3px 0}
+
+/* ── full-review dialog ───────────────────────────────────────────
+   Native <dialog> (21-testimonial-rail.js). Same frosted, lifted feel
+   as the project modals in 48-modals-premium.css, at reading width. */
+.tq-dialog{
+  width:min(640px,calc(100vw - 2rem));max-height:calc(100dvh - 3rem);
+  padding:0;border:none;background:none;color:inherit;overflow:visible;
+  /* The site reset (*{margin:0}) removes the UA margin:auto that centres
+     a modal dialog; without this it pins to the top-left corner. */
+  margin:auto;
+}
+.tq-dialog::backdrop{background:rgba(2,6,16,.72);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.tq-dialog-card{
+  position:relative;max-height:calc(100dvh - 3rem);overflow-y:auto;
+  padding:2.2rem 2.2rem 1.8rem;border-radius:20px;
+  background:linear-gradient(160deg,#0b1830,#050d1d);
+  border:1px solid rgba(0,212,255,.25);
+  box-shadow:0 40px 100px rgba(0,0,0,.6),0 0 60px rgba(0,212,255,.08);
+}
+.tq-dialog.is-client .tq-dialog-card{border-color:rgba(255,200,0,.3);box-shadow:0 40px 100px rgba(0,0,0,.6),0 0 60px rgba(255,200,0,.07)}
+.tq-dialog-card::before{
+  content:'\201C';position:absolute;top:.4rem;right:4rem;pointer-events:none;
+  font-family:Georgia,serif;font-size:8rem;line-height:1;color:var(--cyan);opacity:.08;
+}
+.tq-dialog.is-client .tq-dialog-card::before{color:#ffc800}
+.tq-dialog-close{
+  position:absolute;top:.9rem;right:.9rem;z-index:1;width:36px;height:36px;border-radius:50%;
+  display:grid;place-items:center;cursor:pointer;font-size:1.3rem;line-height:1;
+  color:var(--text);background:rgba(255,255,255,.06);border:1px solid var(--border2);
+  transition:background .2s,border-color .2s,rotate .25s;
+}
+.tq-dialog-close:hover{background:rgba(0,212,255,.12);border-color:var(--cyan);rotate:90deg}
+.tq-dialog .tq-top{padding-right:2.6rem}
+.tq-dialog .tq-quote{display:block;overflow:visible;-webkit-line-clamp:unset;font-size:1.02rem;line-height:1.8;color:rgba(232,244,255,.88);margin:0 0 1.5rem}
+.tq-dialog .tq-proj{
+  flex:1 0 100%;margin:.2rem 0 0;padding:.6rem 1rem;border-radius:99px;cursor:pointer;
+  display:flex;justify-content:center;font:700 .74rem/1 var(--font-body);
+  color:#ffc800;background:rgba(255,200,0,.06);border:1px solid rgba(255,200,0,.35);
+}
+.tq-dialog .tq-proj:hover{background:rgba(255,200,0,.16)}
+
+@media(prefers-reduced-motion:no-preference){
+  .tq-dialog[open] .tq-dialog-card{animation:tqDlgIn .45s cubic-bezier(.16,1,.3,1)}
+  .tq-dialog[open]::backdrop{animation:tqFade .3s ease}
+  @keyframes tqDlgIn{from{opacity:0;transform:perspective(900px) rotateX(10deg) translateY(28px) scale(.96)}}
+  @keyframes tqFade{from{opacity:0}}
+}
+@media(max-width:600px){
+  .tq-dialog-card{padding:1.8rem 1.3rem 1.4rem}
+  .tq-dialog .tq-quote{font-size:.95rem}
+}
+
+.testi-ctrl{display:flex;align-items:center;gap:.9rem;margin-top:1.1rem}
+.testi-arrow{
+  flex-shrink:0;width:40px;height:40px;border-radius:50%;cursor:pointer;
+  display:grid;place-items:center;font-size:1rem;
+  color:var(--cyan);background:rgba(5,14,30,.9);border:1px solid var(--border2);
+  transition:background .2s,border-color .2s,box-shadow .2s,opacity .2s;
+}
+.testi-arrow:hover:not(:disabled){background:rgba(0,212,255,.12);border-color:var(--cyan);box-shadow:0 0 18px rgba(0,212,255,.25)}
+.testi-arrow:disabled{opacity:.3;cursor:default}
+.testi-progress{flex:1;height:2px;border-radius:2px;background:var(--border);overflow:hidden}
+.testi-progress span{display:block;height:100%;width:27%;background:linear-gradient(90deg,var(--cyan),var(--blue));transition:width .25s}
+.testi-count{font-size:.72rem;font-weight:700;letter-spacing:.08em;color:var(--muted);min-width:3.4em;text-align:right}
+
+@media(max-width:900px){
+  .testi-rail .tq{flex-basis:calc((100% - 1.25rem) / 2)}
+}
+@media(max-width:600px){
+  .testi-rail{gap:.9rem}
+  .testi-rail .tq{flex-basis:86%}
+}
+
+/* ═══ EXPERIENCE ═════════════════════════════════════════════════ */
+.tl-item{padding-bottom:1.1rem}
+
+.tl-content{
+  cursor:auto;user-select:auto;
+  padding:1.1rem 1.3rem 1.2rem;
+  background:linear-gradient(160deg,rgba(255,255,255,.03),rgba(255,255,255,.008));
+  border:1px solid var(--border);border-radius:14px;
+  transition:border-color .3s,box-shadow .3s,background .3s;
+}
+.tl-content:hover{border-color:rgba(0,212,255,.28);box-shadow:0 12px 36px rgba(0,0,0,.3)}
+/* The current role reads as current: cyan edge and a faint wash. */
+.tl-item:has(.cur-marker) .tl-content{
+  border-color:rgba(0,212,255,.3);
+  background:
+    radial-gradient(90% 120% at 0% 0%,rgba(0,212,255,.07),transparent 60%),
+    linear-gradient(160deg,rgba(255,255,255,.035),rgba(255,255,255,.01));
+}
+
+.tl-head{align-items:center;gap:.65rem;margin-bottom:.5rem}
+.tl-mono{
+  flex-shrink:0;min-width:36px;height:36px;padding:0 .45rem;border-radius:10px;
+  display:grid;place-items:center;
+  font-family:var(--font-head);font-size:.6rem;font-weight:800;letter-spacing:.05em;
+  color:var(--cyan);background:rgba(0,212,255,.08);border:1px solid rgba(0,212,255,.22);
+}
+.tl-item:has(.cur-marker) .tl-mono{color:#031018;background:linear-gradient(135deg,var(--cyan),var(--blue));border-color:transparent}
+.tl-co{font-size:.95rem}
+.tl-date{margin-left:auto}
+.tl-now{
+  display:inline-flex;align-items:center;gap:.35rem;
+  padding:.14rem .55rem;border-radius:99px;
+  font-size:.58rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:#27c984;background:rgba(39,201,132,.08);border:1px solid rgba(39,201,132,.35);
+}
+.tl-now::before{
+  content:'';width:6px;height:6px;border-radius:50%;background:#27c984;
+  box-shadow:0 0 0 0 rgba(39,201,132,.6);animation:tlNowPulse 2s ease-out infinite;
+}
+@keyframes tlNowPulse{0%{box-shadow:0 0 0 0 rgba(39,201,132,.6)}100%{box-shadow:0 0 0 7px rgba(39,201,132,0)}}
+
+/* Bullets always shown. Overrides the collapsed state in
+   38-new-features-15-feature-enhancement-pass.css (max-height:0,
+   opacity:0), which needed a click the page no longer asks for. */
+.tl-expand{max-height:none;overflow:visible;opacity:1;margin-top:.75rem;display:grid;gap:.15rem}
+.tl-expand[hidden]{display:none}
+
+/* Past roles open on demand (22-timeline-details.js) so the timeline
+   stays short; the current role is always open. */
+.tl-more{
+  display:inline-flex;align-items:center;gap:.35rem;margin-top:.6rem;
+  padding:.3rem .75rem;border-radius:99px;cursor:pointer;
+  font:600 .68rem/1 var(--font-body);letter-spacing:.06em;
+  color:var(--muted2);background:rgba(0,212,255,.04);border:1px solid var(--border2);
+  transition:color .2s,border-color .2s,background .2s;
+}
+.tl-more::after{content:'';width:5px;height:5px;border:solid currentColor;border-width:0 1.5px 1.5px 0;rotate:45deg;translate:0 -1px;transition:rotate .25s,translate .25s}
+.tl-more[aria-expanded="true"]::after{rotate:225deg;translate:0 2px}
+.tl-more:hover{color:var(--cyan);border-color:rgba(0,212,255,.4);background:rgba(0,212,255,.08)}
+.tl-expand li{font-size:.8rem;line-height:1.55}
+
+/* Marker aligned to the centre of the 36px monogram, and centred on the
+   2px rail: items sit 2rem in from the rail, so -2rem - 4px puts the
+   10px dot's centre at 1px, the rail's centre. (The old -2.62rem left it
+   5px off, invisible against a bare line, obvious against cards.) */
+.tl-marker{top:calc(1.1rem + 13px);left:calc(-2rem - 4px)}
+
+/* Scroll-driven rail and markers. The rail grows as the timeline
+   scrolls through the viewport and each marker lights as the reader
+   reaches it. Browsers without scroll timelines keep the one-shot draw
+   (.tl-drawn) from 13-experience-timeline.css. */
+@supports (animation-timeline:view()){
+  @media(prefers-reduced-motion:no-preference){
+    .timeline{view-timeline-name:--tl;view-timeline-axis:block}
+    .timeline::before{
+      height:100%;transition:none;transform-origin:top;
+      animation:tlRail 1ms linear both;
+      animation-timeline:--tl;animation-range:entry 30% cover 75%;
+    }
+    @keyframes tlRail{from{scale:1 0}to{scale:1 1}}
+
+    .tl-item{view-timeline-name:--tli;view-timeline-axis:block}
+    .tl-marker:not(.cur-marker){
+      animation:tlMarker 1ms linear both;
+      animation-timeline:--tli;animation-range:entry 70% cover 40%;
+    }
+    @keyframes tlMarker{
+      from{background:var(--border2);box-shadow:none}
+      to  {background:var(--cyan);box-shadow:0 0 8px rgba(0,212,255,.8)}
+    }
+
+    /* Cards lean in from depth as they enter. `rotate`/`translate`, so
+       this composes with the reveal's transform instead of fighting it. */
+    .tl-content{
+      animation:tlCardIn 1ms linear both;
+      animation-timeline:--tli;animation-range:entry 0% entry 90%;
+      transform-origin:left center;
+    }
+    @keyframes tlCardIn{
+      from{rotate:0 1 0 -14deg;translate:24px 0;opacity:.4}
+      to  {rotate:0 1 0 0deg;  translate:0 0;   opacity:1}
+    }
+  }
+}
+.timeline{perspective:1200px}
+
+/* 23-light-mode.css stacks .tl-head into a column on phones (written for
+   the old bare text row). With a monogram in front that stacks the tile
+   over the name; keep the row and drop only the date to its own line. */
+@media(max-width:600px){
+  .tl-content{padding:1rem 1rem 1.05rem}
+  .tl-head{flex-direction:row;flex-wrap:wrap;align-items:center;gap:.5rem .6rem}
+  .tl-date{margin-left:0;flex-basis:100%;order:3}
+}
+
+/* ═══ CERTIFICATIONS ═════════════════════════════════════════════ */
+.certs-groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;align-items:start}
+/* Placed by weight, not in reading order into a plain 2x2: AWS has one
+   badge, so as its own cell it left a half-empty card beside Workato and
+   an empty hole beside Google Cloud. Now Workato and AWS stack in the
+   left column, Google Cloud (the tallest) fills the right column beside
+   both, and Business Registration spans the full width underneath.
+   Source order: Workato, AWS, Google Cloud, Business Registration. */
+.certs-groups>.cert-group:nth-child(1){grid-column:1;grid-row:1}
+.certs-groups>.cert-group:nth-child(2){grid-column:1;grid-row:2}
+.certs-groups>.cert-group:nth-child(3){grid-column:2;grid-row:1 / span 2;align-self:stretch}
+.certs-groups>.cert-group-biz{grid-row:3}
+/* Google Cloud is stretched to the height of the two cards beside it;
+   spread its four badge rows through that height instead of leaving the
+   extra space as a gap at the bottom. */
+.certs-groups>.cert-group:nth-child(3){display:flex;flex-direction:column}
+.certs-groups>.cert-group:nth-child(3) .certs-badges{flex:1;align-content:space-evenly}
+.cert-group{border-radius:14px;padding:1.1rem 1.25rem 1.2rem}
+.cert-group-biz{
+  grid-column:1/-1;
+  background:radial-gradient(80% 140% at 0% 0%,rgba(16,185,129,.08),transparent 60%),rgba(16,185,129,.02);
+  border-color:rgba(16,185,129,.25);
+}
+.cert-group-biz::before{background:linear-gradient(180deg,#10b981,rgba(16,185,129,.3))}
+.cert-group-biz:hover{border-color:rgba(16,185,129,.5);box-shadow:0 6px 32px rgba(16,185,129,.12)}
+.cert-group-biz .cert-group-count{color:#10b981;background:rgba(16,185,129,.1);border-color:rgba(16,185,129,.3)}
+
+@media(max-width:760px){
+  .certs-groups{grid-template-columns:1fr}
+  .certs-groups>.cert-group:nth-child(n){grid-column:auto;grid-row:auto}
+  .certs-groups>.cert-group:nth-child(3) .certs-badges{align-content:flex-start}
+}
+
+/* ═══ SPECIAL THANKS ═════════════════════════════════════════════ */
+.thanks-av{
+  flex-shrink:0;width:52px;height:52px;border-radius:50%;
+  display:grid;place-items:center;
+  font-family:var(--font-head);font-size:.82rem;font-weight:800;letter-spacing:.04em;
+  color:#031018;background:linear-gradient(135deg,var(--cyan),var(--blue));
+  box-shadow:0 0 0 4px rgba(0,212,255,.1),0 0 24px rgba(0,212,255,.25);
+}
+.thanks-subject{justify-content:flex-start}
+.thanks-actions{margin-left:auto}
+.thanks-btn-ghost{text-decoration:none}
+
+/* 25-special-thanks.css stacks the subject row on phones; keep avatar and
+   name side by side and give the buttons their own line. */
+@media(max-width:600px){
+  .thanks-subject{flex-direction:row;flex-wrap:wrap;align-items:center}
+  .thanks-actions{margin-left:0;flex-basis:100%}
+}
+
+/* ── light theme ───────────────────────────────────────────────── */
+[data-theme="light"] .tq,
+[data-theme="light"] .tl-content{background:rgba(255,255,255,.7)}
+[data-theme="light"] .tq-name{color:#0b1b2e}
+
+/* ── reduced motion ────────────────────────────────────────────── */
+@media(prefers-reduced-motion:reduce){
+  .tl-now::before{animation:none}
+  .tl-content,.tl-marker,.timeline::before{animation:none}
+}

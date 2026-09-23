@@ -41,12 +41,17 @@
     "37-canvas-cursor-trail-particle-overlay.css",
     "38-new-features-15-feature-enhancement-pass.css",
     "39-ui-ux-enhancements.css",
-    "40-results-strip-key-metrics-between-portfo.css",
     "41-trust-bar-business-credentials-above-con.css",
     "42-hud-cursor.css",
     "43-certs-plaque.css",
     "44-interaction-feedback.css",
-    "45-typographic-scale.css"
+    "45-typographic-scale.css",
+    "46-project-cards-3d.css",
+    "47-work-layout.css",
+    "48-modals-premium.css",
+    "49-proof-sections.css",
+    "50-contact-footer-nav.css",
+    "51-hero-polish.css"
   ],
   "main": [
     "00-preamble.js",
@@ -55,7 +60,6 @@
     "03-hero-particle-network.js",
     "04-glitch-auto-fire-every-5s.js",
     "05-project-card-3d-tilt.js",
-    "06-portfolio-filters.js",
     "07-back-to-top.js",
     "08-scroll-single-throttled-handler-perf.js",
     "09-hero-stat-counter-animation.js",
@@ -63,13 +67,13 @@
     "11-mobile-nav.js",
     "12-contact-form-2-stage.js",
     "13-form-submit-inline-validation.js",
-    "14-testimonial-carousel.js",
     "15-scroll-reveal-staggered-per-section.js",
     "16-dynamic-footer-year.js",
     "17-project-modals.js",
     "18-hero-render-pointer-parallax.js",
     "19-section-object-motion.js",
-    "20-results-strip-counters.js"
+    "21-testimonial-rail.js",
+    "22-timeline-details.js"
   ],
   "effects": [
     "00-preamble.js",
@@ -86,15 +90,15 @@
     "14-19-aurora-blob-init.js",
     "16-21-hero-scroll-parallax.js",
     "17-22-tool-chip-stagger-entrance.js",
-    "18-23-timeline-expand-on-click.js",
     "19-24-service-row-tap-expand-touch.js",
-    "20-25-book-a-call-pill.js",
     "21-26-quick-pick-service-buttons.js",
     "22-15-side-dot-navigation.js",
     "23-16-keyboard-shortcuts.js",
     "24-17-copy-phone-button.js",
     "25-18-section-label-entry-flash.js",
     "26-hud-lock-on-cursor.js",
-    "27-service-icon-tilt.js"
+    "27-service-icon-tilt.js",
+    "28-soft-tilt.js",
+    "29-tech-marquee-3d.js"
   ]
 }
