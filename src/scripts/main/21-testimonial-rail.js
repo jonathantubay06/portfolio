@@ -15,7 +15,7 @@
    Replaces the 12.6 KB autoplay carousel. No autoplay: a quote that
    moves while someone is reading it is a quote they do not finish.
 ═══════════════════════════════════════ */
-(function(){
+function initTestiRail(){
   const rail = document.getElementById('testiRail');
   if (!rail) return;
   const prev  = document.getElementById('testiPrev');
@@ -166,4 +166,21 @@
 
   jump(setW());
   update();
+}
+
+/* Deferred until the section is near the viewport. Measuring the quotes
+   and card offsets at startup forced a layout of the whole page before
+   first paint had settled: about 200 ms of blocking time on PageSpeed's
+   desktop run. */
+(function(){
+  const sec = document.getElementById('testimonials') || document.getElementById('testiRail');
+  if (!sec) return;
+  let started = false;
+  const start = () => { if (started) return; started = true; io && io.disconnect(); initTestiRail(); };
+  const io = 'IntersectionObserver' in window
+    ? new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) start(); }, { rootMargin: '900px 0px' })
+    : null;
+  if (io) io.observe(sec); else start();
+  // A deep link or restored scroll can land past the section.
+  if (location.hash && location.hash !== '#main') start();
 })();

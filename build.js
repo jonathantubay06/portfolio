@@ -174,6 +174,14 @@ fs.mkdirSync(DIST, { recursive: true });
  */
 const hash = (s) => crypto.createHash('sha256').update(s).digest('hex').slice(0, 8);
 
+/* An unclosed comment in one partial silently swallows the rules after
+   it (twice so far: a pruned light-mode rule and the hero hotspots).
+   Fail the build instead of shipping a quietly broken stylesheet. */
+for (const f of manifest.styles) {
+  const css = read(path.join(SRC, 'styles', f));
+  const open = (css.match(/\/\*/g) || []).length, close = (css.match(/\*\//g) || []).length;
+  if (open !== close) throw new Error(`src/styles/${f}: ${open} "/*" but ${close} "*/" (unclosed comment)`);
+}
 const styleCss = minify.css(concat('styles', manifest.styles));
 const mainJs = minify.js(concat('scripts/main', manifest.main));
 const effectsJs = minify.js(concat('scripts/effects', manifest.effects));

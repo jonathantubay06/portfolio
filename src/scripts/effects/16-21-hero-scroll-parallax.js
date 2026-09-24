@@ -3,7 +3,9 @@
    speeds as you scroll — creates depth.
    Desktop only (touch + mobile skipped).
 ══════════════════════════════════════ */
-(function(){
+// Set up after load: reading innerWidth during startup forced the page's
+// first full layout inside this script (~300 ms at 4x CPU throttle).
+function initHeroParallax(){
   if (window.matchMedia('(hover: none)').matches) return;
   if (window.innerWidth < 768) return;
 
@@ -25,4 +27,6 @@
   window.addEventListener('scroll', () => {
     if (!queued) { queued = true; requestAnimationFrame(apply); }
   }, { passive: true });
-})();
+}
+if (document.readyState === 'complete') initHeroParallax();
+else window.addEventListener('load', initHeroParallax, { once: true });

@@ -37,8 +37,9 @@
   opacity:0;
   /* The scene is preserve-3d, so z-index does not decide hit testing:
      depth does. At translateZ(0) the cube shared the plate's plane and
-     the pointer landed on the plate. 2px in front wins every time. */
-  transform:translateZ(2px);
+     the pointer landed on the plate. 2px still lost now and then while
+     the scene floats and tilts; 8px wins reliably (a 0.6% size change). */
+  transform:translateZ(8px);
   transition:opacity .3s ease,transform .45s cubic-bezier(.16,1,.3,1),box-shadow .45s ease,filter .3s;
 }
 .hs-ready .hs{pointer-events:auto;cursor:pointer}
@@ -344,6 +345,9 @@
 [data-theme="light"] .c-opt-action-call{color:#12744b}
 [data-theme="light"] .c-opt-action-wa{color:#11763a}
 [data-theme="light"] .qp-label{color:#5a6880}
+.exp-tab-n{font-size:11px}
+[data-theme="light"] .exp-tab-n{color:#0a63b8}
+footer .f-links a{color:var(--muted2)}
 /* The hero stays dark in light mode, but the platform chips took the
    light theme's dark grey text: #3d4f63 on navy, nearly invisible. */
 [data-theme="light"] .hero .pbadge{color:rgba(232,244,255,.72);background:rgba(0,212,255,.045);border-color:rgba(123,154,176,.2)}
@@ -402,3 +406,7 @@
      back-to-top ring above it kept covering card text. */
   #back-to-top{display:none}
 }
+
+/* Skip layout for the testimonials until they are near the viewport, like
+   the other below-the-fold sections (00-base.css). */
+#testimonials{content-visibility:auto;contain-intrinsic-size:auto 840px}

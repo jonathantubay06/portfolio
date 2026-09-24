@@ -79,8 +79,8 @@
       <!-- Phones (under 600px) show the render under the copy, like
            tablets, but it must not compete with their first paint: the
            first <source> hands them a 1x1 GIF at load, and
-           31-hero-hotspots.js swaps in data-phone (14 KB / 38 KB) once the
-           page has loaded. <picture> stops at the first matching source,
+           31-hero-hotspots.js swaps in data-phone (14 KB / 38 KB) on the
+           first scroll or tap, so it never becomes the LCP. <picture> stops at the first matching source,
            so the large plate is never requested on a phone.
 
            Above 1024px the slot is min(100%,930px,78vh*1.1646) — roughly

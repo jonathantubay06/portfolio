@@ -32,14 +32,20 @@
   img.addEventListener('load', apply);
   if (img.complete && img.currentSrc) apply();
 
-  // Phones: the render sits under the copy, below the fold, so it must not
-  // compete with the first paint. The <picture> gives phones a 1x1 GIF at
-  // load; once the page has finished loading, the phone source is pointed
-  // at the small plates (14 KB at 1x, 38 KB at 2x) and the render appears.
+  // Phones: the render sits under the copy, just below the fold. Loaded
+  // right after page load it painted late and became the page's Largest
+  // Contentful Paint (PageSpeed mobile LCP 2.6 s -> 3.8 s). It now loads
+  // on the visitor's first scroll, tap or key press, which also ends LCP
+  // measurement, and it is 14-38 KB, so it is in place before it scrolls
+  // into view. A page restored mid-scroll loads it at once.
   const phone = scene.querySelector('source[data-phone]');
-  if (phone) {
-    const swap = () => { phone.srcset = phone.dataset.phone; };
-    if (document.readyState === 'complete') swap();
-    else window.addEventListener('load', swap, { once: true });
+  if (phone && window.matchMedia('(max-width:599px)').matches) {
+    const evs = ['scroll', 'pointerdown', 'touchstart', 'keydown'];
+    const swap = () => {
+      evs.forEach(ev => window.removeEventListener(ev, swap));
+      phone.srcset = phone.dataset.phone;
+    };
+    if (window.scrollY > 0) swap();
+    else evs.forEach(ev => window.addEventListener(ev, swap, { passive: true, once: true }));
   }
 })();

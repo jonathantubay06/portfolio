@@ -26,18 +26,20 @@
       ink.style.width = tab.offsetWidth + 'px';
       ink.style.transform = 'translateX(' + tab.offsetLeft + 'px)';
     }
-    function select(i, focus) {
+    function select(i, focus, init) {
       tabs.forEach((t, j) => {
         const on = i === j;
         t.setAttribute('aria-selected', String(on));
         t.tabIndex = on ? 0 : -1;
         panels[j].hidden = !on;
-        if (on) panels[j].classList.remove('exp-panel-in'), void panels[j].offsetWidth, panels[j].classList.add('exp-panel-in');
+        // Restarting the entry animation forces a reflow; skip it on the
+        // initial call, which runs before first paint.
+        if (on && !init) panels[j].classList.remove('exp-panel-in'), void panels[j].offsetWidth, panels[j].classList.add('exp-panel-in');
       });
-      moveInk(tabs[i]);
+      if (init) requestAnimationFrame(() => moveInk(tabs[i])); else moveInk(tabs[i]);
       if (focus) tabs[i].focus();
       // A panel that was hidden when its reveal observer fired never got .on
-      panels[i].querySelectorAll('.r:not(.on)').forEach(el => el.classList.add('on'));
+      if (!init) panels[i].querySelectorAll('.r:not(.on)').forEach(el => el.classList.add('on'));
       if (panels[i].id === 'panel-certs') layout();
     }
     tabs.forEach((t, i) => {
@@ -51,7 +53,7 @@
         select(to, true);
       });
     });
-    select(0);
+    select(0, false, true);
     window.addEventListener('resize', () => moveInk(tabs.find(t => t.getAttribute('aria-selected') === 'true')));
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => moveInk(tabs.find(t => t.getAttribute('aria-selected') === 'true')));
   }
@@ -129,7 +131,10 @@
     sx = null;
     if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) go(idx + (dx < 0 ? 1 : -1));
   });
-  window.addEventListener('resize', layout);
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(layout);
-  layout();
+  // Measured only while the certificates panel is showing: select()
+  // lays it out when the tab opens. Measuring the hidden panel at startup
+  // cost a forced reflow for nothing.
+  const shown = () => { const pnl = wrap.closest('[role="tabpanel"]'); return !pnl || !pnl.hidden; };
+  window.addEventListener('resize', () => { if (shown()) layout(); });
+  if (shown()) layout();
 })();

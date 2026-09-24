@@ -319,8 +319,10 @@
       transform-origin:left center;
     }
     @keyframes tlCardIn{
-      from{rotate:0 1 0 -14deg;translate:24px 0;opacity:.4}
-      to  {rotate:0 1 0 0deg;  translate:0 0;   opacity:1}
+      /* No opacity: a scroll-driven fade leaves every card below the fold
+         at 40% until it is reached, which audits read as low-contrast text. */
+      from{rotate:0 1 0 -14deg;translate:24px 0}
+      to  {rotate:0 1 0 0deg;  translate:0 0}
     }
   }
 }
