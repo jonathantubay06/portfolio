@@ -3,6 +3,19 @@
   <div class="sec-label">Career</div>
   <h2>Work <em>Experience</em></h2>
   <p class="sec-sub">12+ years across operations, project leadership, and technical delivery.</p>
+
+  <!-- Experience | Certifications switch. Showing one at a time takes the
+       longest stretch of the page down by about 700px. Tabs pattern:
+       role=tablist, arrow keys move between tabs
+       (34-exp-tabs-cert-carousel.js). Without JS both panels stay visible,
+       one after the other, as before. -->
+  <div class="exp-tabs" role="tablist" aria-label="Career">
+    <button class="exp-tab" role="tab" id="tab-exp" aria-controls="panel-exp" aria-selected="true">Experience <span class="exp-tab-n">5</span></button>
+    <button class="exp-tab" role="tab" id="tab-certs" aria-controls="panel-certs" aria-selected="false" tabindex="-1">Certifications <span class="exp-tab-n">13</span></button>
+    <span class="exp-tab-ink" aria-hidden="true"></span>
+  </div>
+
+  <div class="exp-panel" id="panel-exp" role="tabpanel" aria-labelledby="tab-exp">
   <div class="timeline">
     <div class="tl-item r">
       <div class="tl-marker cur-marker"></div>
@@ -72,8 +85,10 @@
       </div>
     </div>
   </div>
+  </div><!-- /#panel-exp -->
 
   <!-- Certs inline -->
+  <div class="exp-panel" id="panel-certs" role="tabpanel" aria-labelledby="tab-certs">
   <div class="certs-inline r">
     <!-- Decorative object anchoring the certifications block. It sits as a
          flex item on the label row rather than absolutely positioned, so it
@@ -143,6 +158,14 @@
       </div>
 
     </div>
+    <!-- Carousel controls (34-exp-tabs-cert-carousel.js turns the groups
+         into a 3D coverflow; hidden until then). -->
+    <div class="cert-ctrl" hidden>
+      <button type="button" class="cert-arrow" data-dir="-1" aria-label="Previous certification group">&#8592;</button>
+      <div class="cert-pips" role="group" aria-label="Certification groups"></div>
+      <button type="button" class="cert-arrow" data-dir="1" aria-label="Next certification group">&#8594;</button>
+    </div>
   </div>
+  </div><!-- /#panel-certs -->
 </section>
 

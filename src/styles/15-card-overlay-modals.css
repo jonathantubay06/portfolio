@@ -1,0 +1,138 @@
+/* ═══════════════════════════════════════
+   CARD HOVER OVERLAY BUTTONS
+═══════════════════════════════════════ */
+.t-overlay-actions{display:flex;gap:.4rem;width:100%}
+.btn-modal-open{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:.3rem;
+  padding:.52rem .6rem;font-size:.66rem;font-weight:700;letter-spacing:.07em;
+  background:var(--cyan);color:#000;border:none;border-radius:7px;cursor:pointer;
+  text-transform:uppercase;transition:all .2s;
+}
+.btn-modal-open:hover{background:#fff;transform:translateY(-1px);box-shadow:0 4px 18px rgba(0,212,255,.4)}
+.btn-modal-site{
+  display:flex;align-items:center;justify-content:center;gap:.3rem;
+  padding:.52rem .65rem;font-size:.66rem;font-weight:700;letter-spacing:.07em;
+  background:rgba(255,255,255,.09);color:rgba(255,255,255,.9);
+  border:1px solid rgba(255,255,255,.28);border-radius:7px;
+  text-decoration:none;text-transform:uppercase;white-space:nowrap;
+  cursor:pointer;transition:all .2s;backdrop-filter:blur(4px);
+}
+.btn-modal-site:hover{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.6);color:#fff;transform:translateY(-1px)}
+
+/* ═══════════════════════════════════════
+   PROJECT MODALS
+═══════════════════════════════════════ */
+.proj-modal{
+  position:fixed;inset:0;z-index:9000;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.proj-modal.open{opacity:1;pointer-events:all}
+.modal-backdrop{
+  position:absolute;inset:0;background:rgba(0,0,0,.78);
+  backdrop-filter:blur(8px);cursor:pointer;
+}
+.modal-inner{
+  position:relative;z-index:1;
+  background:#06101e;
+  border:1px solid var(--border2);border-top:2px solid var(--cyan);
+  border-radius:16px;overflow:hidden;
+  width:min(860px,94vw);max-height:88vh;
+  /* No overflow-y here — scroll is isolated to .modal-content below */
+  transform:translateY(28px) scale(.96);
+  transition:transform .35s cubic-bezier(.22,.68,0,1.2);
+  display:flex;flex-direction:column;
+  box-shadow:0 32px 80px rgba(0,0,0,.65),0 0 0 1px rgba(0,212,255,.06);
+}
+.proj-modal.open .modal-inner{transform:translateY(0) scale(1)}
+
+.modal-close{
+  position:absolute;top:.85rem;right:.85rem;z-index:10;
+  width:34px;height:34px;border-radius:50%;
+  border:1px solid rgba(0,212,255,.2);
+  background:rgba(6,16,30,.85);color:rgba(255,255,255,.65);
+  font-size:.8rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .22s;backdrop-filter:blur(4px);
+}
+.modal-close:hover{background:rgba(0,212,255,.12);border-color:var(--cyan);color:var(--cyan)}
+
+/* Screenshot — cinematic crop with bottom fade, capped so content is visible */
+.modal-screenshot{
+  width:100%;aspect-ratio:16/6;overflow:hidden;flex-shrink:0;
+  position:relative;
+}
+.modal-screenshot::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:45%;
+  background:linear-gradient(to top,#06101e 0%,transparent 100%);
+  pointer-events:none;
+}
+.modal-screenshot img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+
+/* Content scrolls independently — screenshot stays pinned at top */
+/* overscroll-behavior:contain stops the page behind from scrolling when you hit the edge */
+/* touch-action:pan-y lets the browser handle vertical finger scroll natively on iOS */
+.modal-content{padding:1.4rem 2rem 2.2rem;overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;}
+
+.modal-title{
+  font-family:var(--font-head);font-size:1.45rem;font-weight:800;
+  color:#fff;margin:.45rem 0 .55rem;line-height:1.2;
+}
+
+.modal-badge{
+  font-size:.63rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+  padding:.22rem .7rem;border-radius:99px;
+}
+.badge-role{background:rgba(0,212,255,.1);color:var(--cyan);border:1px solid rgba(0,212,255,.22)}
+.badge-status{background:rgba(34,197,94,.08);color:#4ade80;border:1px solid rgba(34,197,94,.18)}
+
+/* Problem + Result — side-by-side grid */
+.modal-impact{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:1rem}
+.modal-problem,.modal-result{
+  padding:.85rem 1rem;border-radius:10px;font-size:.81rem;
+  line-height:1.6;display:flex;flex-direction:column;gap:.25rem;
+}
+.modal-problem{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.16)}
+.modal-result{background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.16)}
+.modal-label{
+  font-size:.6rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+  display:block;opacity:.6;margin-bottom:.1rem;
+}
+
+.modal-desc{font-size:.84rem;line-height:1.7;color:var(--muted);margin:.9rem 0 1.1rem}
+
+.modal-stack-label{
+  font-size:.62rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:.5rem;
+}
+.modal-stack{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1.6rem}
+.modal-stack span{
+  font-size:.72rem;font-weight:600;padding:.3rem .75rem;
+  background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.18);
+  border-radius:6px;color:var(--cyan);
+  transition:background .18s,border-color .18s;
+}
+.modal-stack span:hover{background:rgba(0,212,255,.14);border-color:rgba(0,212,255,.4)}
+
+/* CTA — full-width primary button */
+.modal-cta{
+  display:flex;align-items:center;justify-content:center;
+  width:100%;padding:.8rem;font-size:.8rem;margin-top:.2rem;
+  border-radius:10px;
+}
+
+/* light mode overrides */
+[data-theme="light"] .modal-inner{background:#f4f8ff;border-color:rgba(0,100,180,.15);border-top-color:var(--blue)}
+[data-theme="light"] .modal-screenshot::after{background:linear-gradient(to top,#f4f8ff 0%,transparent 100%)}
+[data-theme="light"] .modal-title{color:#1c2333}
+[data-theme="light"] .modal-backdrop{background:rgba(0,0,0,.55)}
+[data-theme="light"] .modal-close{background:rgba(255,255,255,.9);border-color:rgba(0,100,180,.2)}
+[data-theme="light"] .modal-stack span{background:rgba(14,122,255,.07);border-color:rgba(14,122,255,.2);color:var(--blue)}
+
+/* Mobile: stack impact grid */
+@media(max-width:600px){
+  .modal-impact{grid-template-columns:1fr}
+  .modal-content{padding:1.1rem 1.1rem 1.5rem}
+  .modal-title{font-size:1.15rem}
+}
+

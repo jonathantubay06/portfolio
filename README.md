@@ -9,10 +9,10 @@ Static portfolio. No framework, no runtime dependencies, no npm install.
                             inline CSS and the @font-face declarations
       _order.txt            section order for index.html
       manifest.json         concatenation order for css/js
-      sections/             18 page sections, one file each
-      styles/               45 css partials
-      scripts/main/         20 partials -> main.js
-      scripts/effects/      23 partials -> effects.js
+      sections/             16 page sections, one file each
+      styles/               22 css partials, grouped by area
+      scripts/main/         18 partials -> main.js
+      scripts/effects/      27 partials -> effects.js
     fonts/                  self-hosted variable woff2 (latin) + OFL texts
     img/                    source renders and their responsive variants
     build.js                assembles src/ into dist/

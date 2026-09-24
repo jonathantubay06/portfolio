@@ -23,15 +23,71 @@
     <div class="pi-step"><span class="pi-num">04</span><span class="pi-title">Support</span></div>
   </div>
 
+  <!-- ══ AUTOMATION DEMO ══
+       Pick a trigger, an action and a notification, press Run, and a
+       signal travels through the three nodes while a log fills in with
+       sample data. It shows what "workflow automation" means instead of
+       describing it. 32-automation-demo.js drives it; without JS the three
+       default choices still read as a finished example flow. -->
+  <div class="auto-demo r" id="automation-demo">
+    <div class="ad-head">
+      <span class="ad-kicker">Try it</span>
+      <h3 class="ad-title">Build an automation in three clicks</h3>
+      <p class="ad-sub">Pick what starts it and what should happen next. This is the kind of flow I build in Zapier, n8n or plain code.</p>
+    </div>
+
+    <div class="ad-board">
+      <div class="ad-node" data-node="0">
+        <span class="ad-step">1 · When</span>
+        <div class="ad-face"><span class="ptile" style="--brand:#96bf48"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#ico-shopify"/></svg></span><span class="ad-name">New Shopify order</span><span class="ad-check" aria-hidden="true">✓</span></div>
+        <div class="ad-opts" role="group" aria-label="Trigger">
+          <button type="button" class="ad-opt" aria-pressed="true" data-icon="shopify" data-brand="#96bf48" data-log="New Shopify order #1042 received · $86.50">New Shopify order</button>
+          <button type="button" class="ad-opt" aria-pressed="false" data-icon="form" data-brand="#00d4ff" data-gen data-log="Website form submitted by Jane from Acme Co.">Form submitted</button>
+          <button type="button" class="ad-opt" aria-pressed="false" data-icon="airtable" data-brand="#18bfff" data-log="New Airtable record: Supplier invoice INV-2291">New Airtable record</button>
+        </div>
+      </div>
+
+      <div class="ad-link" aria-hidden="true"><span class="ad-packet"></span></div>
+
+      <div class="ad-node" data-node="1">
+        <span class="ad-step">2 · Then</span>
+        <div class="ad-face"><span class="ptile" style="--brand:#34a853"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#ico-googlesheets"/></svg></span><span class="ad-name">Add row to Google Sheets</span><span class="ad-check" aria-hidden="true">✓</span></div>
+        <div class="ad-opts" role="group" aria-label="Action">
+          <button type="button" class="ad-opt" aria-pressed="true" data-icon="googlesheets" data-brand="#34a853" data-log="Row 318 added to the Orders sheet">Add row to Google Sheets</button>
+          <button type="button" class="ad-opt" aria-pressed="false" data-icon="airtable" data-brand="#18bfff" data-log="Airtable record created and linked to the customer">Create Airtable record</button>
+          <button type="button" class="ad-opt" aria-pressed="false" data-icon="shopify" data-brand="#96bf48" data-log="Stock updated in Shopify: 3 SKUs adjusted">Update Shopify stock</button>
+        </div>
+      </div>
+
+      <div class="ad-link" aria-hidden="true"><span class="ad-packet"></span></div>
+
+      <div class="ad-node" data-node="2">
+        <span class="ad-step">3 · And</span>
+        <div class="ad-face"><span class="ptile" style="--brand:#a78bfa"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" class="gen"><use href="#ico-chat"/></svg></span><span class="ad-name">Post in Slack</span><span class="ad-check" aria-hidden="true">✓</span></div>
+        <div class="ad-opts" role="group" aria-label="Notification">
+          <button type="button" class="ad-opt" aria-pressed="true" data-icon="chat" data-brand="#a78bfa" data-gen data-log="Slack #orders: “Order #1042 · $86.50 · paid ✅”">Post in Slack</button>
+          <button type="button" class="ad-opt" aria-pressed="false" data-icon="mail" data-brand="#f59e0b" data-gen data-log="Confirmation email sent to the customer">Email the customer</button>
+          <button type="button" class="ad-opt" aria-pressed="false" data-icon="chart" data-brand="#22d3ee" data-gen data-log="Dashboard updated: today’s total refreshed">Update a dashboard</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="ad-foot">
+      <button type="button" class="btn btn-p ad-run">Run it <span aria-hidden="true">▶</span></button>
+      <ol class="ad-log" aria-live="polite" aria-label="Run log"></ol>
+      <button type="button" class="ad-cta qp-btn" data-service="Workflow Automation (Zapier / n8n / Airtable)">Want one like this? Let's talk <span aria-hidden="true">→</span></button>
+    </div>
+  </div>
+
   <!-- Quick-pick CTA — lets visitors jump straight to the contact form
        with the right service pre-selected. JS in effects.js handles
        the scroll + dropdown pre-fill. -->
   <div class="qp-wrap r" aria-label="Quick start">
     <p class="qp-label">What do you need?</p>
     <div class="qp-btns">
-      <button class="qp-btn" data-service="Shopify Store Setup / Build">🛒 Shopify Store</button>
-      <button class="qp-btn" data-service="WordPress / WooCommerce Site">🌐 WordPress Site</button>
-      <button class="qp-btn" data-service="Workflow Automation (Zapier / n8n / Airtable)">⚡ Automation</button>
+      <button class="qp-btn" data-service="Shopify Store Setup / Build"><span class="ptile" style="--brand:#96bf48"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#ico-shopify"/></svg></span>Shopify Store</button>
+      <button class="qp-btn" data-service="WordPress / WooCommerce Site"><span class="ptile" style="--brand:#21759b"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#ico-wordpress"/></svg></span>WordPress Site</button>
+      <button class="qp-btn" data-service="Workflow Automation (Zapier / n8n / Airtable)"><span class="ptile" style="--brand:#ea4b71"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#ico-n8n"/></svg></span>Automation</button>
     </div>
   </div>
 </section>

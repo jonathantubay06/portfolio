@@ -1,0 +1,348 @@
+/* ═══════════════════════════════════════════════════════════════
+   TRUST BAR — business credentials above contact form
+   ═══════════════════════════════════════════════════════════════ */
+.trust-bar{
+  display:flex;justify-content:center;gap:1.2rem;flex-wrap:wrap;
+  margin-bottom:1.8rem;
+}
+.trust-badge{
+  font-size:.78rem;font-weight:600;
+  padding:.45rem 1rem;border-radius:var(--radius-pill);
+  background:rgba(0,212,255,.05);border:1px solid var(--border);
+  color:var(--muted2);letter-spacing:.03em;
+  white-space:nowrap;
+}
+
+/* ── Results + trust: light mode ── */
+
+
+
+[data-theme="light"] .trust-badge{background:rgba(0,100,180,.04);color:#3d4f63}
+
+/* ── Results: mobile ── */
+
+
+/* ═══════════════════════════════════════
+   HUD LOCK-ON CURSOR (desktop only)
+
+   Idle  : a compact arrow, matching the existing cursors/arrow.svg
+           shape so the treatment reads as one design, not two.
+   Locked: a 32px HUD target over deliberate interactive elements,
+           with one acquire pass, then completely static.
+
+   The native cursor is suppressed ONLY while .hud-on is set — that
+   flag is added by JS after the desktop gate passes (pointer:fine,
+   hover:hover, >=1024px, no reduced-motion). It is never a global
+   `cursor:none`: on touch, narrow layouts, reduced motion, or if the
+   JS simply fails to run, the flag is absent and the native SVG arrow
+   from the NEON SVG CURSORS block is what you get.
+   ═══════════════════════════════════════ */
+
+.hud-cursor{
+  position:fixed;left:0;top:0;
+  width:26px;height:26px;
+  pointer-events:none;          /* never intercepts clicks */
+  z-index:9998;                 /* under modals (9999+), over content */
+  opacity:0;
+  will-change:transform;
+  /* translate3d is written inline by JS on pointermove */
+}
+.hud-on .hud-cursor{opacity:1}
+
+/* Hide the native cursor wherever the custom one is live, so the two
+   never render at the same time. Scoped to .hud-on, which only exists
+   once the desktop gate has passed.
+
+   This has to be a universal selector, not a list. Listing tags only
+   covers inherited cursors; any element that sets its OWN cursor still
+   draws the native one on top of ours. The site has eight such rules —
+   .glitch-name{cursor:default} on the hero H1 was the visible one, plus
+   .built-item, .cbadge-static, .fg select, .testi-nav:disabled,
+   .testi-track-wrap, its :active, and .tl-content.
+
+   The "html" prefix matters: ".hud-on *" alone is (0,1,0) and loses to
+   any descendant rule like ".fg select" (0,1,1). "html.hud-on *" is
+   (0,1,1), tying those, and this partial is concatenated last — so it
+   wins on order without needing a rule per offender. */
+html.hud-on,
+html.hud-on *{
+  cursor:none;
+}
+/* Text entry keeps its I-beam — a HUD target over a caret is wrong, and
+   losing the caret would hurt usability. Higher specificity than the
+   universal rule above so it survives. */
+.hud-on input:not([type="button"]):not([type="submit"]):not([type="checkbox"]):not([type="radio"]),
+.hud-on textarea{
+  cursor:text;
+}
+/* The carousel's grab/grabbing states communicate that it is draggable;
+   that affordance is worth more than cursor consistency. */
+
+
+
+/* ── Idle: arrow. Same silhouette as cursors/arrow.svg (M6 4L26 9…),
+   drawn inline so it can animate out on lock. ── */
+.hud-arrow{
+  position:absolute;left:0;top:0;
+  width:26px;height:26px;
+  transition:opacity .16s ease,transform .22s cubic-bezier(.2,.7,.3,1);
+  transform-origin:4px 4px;
+}
+.hud-arrow path{
+  fill:rgba(10,21,36,.92);
+  stroke:rgba(0,212,255,.9);
+  stroke-width:1.6;
+  stroke-linejoin:round;
+  paint-order:stroke fill;
+}
+.hud-cursor.is-locked .hud-arrow{opacity:0;transform:scale(.6)}
+
+/* ── Locked: compact HUD target ── */
+.hud-ring{
+  position:absolute;left:0;top:0;
+  width:32px;height:32px;margin:-16px 0 0 -16px;
+  border-radius:50%;
+  border:1px solid rgba(0,212,255,.62);
+  background:rgba(6,14,26,.3);
+  box-shadow:0 0 6px rgba(0,212,255,.18),inset 0 0 6px rgba(0,212,255,.08);
+  opacity:0;transform:scale(.75);
+}
+.hud-tick{position:absolute;background:rgba(0,212,255,.85);opacity:0}
+.hud-tick.t-n{top:-13px;left:0;width:1px;height:5px;margin-left:-.5px}
+.hud-tick.t-s{top:8px;left:0;width:1px;height:5px;margin-left:-.5px}
+.hud-tick.t-w{left:-13px;top:0;height:1px;width:5px;margin-top:-.5px}
+.hud-tick.t-e{left:8px;top:0;height:1px;width:5px;margin-top:-.5px}
+/* Centre pip — reads as the crosshair's aim point */
+.hud-pip{
+  position:absolute;left:0;top:0;
+  width:3px;height:3px;margin:-1.5px 0 0 -1.5px;
+  border-radius:50%;background:rgba(0,212,255,.95);
+  opacity:0;
+}
+
+.hud-cursor.is-locked .hud-ring{
+  opacity:1;transform:scale(1) rotate(0deg);
+  animation:hudAcquire .46s cubic-bezier(.16,.84,.34,1) both;
+}
+.hud-cursor.is-locked .hud-tick,
+.hud-cursor.is-locked .hud-pip{
+  opacity:1;animation:hudTicks .46s cubic-bezier(.16,.84,.34,1) both;
+}
+
+/* Acquire: up from 75%, unwind a 16deg rotation, one glow bump, settle.
+   Plays once per entry — JS removes .is-locked on leave, which resets
+   the keyframes so it can replay on a later entry. */
+@keyframes hudAcquire{
+  0%  {opacity:0;transform:scale(.75) rotate(16deg);
+       box-shadow:0 0 0 rgba(0,212,255,0),inset 0 0 0 rgba(0,212,255,0)}
+  55% {opacity:1;
+       box-shadow:0 0 13px rgba(0,212,255,.42),inset 0 0 8px rgba(0,212,255,.16)}
+  100%{opacity:1;transform:scale(1) rotate(0deg);
+       box-shadow:0 0 6px rgba(0,212,255,.2),inset 0 0 6px rgba(0,212,255,.09)}
+}
+@keyframes hudTicks{
+  0%{opacity:0}60%{opacity:1}100%{opacity:.85}
+}
+
+/* Belt and braces — the JS never builds it in these conditions, but if
+   it somehow exists, hide it and restore the native cursor. */
+@media(prefers-reduced-motion:reduce){
+  .hud-cursor{display:none!important}
+  html.hud-on,html.hud-on *{cursor:auto}
+}
+@media(hover:none),(pointer:coarse),(max-width:1023px){
+  .hud-cursor{display:none!important}
+  html.hud-on,html.hud-on *{cursor:auto}
+}
+/* ═══════════════════════════════════════
+   CERTIFICATIONS PLAQUE
+   A rendered object anchoring the certifications block, matching the
+   service icons in tone.
+
+   It is a flex item on .certs-inline-label (already display:flex) rather
+   than an absolutely-positioned overlay. The first version used
+   position:absolute; right:0; top:-6px and landed on top of the Workato
+   card and its count badge — the cards extend to that same edge, so there
+   was never clear space there. As a flex item with margin-left:auto it is
+   laid out, not floated over, and cannot collide at any size.
+   ═══════════════════════════════════════ */
+.certs-plaque{
+  margin-left:auto;          /* pushes to the right end of the label row */
+  width:52px;height:auto;
+  flex-shrink:0;
+  filter:saturate(.7) brightness(.92) drop-shadow(0 8px 14px rgba(0,0,0,.5));
+  pointer-events:none;
+}
+/* The label row is short; let the plaque hang without stretching it. */
+.certs-inline-label{align-items:center;min-height:52px}
+
+.inview .certs-plaque{animation:plaqueFloat 8s ease-in-out infinite}
+@keyframes plaqueFloat{0%,100%{translate:0 0}50%{translate:0 -6px}}
+
+@media(max-width:900px){.certs-plaque{display:none}}
+@media(prefers-reduced-motion:reduce){.certs-plaque{animation:none!important}}
+/* ═══════════════════════════════════════
+   INTERACTION FEEDBACK
+
+   Three additions from the 2026-09-22 interaction audit. The site had
+   plenty of ambient motion — aurora, grain, particles, cursor trail —
+   and almost no motion that answers the visitor. Ambient makes a page
+   feel alive before you touch it; this makes it feel responsive to you.
+
+   Everything here is transform/opacity/scale only, so it stays on the
+   compositor. Nothing writes box-shadow, filter or anything else that
+   forces paint on a pointer event.
+═══════════════════════════════════════ */
+
+/* ── A · CTA feedback ──────────────────────────────────────────────
+   .is-mag is set by effects.js while a pointer is inside a CTA. It
+   kills the transform transition for the duration.
+
+   Without this, every frame's transform write STARTS A NEW transition
+   on top of the previous one — the .btn rule carries transition:all
+   .28s, so a moving pointer stacks roughly sixty overlapping 280ms
+   interpolations a second. That is both slower and visibly mushier
+   than no transition at all. The shipped magnetic script had exactly
+   this bug on the hero buttons; it is the same mistake the project
+   card tilt was rewritten to fix.
+
+   The press squash uses `scale` rather than folding a scale() into the
+   transform string. scale is a separate property that composes AFTER
+   transform, so the pull (transform) and the squash (scale) have one
+   writer each and never overwrite each other. */
+.btn.is-mag,
+.qp-btn.is-mag,
+.btn-modal-open.is-mag,
+.btn-modal-site.is-mag,
+#book-pill.is-mag,
+.mobile-cta-bar .btn.is-mag{transition:none}
+
+/* No transition-property declaration here, deliberately.
+
+   The first draft set `transition-property:scale` on these buttons to
+   give the press release a springy curve. That overrides the
+   `transition:all .28s` they already carry, which silently kills the
+   existing hover transitions — .btn-p:hover's translateY(-2px) and its
+   box-shadow would both have started snapping instead of easing. This
+   file loads after 05-buttons.css, so the override would have won.
+
+   `all` already covers `scale`, so the release is smooth without any
+   new declaration. A sprung release is not worth breaking every hover
+   state on the site to get.
+
+   Measured on the built stylesheet:
+     .btn            transition:all .28s
+     .qp-btn         transition:all .22s
+     .btn-modal-open transition:all .2s
+     .btn-modal-site transition:all .2s
+     .pf-btn         transition:all var(--transition-fast)
+
+   #book-pill is the one exception: it lists its properties explicitly
+   and scale is not among them, so the squash would release by snapping.
+   Appending to that list is safe because the list is re-stated in full. */
+#book-pill{
+  transition:opacity .4s ease,
+             transform .4s cubic-bezier(.25,.8,.25,1),
+             box-shadow .25s ease,
+             background .25s ease,
+             scale .22s cubic-bezier(.34,1.56,.64,1);
+}
+
+/* The shorthand sets transition-property:scale for the duration of the
+   press, which suppresses the hover transitions while held — that is
+   wanted, since the squash should land immediately. Removing the class
+   restores the element's own transition. */
+.is-press{scale:.96;transition:scale .09s ease-out}
+
+/* ── B · process strip sequence ────────────────────────────────────
+   .process-inline already carries .r, so main.js adds .on when the
+   section scrolls in. Staggering the children off that class means no
+   second IntersectionObserver and no new script — the sequence rides
+   the reveal machinery that is already there.
+
+   Steps and arrows alternate in the DOM (step, arrow, step, arrow...),
+   so nth-child walks both: 1,3,5,7 are .pi-step and 2,4,6 are
+   .pi-arrow. 130ms apart reads as a sequence without anyone waiting
+   for it — the last item lands at 780ms.
+
+   The arrows use scaleX from their left edge, which is why they read as
+   drawing rather than fading in. */
+.process-inline>.pi-step,
+.process-inline>.pi-arrow{
+  opacity:0;
+  transition:opacity .45s ease,
+             translate .45s cubic-bezier(.2,.7,.3,1),
+             scale .4s ease;
+}
+.process-inline>.pi-step{translate:0 10px}
+.process-inline>.pi-arrow{scale:0 1;transform-origin:left center}
+
+.process-inline.on>.pi-step{opacity:1;translate:0 0}
+.process-inline.on>.pi-arrow{opacity:1;scale:1 1}
+
+.process-inline.on>:nth-child(1){transition-delay:0ms}
+.process-inline.on>:nth-child(2){transition-delay:130ms}
+.process-inline.on>:nth-child(3){transition-delay:260ms}
+.process-inline.on>:nth-child(4){transition-delay:390ms}
+.process-inline.on>:nth-child(5){transition-delay:520ms}
+.process-inline.on>:nth-child(6){transition-delay:650ms}
+.process-inline.on>:nth-child(7){transition-delay:780ms}
+
+/* Each number flashes as its step lands, so the eye is pulled along the
+   row instead of just noticing it has filled in. text-shadow is a paint
+   property, which is fine here: it runs once, on four small elements,
+   and never on a pointer event. */
+.process-inline.on .pi-num{animation:piFlash .5s ease-out both}
+.process-inline.on>:nth-child(3) .pi-num{animation-delay:260ms}
+.process-inline.on>:nth-child(5) .pi-num{animation-delay:520ms}
+.process-inline.on>:nth-child(7) .pi-num{animation-delay:780ms}
+@keyframes piFlash{
+  0%  {text-shadow:0 0 0 rgba(0,212,255,0)}
+  35% {text-shadow:0 0 14px rgba(0,212,255,.9)}
+  100%{text-shadow:0 0 0 rgba(0,212,255,0)}
+}
+
+/* Below 900px the arrows are display:none and the strip wraps or
+   stacks, so a left-to-right draw has nothing to draw along. Steps
+   still stagger; the arrow rules simply have no targets. */
+
+/* ── C · service icon tilt ─────────────────────────────────────────
+   The icons already bob (svcFloat, gated on .inview) and already lift
+   on row hover. This replaces the fixed hover pose with one that
+   follows the cursor, so they read as objects being turned rather than
+   images that jump.
+
+   perspective on the row rather than the icon: the icon is the thing
+   being rotated, and an element cannot supply its own perspective.
+
+   The bob writes `translate`; the tilt writes `transform`. Separate
+   properties, composed in a fixed order (translate, rotate, scale,
+   transform), so the float keeps running underneath the tilt instead
+   of being cancelled by it. */
+.svc-row{perspective:600px}
+.svc-row.is-tilting .svc-ico-3d{transition:none}
+
+/* ── reduced motion ────────────────────────────────────────────────
+   24-reduced-motion-granular.css already crushes every duration to
+   .01ms, which handles the transitions. What it cannot do is undo the
+   rest states: a .pi-step left at opacity:0 would stay invisible, and
+   an .is-press would stay squashed. Those need explicit resets.
+
+   The tilt and pull scripts bail out entirely under reduced motion, so
+   nothing here is fighting live JS. */
+@media(prefers-reduced-motion:reduce){
+  .process-inline>.pi-step,
+  .process-inline>.pi-arrow{
+    opacity:1!important;translate:none!important;scale:none!important;
+    transition:none!important;
+  }
+  .process-inline.on .pi-num{animation:none!important}
+  .is-press{scale:none!important}
+  .svc-row{perspective:none}
+}
+
+/* Touch: the pull script bails out on (hover: none), so .is-mag is never
+   applied there and needs no handling. The press squash is deliberately
+   kept — a tap has no hover state to confirm it landed, so visible
+   acknowledgement does more work on a phone than anywhere else. It
+   needs no extra rules either; .is-press carries its own transition. */

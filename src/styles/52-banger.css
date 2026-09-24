@@ -1,0 +1,311 @@
+/* ═══════════════════════════════════════
+   ROUND 3 — 3D, INTERACTION, MOTION BUDGET (2026-09-25)
+
+   1. Motion budget   looping animations pause off screen
+   2. Hero cubes      the render's three cubes lift out and link somewhere
+   3. Automation demo build-and-run a three-step flow in Services
+   4. Hover scroll    project cards scroll the real site on hover
+   5. Career tabs     Experience | Certifications, certs as a 3D coverflow
+   6. Section entries headings unfold in 3D, dividers draw themselves
+═══════════════════════════════════════ */
+
+/* ── 1. motion budget ─────────────────────────────────────────────── */
+/* 30-offscreen-animation-pause.js marks blocks more than 300px outside
+   the viewport. */
+.is-offscreen,.is-offscreen *,.is-offscreen::before,.is-offscreen::after,
+.is-offscreen *::before,.is-offscreen *::after{animation-play-state:paused!important}
+/* The divider glow animated `filter:blur(.5px)` alongside opacity. Half
+   a pixel of blur is invisible, but animating filter repaints the line
+   every frame on nine dividers. Opacity alone runs on the compositor. */
+@keyframes energize{0%,100%{opacity:.5}50%{opacity:1}}
+
+/* ── 2. hero cubes ────────────────────────────────────────────────── */
+.hs{
+  position:absolute;z-index:4;
+  left:calc(var(--l) * 1%);top:calc(var(--t) * 1%);
+  width:calc(var(--w) * 1%);height:calc(var(--h) * 1%);
+  border-radius:18%;
+  pointer-events:none;              /* on only once the plate URL is known */
+  outline:none;
+  background-image:var(--plate-src);
+  background-repeat:no-repeat;
+  /* Scale the plate so this box shows exactly its own patch of it:
+     size = 100% x 100/w, position = l / (100 - w) (the CSS percentage
+     position formula solved for a box inside a bigger image). */
+  background-size:calc(100% * 100 / var(--w)) calc(100% * 100 / var(--h));
+  background-position:calc(var(--l) / (100 - var(--w)) * 100%) calc(var(--t) / (100 - var(--h)) * 100%);
+  opacity:0;
+  /* The scene is preserve-3d, so z-index does not decide hit testing:
+     depth does. At translateZ(0) the cube shared the plate's plane and
+     the pointer landed on the plate. 2px in front wins every time. */
+  transform:translateZ(2px);
+  transition:opacity .3s ease,transform .45s cubic-bezier(.16,1,.3,1),box-shadow .45s ease,filter .3s;
+}
+.hs-ready .hs{pointer-events:auto;cursor:pointer}
+.hs:hover,.hs:focus-visible{
+  opacity:1;
+  transform:translateZ(60px) translateY(-9%) scale(1.12);
+  box-shadow:0 22px 40px -10px rgba(0,0,0,.7),0 0 34px rgba(0,212,255,.45);
+  filter:brightness(1.18) saturate(1.1);
+}
+/* A ring pulses round each cube once, a few seconds after load. */
+.hs::before{
+  content:'';position:absolute;inset:-6%;border-radius:22%;
+  border:2px solid rgba(0,212,255,.8);opacity:0;pointer-events:none;
+}
+.hs-hint .hs::before{animation:hsPing 1.1s ease-out 2}
+.hs-hint .hs:nth-of-type(2)::before{animation-delay:.18s}
+.hs-hint .hs:nth-of-type(3)::before{animation-delay:.36s}
+@keyframes hsPing{0%{opacity:.9;scale:.9}100%{opacity:0;scale:1.35}}
+.hs-label{
+  position:absolute;left:50%;bottom:calc(100% + 10px);
+  translate:-50% 6px;white-space:nowrap;
+  padding:.35rem .75rem;border-radius:99px;
+  font:600 .72rem/1 var(--font-body);letter-spacing:.02em;color:#e8f4ff;
+  background:rgba(6,16,30,.92);border:1px solid rgba(0,212,255,.45);
+  box-shadow:0 8px 20px rgba(0,0,0,.45);
+  opacity:0;transition:opacity .25s,translate .3s cubic-bezier(.16,1,.3,1);
+  pointer-events:none;
+}
+.hs-label b{color:var(--cyan)}
+.hs:hover .hs-label,.hs:focus-visible .hs-label{opacity:1;translate:-50% 0}
+
+/* ── 3. automation demo ───────────────────────────────────────────── */
+.auto-demo{
+  position:relative;margin:2.6rem 0 2.2rem;padding:1.8rem 1.8rem 1.5rem;
+  border-radius:20px;
+  background:
+    radial-gradient(80% 120% at 0% 0%,rgba(0,212,255,.07),transparent 60%),
+    linear-gradient(160deg,rgba(255,255,255,.035),rgba(255,255,255,.01));
+  border:1px solid rgba(0,212,255,.18);
+}
+.ad-head{max-width:620px;margin-bottom:1.4rem}
+.ad-kicker{
+  display:inline-block;margin-bottom:.5rem;padding:.2rem .6rem;border-radius:99px;
+  font-size:.6rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:#031018;background:linear-gradient(135deg,var(--cyan),var(--blue));
+}
+.ad-title{font-family:var(--font-head);font-size:clamp(1.05rem,2vw,1.3rem);color:#fff;margin:0 0 .35rem}
+.ad-sub{font-size:.88rem;color:var(--muted2);line-height:1.65;margin:0}
+
+/* The board tilts back like a desk seen from above; nodes stand up on it. */
+.ad-board{
+  display:grid;grid-template-columns:1fr 70px 1fr 70px 1fr;align-items:start;
+  perspective:1100px;
+}
+.ad-node{min-width:0;transform-style:preserve-3d}
+.ad-step{display:block;font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
+.ad-face{
+  position:relative;display:flex;align-items:center;gap:.65rem;
+  padding:.9rem 1rem;border-radius:14px;
+  background:linear-gradient(160deg,#0f2036,#08121f);
+  border:1px solid var(--border2);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 14px 30px -12px rgba(0,0,0,.7);
+  transform:rotateX(14deg);transform-origin:50% 100%;
+  transition:transform .5s cubic-bezier(.16,1,.3,1),box-shadow .4s,border-color .4s;
+}
+.ad-face .ptile{opacity:1}
+.ad-name{font-size:.86rem;font-weight:600;color:#e8f4ff;line-height:1.3;min-width:0}
+.ad-check{
+  margin-left:auto;width:22px;height:22px;border-radius:50%;flex-shrink:0;
+  display:grid;place-items:center;font-size:.72rem;font-weight:800;
+  color:#031018;background:#4ade80;opacity:0;scale:.4;
+  transition:opacity .25s,scale .35s cubic-bezier(.34,1.56,.64,1);
+}
+.ad-face.is-swapped{animation:adSwap .45s cubic-bezier(.16,1,.3,1)}
+@keyframes adSwap{from{rotate:1 0 0 -40deg;opacity:.3}}
+.ad-node.is-fired .ad-face{
+  transform:rotateX(0) translateY(-4px);
+  border-color:rgba(74,222,128,.55);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 18px 36px -12px rgba(0,0,0,.7),0 0 28px rgba(74,222,128,.25);
+}
+.ad-node.is-fired .ad-check{opacity:1;scale:1}
+
+.ad-opts{display:flex;flex-direction:column;gap:.35rem;margin-top:.7rem}
+.ad-opt{
+  text-align:left;cursor:pointer;
+  padding:.42rem .7rem;border-radius:9px;
+  font:500 .76rem/1.3 var(--font-body);color:var(--muted2);
+  background:transparent;border:1px solid transparent;
+  transition:background .2s,border-color .2s,color .2s;
+}
+.ad-opt:hover{background:rgba(0,212,255,.06);color:#e8f4ff}
+.ad-opt[aria-pressed="true"]{color:var(--cyan);background:rgba(0,212,255,.08);border-color:rgba(0,212,255,.3)}
+
+/* Links between nodes: a dashed track and a glowing packet. */
+.ad-link{position:relative;height:2px;margin-top:calc(.62rem * 1.4 + .5rem + 1.6rem);
+  background:repeating-linear-gradient(90deg,rgba(0,212,255,.35) 0 6px,transparent 6px 12px)}
+.ad-packet{
+  position:absolute;top:50%;left:0;width:12px;height:12px;border-radius:50%;
+  translate:-50% -50%;opacity:0;
+  background:radial-gradient(circle,#fff,var(--cyan) 55%,transparent 72%);
+  box-shadow:0 0 14px var(--cyan),0 0 28px rgba(0,212,255,.6);
+}
+.ad-link.is-flowing{background:linear-gradient(90deg,var(--cyan),#4ade80)}
+.ad-link.is-flowing .ad-packet{animation:adPacket .75s cubic-bezier(.45,0,.4,1) forwards}
+@keyframes adPacket{0%{left:0;opacity:1}90%{opacity:1}100%{left:100%;opacity:0}}
+
+.ad-foot{display:flex;align-items:flex-start;gap:1.2rem;flex-wrap:wrap;margin-top:1.4rem}
+.ad-run{flex-shrink:0}
+.ad-run:disabled{opacity:.6;cursor:progress}
+.ad-log{
+  flex:1;min-width:220px;margin:0;padding:0;list-style:none;
+  font:500 .78rem/1.6 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#9fe6c1;
+}
+.ad-log:empty::before{content:'Press Run to send a test through the flow.';color:var(--muted)}
+.ad-log li{animation:adLine .35s ease both}
+@keyframes adLine{from{opacity:0;translate:-6px 0}}
+.ad-log li:last-child:not(:first-child){color:var(--muted2)}
+.auto-demo .ad-cta{margin-left:auto;align-self:center;flex:0 0 auto}  /* .qp-btn is flex:1 elsewhere */
+.auto-demo.is-done .ad-cta{border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 18px rgba(0,212,255,.25)}
+
+/* quick-pick buttons now carry logo tiles */
+.qp-btn{display:inline-flex;align-items:center;gap:.5rem}
+.qp-btn .ptile{width:20px;height:20px;border-radius:6px}
+.qp-btn .ptile svg{width:12px;height:12px}
+
+@media(max-width:760px){
+  .ad-board{grid-template-columns:1fr;gap:.2rem}
+  .ad-link{width:2px;height:28px;margin:.4rem 0 .4rem 1.6rem;
+    background:repeating-linear-gradient(180deg,rgba(0,212,255,.35) 0 6px,transparent 6px 12px)}
+  .ad-link.is-flowing{background:linear-gradient(180deg,var(--cyan),#4ade80)}
+  .ad-packet{left:50%;top:0}
+  @keyframes adPacket{0%{top:0;opacity:1}90%{opacity:1}100%{top:100%;opacity:0}}
+  .ad-opts{flex-direction:row;flex-wrap:wrap}
+  .auto-demo{padding:1.4rem 1.1rem 1.2rem}
+  .auto-demo .ad-cta{margin-left:0;flex:0 0 100%;justify-content:center}
+  .auto-demo .ad-run{flex:0 0 100%;max-width:none}
+  /* One swipeable row of options per step keeps the stacked demo short. */
+  .ad-opts{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-right:-1.1rem;padding-right:1.1rem}
+  .ad-opts::-webkit-scrollbar{display:none}
+  .ad-opt{flex-shrink:0;white-space:nowrap}
+}
+
+/* Light theme: the nodes stay dark tiles (they read as devices), the text
+   around them follows the page. */
+[data-theme="light"] .auto-demo{background:radial-gradient(80% 120% at 0% 0%,rgba(0,212,255,.08),transparent 60%),#fff;border-color:rgba(0,100,180,.16)}
+[data-theme="light"] .ad-title{color:#1c2333}
+[data-theme="light"] .ad-opt{color:#3d4f63}
+[data-theme="light"] .ad-opt:hover{color:#1c2333;background:rgba(0,100,180,.06)}
+[data-theme="light"] .ad-opt[aria-pressed="true"]{color:#0a63b8;background:rgba(0,100,180,.07);border-color:rgba(0,100,180,.3)}
+[data-theme="light"] .ad-log{color:#15803d}
+[data-theme="light"] .ad-log li:last-child:not(:first-child){color:#3d4f63}
+
+/* ── 4. hover scroll ──────────────────────────────────────────────── */
+/* Sits over the screenshot and under the address bar (raised to z 2).
+   Invisible until its full-page capture has loaded
+   (33-card-hover-scroll.js). */
+.ss-win{position:relative}
+.thumb-ss .ss-win .t-urlbar{position:relative;z-index:2}
+.ss-scroll{
+  position:absolute;inset:0;z-index:1;
+  background-repeat:no-repeat;background-size:100% auto;background-position:50% 0;
+  opacity:0;pointer-events:none;
+  transition:opacity .3s ease,background-position .9s cubic-bezier(.4,0,.2,1);
+}
+.proj-card:hover .ss-scroll.is-ready{
+  opacity:1;background-position:50% 100%;
+  transition:opacity .3s ease,background-position var(--dur,8s) linear .45s;
+}
+@media(prefers-reduced-motion:reduce){.ss-scroll{display:none}}
+
+/* ── 5. career tabs + certificate coverflow ───────────────────────── */
+.exp-tabs{
+  position:relative;display:inline-flex;gap:.25rem;margin:0 0 2rem;padding:.3rem;
+  border-radius:99px;background:rgba(255,255,255,.03);border:1px solid var(--border);
+}
+.exp-tab{
+  position:relative;z-index:1;display:inline-flex;align-items:center;gap:.5rem;
+  padding:.55rem 1.1rem;border-radius:99px;cursor:pointer;
+  font:600 .8rem/1 var(--font-body);letter-spacing:.03em;color:var(--muted2);
+  background:none;border:none;transition:color .25s;
+}
+.exp-tab[aria-selected="true"]{color:#031018}
+.exp-tab-n{font-size:.62rem;padding:.12rem .42rem;border-radius:99px;background:rgba(0,212,255,.12);color:var(--cyan)}
+.exp-tab[aria-selected="true"] .exp-tab-n{background:rgba(3,16,24,.18);color:#031018}
+.exp-tab-ink{
+  position:absolute;z-index:0;top:.3rem;bottom:.3rem;left:0;border-radius:99px;
+  background:linear-gradient(135deg,var(--cyan),var(--blue));
+  box-shadow:0 6px 18px rgba(0,212,255,.3);
+  transition:transform .45s cubic-bezier(.16,1,.3,1),width .45s cubic-bezier(.16,1,.3,1);
+}
+/* Before JS, the selected colour would sit on no ink: keep text readable. */
+.exp-tabs:not(.is-js) .exp-tab[aria-selected="true"]{color:var(--cyan)}
+.exp-tabs:not(.is-js) .exp-tab-ink{display:none}
+.exp-panel[hidden]{display:none}
+.exp-panel-in{animation:expIn .5s cubic-bezier(.16,1,.3,1)}
+@keyframes expIn{from{opacity:0;translate:0 14px}}
+/* The certs block no longer follows the timeline, so it needs no top rule. */
+#panel-certs .certs-inline{margin-top:0;padding-top:0}
+#panel-certs .certs-inline::before{display:none}
+
+.certs-groups.is-carousel{
+  display:block;position:relative;perspective:1200px;
+  transition:height .45s cubic-bezier(.16,1,.3,1);
+  outline:none;touch-action:pan-y;
+}
+.certs-groups.is-carousel:focus-visible{outline:2px solid var(--cyan);outline-offset:8px;border-radius:16px}
+.certs-groups.is-carousel>.cert-group{
+  position:absolute;top:0;left:50%;width:min(560px,86%);margin:0;
+  grid-column:auto;grid-row:auto;
+  translate:calc(-50% + var(--p,0) * 66%) 0;
+  transform:translateZ(calc(var(--a,0) * -220px)) rotateY(calc(var(--p,0) * -34deg));
+  opacity:calc(1 - var(--a,0) * .55);
+  /* Solid face, so a side card never shows through the front one. */
+  background:#07111f;
+  transition:translate .6s cubic-bezier(.16,1,.3,1),transform .6s cubic-bezier(.16,1,.3,1),opacity .45s,filter .45s;
+  filter:saturate(calc(1 - var(--a,0) * .5));
+  cursor:pointer;
+}
+.certs-groups.is-carousel>.cert-group.is-front{cursor:default;box-shadow:0 24px 50px -20px rgba(0,0,0,.7),0 0 0 1px rgba(0,212,255,.18)}
+.certs-groups.is-carousel>.cert-group.is-far{opacity:0;pointer-events:none}
+[data-theme="light"] .certs-groups.is-carousel>.cert-group{background:#fff}
+.cert-ctrl{display:flex;align-items:center;justify-content:center;gap:1rem;margin-top:1.4rem}
+.cert-ctrl[hidden]{display:none}
+.cert-arrow{
+  width:38px;height:38px;border-radius:50%;cursor:pointer;display:grid;place-items:center;
+  color:var(--cyan);background:rgba(5,14,30,.9);border:1px solid var(--border2);
+  transition:background .2s,border-color .2s,box-shadow .2s;
+}
+.cert-arrow:hover{background:rgba(0,212,255,.12);border-color:var(--cyan);box-shadow:0 0 18px rgba(0,212,255,.25)}
+.cert-pips{display:flex;gap:.45rem}
+.cert-pip{width:8px;height:8px;padding:0;border-radius:99px;border:none;cursor:pointer;background:var(--border2);transition:width .3s,background .3s}
+.cert-pip[aria-current="true"]{width:24px;background:var(--cyan)}
+@media(max-width:600px){
+  .certs-groups.is-carousel>.cert-group{width:88%;translate:calc(-50% + var(--p,0) * 70%) 0}
+  .exp-tab{padding:.5rem .85rem;font-size:.74rem}
+}
+@media(prefers-reduced-motion:reduce){
+  .certs-groups.is-carousel>.cert-group{transition:opacity .2s}
+}
+
+/* ── 6. section entries ───────────────────────────────────────────── */
+@supports (animation-timeline:view()){
+  @media(prefers-reduced-motion:no-preference){
+    /* Headings unfold toward the reader as they enter. Individual
+       `rotate`/`translate`, so nothing else that animates `transform` on
+       an h2 is overridden. The parent carries the perspective. */
+    :is(.sec,.testi-inner,.contact-stage1,.thanks-section){perspective:1000px}
+    :is(.sec,.testi-inner,.contact-stage1,.thanks-section)>h2,
+    .contact-stage1>div>h2{
+      transform-origin:50% 100%;
+      animation:secH2In linear both;
+      animation-timeline:view();
+      animation-range:entry 10% entry 90%;
+    }
+    @keyframes secH2In{from{rotate:1 0 0 70deg;translate:0 .4em;opacity:0}to{rotate:1 0 0 0deg;translate:0 0;opacity:1}}
+
+    /* Dividers draw outward from the centre as they scroll in. `scale`
+       rather than `transform`, which the divider's pseudo-elements use. */
+    .divider{
+      animation-name:energize,dividerDraw;
+      animation-duration:3s,1ms;
+      animation-timing-function:ease-in-out,linear;
+      animation-iteration-count:infinite,1;
+      animation-fill-mode:none,both;
+      animation-timeline:auto,view();
+      animation-range:normal,entry 0% cover 40%;
+    }
+    @keyframes dividerDraw{from{scale:0 1}to{scale:1 1}}
+  }
+}

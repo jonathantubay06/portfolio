@@ -1,0 +1,323 @@
+/* ═══════════════════════════════════════
+   REDUCED MOTION — granular
+═══════════════════════════════════════ */
+@media(prefers-reduced-motion:reduce){
+  .svc-ico-3d{animation:none!important;transform:none!important}
+
+  /* Hero render: freeze the plate and every overlay. */
+  .hero-scene,.hero-ambient,.fx-laptop::before,.fx-laptop::after,
+  .fx-tablet::before,.fx-wire,.fx-lamp,.fx-ping,.fx-pen{
+    animation:none!important;transform:none!important;
+  }
+  .fx-svg,.fx-laptop,.fx-tablet{display:none}
+
+  *,*::before,*::after{
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.01ms!important;
+    scroll-behavior:auto!important;
+  }
+  body{opacity:1;animation:none}
+  .r{opacity:1;transform:none;animation:none}
+  
+  #back-to-top{transition:none}
+  .proj-card:hover{transform:none}
+  .proj-sheen{display:none}
+  
+  .svc-row:hover{transform:none}
+  .cert-group:hover{transform:none}
+  .cbadge:hover{transform:none}
+}
+
+/* ═══════════════════════════════════════
+   SPECIAL THANKS
+═══════════════════════════════════════ */
+.thanks-section{
+  padding:6rem 1.5rem 5rem;
+  text-align:center;
+  max-width:760px;
+  margin:0 auto;
+}
+.thanks-heading{
+  font-family:var(--font-head);
+  font-size:clamp(1.6rem,4vw,2.4rem);
+  letter-spacing:.04em;
+  margin:.5rem 0 .6rem;
+  background:linear-gradient(135deg,var(--cyan),var(--blue));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.thanks-sub{
+  color:var(--muted);font-size:.95rem;margin-bottom:2.5rem;
+}
+.thanks-card{
+  position:relative;
+  background:rgba(0,212,255,0.04);
+  border:1px solid rgba(0,212,255,0.22);
+  border-radius:16px;
+  padding:2.4rem 2rem 2rem;
+  display:flex;gap:2rem;align-items:flex-start;
+  text-align:left;
+  box-shadow:0 0 40px rgba(0,212,255,0.07), inset 0 0 60px rgba(0,212,255,0.03);
+  transition:box-shadow .35s ease, border-color .35s ease;
+}
+.thanks-card::before{
+  content:'';
+  position:absolute;inset:-1px;border-radius:17px;
+  background:linear-gradient(135deg,rgba(0,212,255,0.3),rgba(14,122,255,0.15),transparent 60%);
+  pointer-events:none;z-index:0;opacity:.6;
+}
+.thanks-card:hover{
+  border-color:rgba(0,212,255,0.5);
+  box-shadow:0 0 60px rgba(0,212,255,0.14), inset 0 0 60px rgba(0,212,255,0.05);
+}
+.thanks-card>*{position:relative;z-index:1;}
+.thanks-body{flex:1;min-width:0;}
+.thanks-quote{
+  font-size:clamp(.92rem,2vw,1.02rem);
+  line-height:1.8;
+  color:var(--muted2);
+  border:none;
+  padding:0;
+  margin:0 0 1.4rem;
+  font-style:normal;
+}
+.thanks-quote em{
+  color:var(--cyan);font-style:italic;
+}
+.thanks-quote::before{
+  content:'\201C';
+  font-size:2rem;line-height:0;vertical-align:-.4em;
+  color:var(--cyan);opacity:.4;margin-right:.15em;
+  display:none; /* quote text already starts with " */
+}
+/* Subject row: name + role on left, buttons on right */
+.thanks-subject{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:1rem;flex-wrap:wrap;margin-bottom:1.2rem;
+}
+.thanks-subject-inner{flex:1;min-width:0;}
+.thanks-name{
+  font-family:var(--font-head);font-size:.95rem;letter-spacing:.08em;
+  color:var(--text);margin-bottom:.2rem;
+}
+.thanks-role{font-size:.83rem;color:var(--muted);}
+.thanks-link{color:var(--cyan);text-decoration:none;}
+.thanks-link:hover{text-decoration:underline;}
+.thanks-divider{
+  height:1px;background:rgba(0,212,255,0.15);margin:0 0 1.4rem;
+}
+.thanks-actions{display:flex;gap:.8rem;flex-wrap:wrap;}
+.thanks-btn{
+  display:inline-flex;align-items:center;gap:.45rem;
+  padding:.48rem 1rem;border-radius:var(--radius);
+  background:linear-gradient(135deg,var(--cyan),var(--blue));
+  color:#000;font-size:.78rem;font-weight:700;letter-spacing:.05em;
+  text-decoration:none;transition:opacity .2s,transform .2s;white-space:nowrap;
+}
+.thanks-btn:hover{opacity:.88;transform:translateY(-1px);}
+.thanks-btn-ghost{
+  background:transparent;
+  border:1px solid rgba(0,212,255,0.35);
+  color:var(--cyan);
+}
+.thanks-btn-ghost:hover{background:rgba(0,212,255,0.08);opacity:1;}
+/* Attribution line: "— Jonathan Tubay" */
+.thanks-attribution{
+  font-size:.82rem;color:var(--muted);
+  font-style:italic;margin-top:.2rem;
+  letter-spacing:.02em;
+}
+@media(max-width:600px){
+  .thanks-card{flex-direction:column;gap:1.4rem;padding:1.8rem 1.4rem 1.6rem;}
+  .thanks-subject{flex-direction:column;align-items:flex-start;}
+}
+
+/* ═══════════════════════════════════════
+   TOUCH / NO-HOVER DEVICES
+   Hover overlay never fires on phones & tablets —
+   always show it so Details/Live Site are tappable
+═══════════════════════════════════════ */
+@media (hover: none) {
+  /* Always show the card overlay so touch users can tap Details */
+  .t-overlay{opacity:1}
+  /* Always hide URL bar — it's behind the always-visible overlay */
+  .thumb-ss .t-urlbar{opacity:0;pointer-events:none}
+  /* Disable 3D tilt on touch — mousemove doesn't fire, avoids stuck transforms */
+  .proj-card{transform:none!important;box-shadow:none!important}
+  .proj-sheen{display:none}
+  /* Slightly tighter overlay gradient so the screenshot top is still visible */
+  .t-overlay{background:linear-gradient(to top,rgba(2,8,20,.96) 0%,rgba(2,8,20,.55) 55%,transparent 100%)}
+}
+
+/* ═══════════════════════════════════════
+   EXTRA SMALL (<=400px) — very small phones
+═══════════════════════════════════════ */
+@media(max-width:400px){
+  .hero{padding:2.5rem .85rem 4rem}
+  .sec{padding:3rem .9rem}
+  .modal-inner{width:100%;border-radius:12px 12px 0 0;position:fixed;bottom:0;top:auto;transform:translateY(100%)}
+  .proj-modal.open .modal-inner{transform:translateY(0)}
+  .proj-modal{align-items:flex-end}
+  .modal-screenshot{aspect-ratio:16/7}
+  .btn-modal-open,.btn-modal-site{font-size:.6rem;padding:.4rem .45rem}
+  .cbadge{font-size:.65rem;padding:.28rem .55rem}
+}
+
+/* ═══════════════════════════════════════
+   FOCUS VISIBLE — keyboard nav
+═══════════════════════════════════════ */
+:focus-visible{
+  outline:2px solid var(--cyan);
+  outline-offset:3px;
+}
+a:focus:not(:focus-visible),
+button:focus:not(:focus-visible){
+  outline:none;
+}
+
+/* ═══════════════════════════════════════
+   NOISE / GRAIN OVERLAY
+═══════════════════════════════════════ */
+.noise-overlay{
+  position:fixed;inset:0;z-index:1;pointer-events:none;
+  opacity:.028;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat:repeat;background-size:200px 200px;
+}
+
+/* ═══════════════════════════════════════
+   NEON SVG CURSORS — arrow default, hand on links
+   ═══════════════════════════════════════ */
+body{
+  cursor: url('cursors/arrow.svg') 4 4, auto;
+}
+a,button,[role="button"],label,input,select,textarea,.btn,.proj-card{
+  cursor: pointer;
+}
+/* Keep native cursor on touch */
+@media(hover:none){
+  body, a, button{ cursor: auto }
+}
+
+/* ═══════════════════════════════════════
+   CUSTOM CURSOR (desktop — injected by effects.js)
+═══════════════════════════════════════ */
+/* Dot + ring removed — replaced by SVG neon cursors above */
+
+/* ═══════════════════════════════════════
+   AVAILABLE FOR PROJECTS PILL
+═══════════════════════════════════════ */
+/* Stack order from bottom: back-to-top (1.8rem) → book-pill (5.4rem) → avail-pill (8.4rem) */
+#avail-pill{
+  position:fixed;bottom:8.4rem;right:1.8rem;z-index:149;
+  display:flex;align-items:center;gap:.45rem;
+  padding:.46rem 1rem;
+  background:rgba(34,197,94,.07);
+  border:1px solid rgba(34,197,94,.28);
+  border-radius:100px;
+  font-size:.73rem;font-weight:600;letter-spacing:.05em;
+  color:#4ade80;text-decoration:none;
+  opacity:0;transform:translateX(120%);
+  transition:opacity .4s,transform .4s cubic-bezier(.25,.8,.25,1);
+  pointer-events:none;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+}
+#avail-pill.visible{opacity:1;transform:translateX(0);pointer-events:auto}
+#avail-pill:hover{background:rgba(34,197,94,.13);border-color:rgba(34,197,94,.5)}
+.avail-pill-dot{
+  width:7px;height:7px;border-radius:50%;
+  background:#4ade80;flex-shrink:0;
+  animation:pill-pulse 2.2s ease-in-out infinite;
+}
+@keyframes pill-pulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,.45)}
+  50%    {box-shadow:0 0 0 7px rgba(74,222,128,0)}
+}
+@media(max-width:600px){#avail-pill{display:none}}
+
+/* ═══════════════════════════════════════
+   ACTIVE NAV LINK
+═══════════════════════════════════════ */
+.nav-links a.active{color:var(--cyan)}
+.nav-links a.active::after{width:100%}
+
+/* ═══════════════════════════════════════
+   BACK-TO-TOP PROGRESS RING
+═══════════════════════════════════════ */
+.btt-ring{
+  position:absolute;inset:0;
+  width:100%!important;height:100%!important;
+  transform:rotate(-90deg);
+  pointer-events:none;overflow:visible;
+  stroke-width:unset!important;
+}
+#back-to-top .btt-track{fill:none;stroke:rgba(0,212,255,.12);stroke-width:2}
+#back-to-top .btt-progress{
+  fill:none;stroke:var(--cyan);stroke-width:2;
+  stroke-linecap:round;
+  stroke-dasharray:113.1;stroke-dashoffset:113.1;
+  transition:stroke-dashoffset .1s linear;
+}
+
+/* ═══════════════════════════════════════
+   COPY EMAIL BUTTON
+═══════════════════════════════════════ */
+.c-opt-val-row{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.copy-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:26px;height:26px;border-radius:6px;
+  background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.18);
+  color:var(--cyan);cursor:pointer;
+  transition:all .2s;flex-shrink:0;padding:0;
+}
+.copy-btn:hover{background:rgba(0,212,255,.18);border-color:rgba(0,212,255,.5)}
+.copy-btn svg{width:13px;height:13px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.copy-toast{
+  position:fixed;bottom:2.5rem;left:50%;transform:translateX(-50%) translateY(20px);
+  background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.35);
+  color:#4ade80;padding:.5rem 1.3rem;border-radius:100px;
+  font-size:.82rem;font-weight:600;
+  opacity:0;transition:opacity .25s,transform .25s;
+  pointer-events:none;z-index:9999;white-space:nowrap;
+}
+.copy-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ═══════════════════════════════════════
+   EASTER EGG — terminal overlay
+═══════════════════════════════════════ */
+#egg-overlay{
+  position:fixed;inset:0;z-index:10000;
+  background:rgba(0,0,0,.82);
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;
+  transition:opacity .3s ease;
+}
+#egg-overlay.open{opacity:1;pointer-events:auto}
+#egg-terminal{
+  background:var(--bg);border:1px solid var(--cyan);border-radius:10px;
+  padding:2rem 2.5rem;width:min(520px,90vw);
+  box-shadow:0 0 60px rgba(0,212,255,.28);
+  font-family:var(--font-head);font-size:.82rem;
+}
+.egg-bar{
+  display:flex;align-items:center;gap:.45rem;
+  margin-bottom:1.4rem;padding-bottom:.9rem;
+  border-bottom:1px solid var(--border);
+}
+.egg-bar-dot{width:10px;height:10px;border-radius:50%}
+.egg-bar-title{font-size:.68rem;color:var(--muted);letter-spacing:.1em;margin-left:auto}
+.egg-line{line-height:2.1;color:var(--muted2)}
+.egg-cmd{color:var(--cyan)}
+.egg-ok{color:#4ade80}
+.egg-dim{color:var(--muted);font-size:.76rem}
+#egg-close{
+  display:block;margin:1.6rem auto 0;
+  padding:.55rem 1.8rem;
+  background:transparent;border:1px solid var(--cyan);
+  color:var(--cyan);border-radius:4px;cursor:pointer;
+  font-family:var(--font-head);font-size:.74rem;font-weight:700;letter-spacing:.1em;
+  transition:all .2s;
+}
+#egg-close:hover{background:var(--cyan);color:#000}
+

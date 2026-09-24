@@ -8,7 +8,6 @@ testimonials
 experience
 special-thanks
 project-modals
-side-dot-navigation
 keyboard-shortcut-hint
 back-to-top
 easter-egg-terminal

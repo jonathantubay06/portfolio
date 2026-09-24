@@ -1,6 +1,0 @@
-/* ═══════════════════════════════════════
-   ACTIVE NAV LINK
-═══════════════════════════════════════ */
-.nav-links a.active{color:var(--cyan)}
-.nav-links a.active::after{width:100%}
-

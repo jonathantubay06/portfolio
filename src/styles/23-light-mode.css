@@ -35,11 +35,11 @@
 [data-theme="light"] .acc-lbl{color:#3d4f63}
 /* Light mode depth-fade: same structure as dark but with warm tones */
 [data-theme="light"] .testi-bg{background:linear-gradient(180deg,rgba(240,237,232,.9) 0%,#f0ede8 8%,#f0ede8 92%,rgba(240,237,232,.9) 100%)}
-[data-theme="light"] .tc{background:#fff;border-color:rgba(0,100,180,.12)}
-[data-theme="light"] .tc-quote{color:rgba(28,35,51,.82)}
-[data-theme="light"] .tc-name{color:#1c2333}
-[data-theme="light"] .tc-role{color:#5a6880}
-[data-theme="light"] .tools-bg{background:linear-gradient(180deg,rgba(240,237,232,.9) 0%,#f0ede8 8%,#f0ede8 92%,rgba(240,237,232,.9) 100%)}
+
+
+
+
+
 [data-theme="light"] .pi-num{color:var(--cyan)}
 [data-theme="light"] .pi-title{color:#1c2333}
 [data-theme="light"] .tl-role{color:#3d4f63}
@@ -52,10 +52,10 @@
 [data-theme="light"] footer{background:#f0ede8;border-top-color:rgba(0,100,180,.12)}
 [data-theme="light"] .nav-drawer{background:#faf8f5}
 [data-theme="light"] .nav-drawer a{color:#1c2333}
-[data-theme="light"] .pf-btn{border-color:rgba(0,100,180,.2);color:#3d4f63}
+
 /* No colour override: white on #00d4ff is 1.77:1. The dark-mode rule
    already uses #03080f on this same cyan, which is 11.35:1. */
-[data-theme="light"] .pf-btn.active{background:var(--cyan);border-color:var(--cyan)}
+
 [data-theme="light"] h2{color:#1c2333}
 /* Hero always stays dark-on-dark — never override its text */
 [data-theme="light"] .hero,
@@ -71,7 +71,7 @@
 [data-theme="light"] .svc-title-sm{color:#1c2333}
 [data-theme="light"] .pi-title{color:#1c2333}
 [data-theme="light"] .proj-name{color:#1c2333}
-[data-theme="light"] .tc-name{color:#1c2333}
+
 [data-theme="light"] .tl-co{color:#1c2333}
 [data-theme="light"] .hero-sub{color:rgba(28,35,51,.75)}
 [data-theme="light"] .pbadge{background:rgba(0,100,180,.08);border-color:rgba(0,100,180,.2);color:#3d4f63}
@@ -93,7 +93,7 @@
 [data-theme="light"] .ci-val{color:#1c2333}
 [data-theme="light"] .ci-val a{color:var(--cyan)}
 [data-theme="light"] .ci-row{background:#fff;border-color:rgba(0,100,180,.14)}
-[data-theme="light"] .c-opt{background:#fff;border-color:rgba(0,100,180,.14)}
+
 [data-theme="light"] .c-info-intro{color:#5a6880}
 
 [data-theme="light"] .fg input,
@@ -102,7 +102,7 @@
 [data-theme="light"] .fg input::placeholder,
 [data-theme="light"] .fg textarea::placeholder{color:#8a9ab0}
 [data-theme="light"] .fg label{color:#3d4f63}
-[data-theme="light"] .stage2-line{background:rgba(0,100,180,.15)}
+
 
 /* ── Modal close button (white icon on white bg in light mode) ── */
 [data-theme="light"] .modal-close{color:#3d4f63}
@@ -122,9 +122,7 @@
    Hide floating code tokens — they crowd the
    hero on portrait tablets and smaller iPads
 ═══════════════════════════════════════ */
-@media(max-width:768px){
-  .hero-code-float{display:none}
-}
+
 
 /* ═══════════════════════════════════════
    RESPONSIVE — TABLET (<=900px)
@@ -134,10 +132,10 @@
   .nav-cta{display:none} /* already in the mobile drawer — hide in the top bar */
   .nav-toggle{display:flex}
   nav{padding:.85rem 1.2rem}
-  .testi-track .tc{flex:0 0 calc((100% - 1.25rem) / 2)}
-  .testi-prev{left:-16px}
-  .testi-next{right:-16px}
-  .grid-portfolio{grid-template-columns:repeat(2,1fr)}
+  
+  
+  
+  
   .svc-compact{grid-template-columns:1fr}
   .acc-strip{grid-template-columns:1fr}
   .c-layout{grid-template-columns:1fr}
@@ -147,7 +145,7 @@
   .pi-arrow{display:none}
   .cert-group-header{flex-wrap:wrap}
   /* Testimonials: shrink nav arrows on tablet */
-  .testi-prev,.testi-next{width:32px;height:32px;font-size:.85rem}
+  
   /* Timeline: tighter on tablet */
   .tl-head{flex-direction:column;gap:.2rem}
   /* Contact info rows stack tidier */
@@ -157,20 +155,18 @@
   /* Hero fade: slightly shorter on tablet */
   .hero::after{height:100px}
   /* Depth-fade sections: slightly reduced for smaller screens */
-  .testi-bg::before,.testi-bg::after,
-  .tools-bg::before,.tools-bg::after,
-  .built-wrap::before,.built-wrap::after{opacity:.8}
+  .testi-bg::before,.testi-bg::after,.built-wrap::before,.built-wrap::after{opacity:.8}
 }
 
 /* ═══════════════════════════════════════
    RESPONSIVE — MOBILE (<=600px)
 ═══════════════════════════════════════ */
 @media(max-width:600px){
-  .testi-track .tc{flex:0 0 100%}
-  .testi-track{gap:.75rem}
-  .testi-prev{left:-10px}
-  .testi-next{right:-10px}
-  .grid-portfolio{grid-template-columns:1fr}
+  
+  
+  
+  
+  
   .proj-body{padding:1rem}
   .svc-compact{grid-template-columns:1fr;gap:.5rem}
   .acc-strip{grid-template-columns:1fr;gap:.7rem}
@@ -181,9 +177,9 @@
   .stat-item:nth-child(2){border-right:none}
   .stat-item:nth-child(3){border-bottom:none}
   .stat-item:last-child{border-right:none;border-bottom:none}
-  .c-options{flex-direction:column;align-items:stretch}
-  .c-opt{flex-direction:row;align-items:center;gap:.9rem;min-width:auto}
-  .c-opt-ico{font-size:1.4rem}
+  
+  
+  
   .hero-cta{flex-direction:column;align-items:center}
   .hero{padding:3rem 1rem 4.5rem}
   .btn{width:100%;max-width:280px;justify-content:center}
@@ -194,7 +190,7 @@
   .pbadge{font-size:.65rem;padding:.28rem .65rem}
   .stat-strip{grid-template-columns:repeat(2,1fr);gap:0}
   .scroll-hint{display:none}
-  .start-btn{width:100%;max-width:320px;justify-content:center}
+  
   .timeline{padding-left:1.4rem}
   .tl-marker{left:-1.95rem}
   /* Card overlay on mobile */
@@ -213,7 +209,7 @@
   .cbadge:hover{transform:none;box-shadow:none} /* no scale on mobile */
   .cert-group-header{flex-wrap:wrap}
   /* Testi dots: larger touch targets on mobile */
-  .testi-dot{width:9px;height:9px;padding:6px;box-sizing:content-box}
+  
   /* Hero bottom fade: shorter on mobile */
   .hero::after{height:80px}
   /* Divider: keep thin line but reduce glow on mobile */
@@ -222,7 +218,7 @@
   .built-track{gap:1.5rem}
   /* Marquee: smaller text on mobile */
   .built-item{font-size:.7rem}
-  .built-icon{width:16px;height:16px}
+  
   /* Section label smaller */
   .sec-label{font-size:.66rem;letter-spacing:.16em}
   /* Timeline: tighter */
@@ -235,7 +231,7 @@
   /* Footer links wrap */
 
   /* Floating code tokens hidden on mobile (already JS-guarded, this is CSS backup) */
-  .hero-code-float{display:none}
+  
   /* Scroll hint hidden on mobile */
   .scroll-hint{display:none}
   /* World clock smaller */
