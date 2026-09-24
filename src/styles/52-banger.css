@@ -309,3 +309,96 @@
     @keyframes dividerDraw{from{scale:0 1}to{scale:1 1}}
   }
 }
+
+/* ═══════════════════════════════════════
+   AUDIT PASS (2026-09-24)
+   7. Contrast       every text colour at WCAG AA in both themes
+   8. Backgrounds    light mode full width; Services and Contact get
+                     their own glow so the page is not one flat slab
+   9. Phones         shorter Work (swipe rows), clamped service copy,
+                     render under the hero copy, less floating chrome
+═══════════════════════════════════════ */
+
+/* ── 7. contrast ──────────────────────────────────────────────────── */
+/* Card one-liners were 4.17:1 (dark) and 3.37:1 (light) at 12px. */
+.proj-card .proj-desc{color:rgba(232,244,255,.64)}
+[data-theme="light"] .proj-card .proj-desc{color:rgba(15,25,42,.7)}
+
+/* Figures keep their card's colour, pulled toward white (dark) or ink
+   (light) until they clear 4.5:1. The video checker's purple was 2.83:1,
+   and bright cyan on white 1.49:1. */
+.proj-metric b{color:color-mix(in srgb,rgb(var(--glow)) 68%,#fff)}
+[data-theme="light"] .proj-metric b{color:color-mix(in srgb,rgb(var(--glow)) 45%,#0b1a2e)}
+
+/* Light mode: #00d4ff on white is 1.77:1. Text that used it takes the
+   darker brand blue; fills, borders and glows keep the cyan. */
+[data-theme="light"] .pi-num,
+[data-theme="light"] .work-group-h,
+[data-theme="light"] .thanks-link,
+[data-theme="light"] .thanks-btn-ghost,
+[data-theme="light"] .ci-val a{color:#0a63b8}
+[data-theme="light"] .btn-modal-site{color:#0a63b8;border-color:rgba(10,99,184,.35)}
+[data-theme="light"] .proj-origin-free    {color:#7a4f00;border-color:rgba(160,110,0,.4);background:rgba(255,200,0,.14)}
+[data-theme="light"] .proj-origin-sentry  {color:#274c96;border-color:rgba(39,76,150,.32);background:rgba(39,76,150,.06)}
+[data-theme="light"] .proj-origin-personal{color:#6230b8;border-color:rgba(98,48,184,.3);background:rgba(98,48,184,.06)}
+[data-theme="light"] .c-opt-action-call{color:#12744b}
+[data-theme="light"] .c-opt-action-wa{color:#11763a}
+[data-theme="light"] .qp-label{color:#5a6880}
+/* The hero stays dark in light mode, but the platform chips took the
+   light theme's dark grey text: #3d4f63 on navy, nearly invisible. */
+[data-theme="light"] .hero .pbadge{color:rgba(232,244,255,.72);background:rgba(0,212,255,.045);border-color:rgba(123,154,176,.2)}
+[data-theme="light"] .hero .pbadge:hover{color:var(--cyan);border-color:rgba(0,212,255,.4)}
+
+/* Functional text under 11px: the origin labels were 9.6px (8.3px on
+   the toolkit tiles), the form labels 12px. */
+.proj-origin{font-size:11px}
+.proj-tile .proj-origin{font-size:10.5px;letter-spacing:.08em}
+.fg label{font-size:max(.8rem,12.5px)}
+
+/* ── 8. backgrounds ───────────────────────────────────────────────── */
+/* Light mode painted #faf8f5 on the 1120px section box only, so the
+   body's blue wash showed as strips down both sides: a boxed page in
+   one theme, full bleed in the other. */
+[data-theme="light"] .sec{background:transparent}
+
+/* A soft glow per section, bled to the viewport edges with a
+   border-image outset (not clipped by the sections' overflow-x:clip,
+   and ink overflow adds no scrollbar). Positions are px from the
+   section's centre because the gradient spans the whole outset area. */
+#services,#contact{border-image-slice:0 fill;border-image-width:0;border-image-outset:0 100vmax}
+#services{border-image-source:radial-gradient(ellipse 560px 36% at calc(50% + 420px) 30%,rgba(0,212,255,.075),transparent)}
+#contact {border-image-source:radial-gradient(ellipse 640px 40% at calc(50% - 380px) 60%,rgba(14,122,255,.1),transparent)}
+[data-theme="light"] #services{border-image-source:radial-gradient(ellipse 560px 36% at calc(50% + 420px) 30%,rgba(14,122,255,.07),transparent)}
+[data-theme="light"] #contact {border-image-source:radial-gradient(ellipse 640px 40% at calc(50% - 380px) 60%,rgba(14,122,255,.08),transparent)}
+
+/* ── 9. phones ────────────────────────────────────────────────────── */
+@media(max-width:599px){
+  /* The render, under the copy like tablets. */
+  .hero-art{width:100%;margin:1.25rem 0 -2.5rem}   /* the plate's lower edge is empty desk */
+  .hero-scene{--plate-w:min(94vw,440px)}
+  .hs-label{display:none}   /* tap goes straight to the section; the label would hang off the edge */
+}
+@media(max-width:600px){
+  /* "More builds" and the toolkit become swipe rows: the next card
+     peeks in from the right. Took Work from ~4,500px to ~2,300px. */
+  .work-grid,.work-tiles{
+    display:flex;gap:.85rem;overflow-x:auto;overscroll-behavior-x:contain;
+    scroll-snap-type:x mandatory;scroll-padding-inline:.9rem;
+    margin-inline:-.9rem;padding:.35rem .9rem 1rem;scrollbar-width:none;
+  }
+  .work-grid:focus-visible,.work-tiles:focus-visible{outline:2px solid var(--cyan);outline-offset:-2px;border-radius:12px}
+  .work-grid::-webkit-scrollbar,.work-tiles::-webkit-scrollbar{display:none}
+  .work-grid>.proj-card{flex:0 0 84%;scroll-snap-align:start}
+  .work-tiles>.proj-card{flex:0 0 64%;scroll-snap-align:start}
+
+  /* Service copy clamps to two lines until the row is tapped open. */
+  .svc-row:not(.svc-open) .svc-desc-sm{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+
+  /* The timeline's padding shrinks to 1.4rem here, but the marker kept
+     the desktop offset and sat half off the screen edge. */
+  .tl-marker{left:calc(-1.4rem - 4px)}
+
+  /* The sticky "Let's talk" bar is the floating action on phones; the
+     back-to-top ring above it kept covering card text. */
+  #back-to-top{display:none}
+}

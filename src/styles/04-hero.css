@@ -38,12 +38,11 @@
   .hero .hero-eyebrow,.hero .platforms,.hero .hero-cta,.hero .stat-strip{justify-content:flex-start}
   .hero .scroll-hint{display:none}
 }
-.hero-art{display:none}
-
-/* Render + overlays. Was min-width:1024px; tablets (600-1023px) now show
-   the render under the copy too (sized in 51-hero-polish.css). Phones
-   under 600px still skip it: the <picture> hands them a 1x1 GIF. */
-@media(min-width:600px){
+/* Render + overlays. Was min-width:1024px, then 600px; since 2026-09-24
+   every width shows it. Tablets and phones get it under the copy (sized
+   in 51-hero-polish.css and 52-banger.css). Phones load a small plate
+   only after the page has loaded (see hero.html). */
+@media screen{
   .hero-art{
     display:flex;justify-content:center;
     position:relative;z-index:1;

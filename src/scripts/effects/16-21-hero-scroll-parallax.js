@@ -12,13 +12,17 @@
   const desc = document.querySelector('.hero-desc');
   if (!h1) return;
 
-  window.addEventListener('scroll', () => {
+  // One write per frame at most: scroll can fire several times a frame.
+  let queued = false;
+  function apply() {
+    queued = false;
     const y = window.scrollY;
     if (y > window.innerHeight) return;
     h1.style.transform   = `translateY(-${y * .18}px)`;
     if (sub)  sub.style.transform  = `translateY(-${y * .11}px)`;
     if (desc) desc.style.transform = `translateY(-${y * .07}px)`;
+  }
+  window.addEventListener('scroll', () => {
+    if (!queued) { queued = true; requestAnimationFrame(apply); }
   }, { passive: true });
 })();
-
-

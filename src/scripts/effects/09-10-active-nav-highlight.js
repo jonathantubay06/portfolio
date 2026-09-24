@@ -35,6 +35,15 @@
   }, { rootMargin: '-40% 0px -40% 0px', threshold: 0 });
 
   sections.forEach(s => obs.observe(s));
+
+  // Sections with no nav link (hero, special thanks, contact) clear the
+  // highlight, so "Experience" does not stay lit while you read Contact.
+  const others = [document.querySelector('.hero'), document.querySelector('.thanks-section'), document.getElementById('contact')]
+    .filter(el => el && !linkMap[el.id]);
+  const clear = new IntersectionObserver(entries => {
+    if (entries.some(en => en.isIntersecting)) links.forEach(l => l.classList.remove('active'));
+  }, { rootMargin: '-40% 0px -40% 0px', threshold: 0 });
+  others.forEach(el => clear.observe(el));
 })();
 
 

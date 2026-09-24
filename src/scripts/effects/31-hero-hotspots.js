@@ -15,9 +15,11 @@
   const img = scene && scene.querySelector('.hero-plate');
   if (!scene || !img || !scene.querySelector('.hs')) return;
 
+  let done = false;
   function apply() {
     const src = img.currentSrc;
-    if (!src || src.startsWith('data:')) return;        // phones get a 1x1 GIF: no hotspots there
+    if (done || !src || src.startsWith('data:')) return; // phone placeholder: wait for the real plate
+    done = true;
     scene.style.setProperty('--plate-src', 'url("' + src + '")');
     scene.classList.add('hs-ready');
     if (!PREFERS_REDUCED_MOTION) {
@@ -27,6 +29,17 @@
       }, 3200);
     }
   }
+  img.addEventListener('load', apply);
   if (img.complete && img.currentSrc) apply();
-  else img.addEventListener('load', apply, { once: true });
+
+  // Phones: the render sits under the copy, below the fold, so it must not
+  // compete with the first paint. The <picture> gives phones a 1x1 GIF at
+  // load; once the page has finished loading, the phone source is pointed
+  // at the small plates (14 KB at 1x, 38 KB at 2x) and the render appears.
+  const phone = scene.querySelector('source[data-phone]');
+  if (phone) {
+    const swap = () => { phone.srcset = phone.dataset.phone; };
+    if (document.readyState === 'complete') swap();
+    else window.addEventListener('load', swap, { once: true });
+  }
 })();
