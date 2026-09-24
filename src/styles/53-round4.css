@@ -1,0 +1,215 @@
+/* ═══════════════════════════════════════
+   ROUND 4 — 3D, PRESENTATION, CALM (2026-09-25)
+
+   1. 3D buttons       a pressable edge under every button
+   2. Hero             four chips, flip-in stats
+   3. Section headers  a big outlined numeral behind each heading
+   4. Services deck    cards rise out of a tilted stack as you scroll
+   5. Experience stack older roles unfold from behind the current one
+   6. Contact          the form dressed as a small terminal
+   7. Calm             less glow, no text under 11px, quieter floating UI
+
+   Motion is transform-only (no opacity) so nothing below the fold is
+   ever half transparent when an audit reads it, and every scroll-driven
+   piece sits behind @supports + prefers-reduced-motion.
+═══════════════════════════════════════ */
+
+/* ── 1. 3D buttons ─────────────────────────────────────────────────
+   A solid "edge" shadow under the face, a top highlight and an inner
+   shade. Hover lifts the face and deepens the edge; press sinks it.
+   Only transform and box-shadow change, both cheap to animate. */
+.btn,.btn-modal-open,.btn-modal-site,.qp-btn,.ad-cta,.cert-arrow,.thanks-btn,.exp-tab[aria-selected="true"]{
+  transition:transform .16s cubic-bezier(.3,.7,.4,1.4),box-shadow .16s ease,background .2s,border-color .2s,color .2s;
+}
+.btn-p,.btn-modal-open{
+  --edge:#0757b8;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.45),
+    inset 0 -2px 0 rgba(0,0,0,.14),
+    0 5px 0 var(--edge),
+    0 12px 22px -8px rgba(0,160,255,.55);
+}
+.btn-p:hover,.btn-modal-open:hover{
+  transform:translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.5),
+    inset 0 -2px 0 rgba(0,0,0,.14),
+    0 7px 0 var(--edge),
+    0 18px 28px -10px rgba(0,160,255,.6);
+}
+.btn-p:active,.btn-modal-open:active{
+  transform:translateY(4px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),inset 0 -1px 0 rgba(0,0,0,.14),0 1px 0 var(--edge),0 4px 10px -4px rgba(0,160,255,.4);
+}
+.btn-g,.btn-modal-site,.qp-btn,.ad-cta,.thanks-btn{
+  --edge:rgba(0,212,255,.38);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 4px 0 var(--edge),0 10px 18px -10px rgba(0,0,0,.8);
+}
+.btn-g:hover,.btn-modal-site:hover,.qp-btn:hover,.ad-cta:hover,.thanks-btn:hover{
+  transform:translateY(-2px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 6px 0 var(--edge),0 14px 22px -10px rgba(0,0,0,.85);
+}
+.btn-g:active,.btn-modal-site:active,.qp-btn:active,.ad-cta:active,.thanks-btn:active{
+  transform:translateY(3px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 1px 0 var(--edge),0 3px 8px -4px rgba(0,0,0,.8);
+}
+.cert-arrow{box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 3px 0 rgba(0,212,255,.3)}
+.cert-arrow:active{transform:translateY(3px);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 0 0 rgba(0,212,255,.3)}
+.exp-tab[aria-selected="true"]{box-shadow:inset 0 1px 0 rgba(255,255,255,.4),0 3px 0 #0757b8,0 8px 16px -6px rgba(0,160,255,.5)}
+[data-theme="light"] .btn-g,[data-theme="light"] .btn-modal-site,[data-theme="light"] .qp-btn,
+[data-theme="light"] .ad-cta,[data-theme="light"] .thanks-btn{--edge:rgba(10,99,184,.35)}
+[data-theme="light"] .btn-g,[data-theme="light"] .btn-modal-site,[data-theme="light"] .qp-btn,
+[data-theme="light"] .ad-cta,[data-theme="light"] .thanks-btn{box-shadow:inset 0 1px 0 #fff,0 4px 0 var(--edge),0 10px 18px -12px rgba(15,25,42,.35)}
+/* The sticky phone CTA sits on the screen edge; a lift would clip. */
+.mobile-cta-bar .btn:hover{transform:none}
+@media(prefers-reduced-motion:reduce){
+  .btn:hover,.btn-modal-open:hover,.btn-modal-site:hover,.qp-btn:hover,.ad-cta:hover,.thanks-btn:hover{transform:none}
+}
+
+/* ── 2. hero ──────────────────────────────────────────────────────── */
+/* Softr and Airtable already scroll past in the tech-stack row below;
+   four chips leave the name and the render room to breathe. */
+.hero .platforms .pbadge:nth-child(3),
+.hero .platforms .pbadge:nth-child(4){display:none}
+
+/* Stats flip in like a departure board. Transform only: the numbers are
+   readable (and measurable) from the first frame. */
+@media(prefers-reduced-motion:no-preference){
+  .stat-strip{perspective:600px}
+  .stat-num{transform-origin:50% 0;animation:statFlip .9s cubic-bezier(.2,.9,.25,1.25) both}
+  .stat-item:nth-child(1) .stat-num{animation-delay:.55s}
+  .stat-item:nth-child(2) .stat-num{animation-delay:.67s}
+  .stat-item:nth-child(3) .stat-num{animation-delay:.79s}
+  .stat-item:nth-child(4) .stat-num{animation-delay:.91s}
+  @keyframes statFlip{from{transform:rotateX(-100deg)}60%{transform:rotateX(14deg)}}
+}
+/* A split-flap seam across each figure. */
+.stat-item{position:relative}
+.stat-item::after{
+  content:'';position:absolute;left:14%;right:14%;top:calc(1.1rem + .62em);height:1px;
+  background:linear-gradient(90deg,transparent,rgba(0,0,0,.55),transparent);pointer-events:none;
+}
+
+/* ── 3. section headers ──────────────────────────────────────────────
+   Every section used the same label + two-tone heading. A large
+   outlined numeral at the right of each heading gives the page a sequence and
+   a different silhouette per section. Alt text "" keeps it out of
+   screen readers. */
+#services h2,#work h2,#experience h2,#testimonials h2{position:relative;isolation:isolate}
+#services h2::before,#work h2::before,#experience h2::before{
+  position:absolute;z-index:-1;right:0;top:50%;translate:0 -50%;
+  font:900 clamp(5rem,13vw,10rem)/1 var(--font-head);letter-spacing:-.04em;
+  color:transparent;-webkit-text-stroke:1.5px rgba(0,212,255,.22);
+  pointer-events:none;user-select:none;
+}
+#services h2::before{content:'01' / ''}
+#work h2::before{content:'02' / ''}
+#experience h2::before{content:'03' / ''}
+/* Reviews get a giant quote mark instead of a number. */
+#testimonials h2::before{
+  content:'\201C' / '';position:absolute;z-index:-1;left:-.12em;top:50%;translate:0 -42%;
+  font:700 clamp(7rem,16vw,12rem)/1 Georgia,serif;color:rgba(0,212,255,.1);pointer-events:none;
+}
+[data-theme="light"] #services h2::before,[data-theme="light"] #work h2::before,
+[data-theme="light"] #experience h2::before{-webkit-text-stroke-color:rgba(10,99,184,.14)}
+[data-theme="light"] #testimonials h2::before{color:rgba(10,99,184,.08)}
+
+/* ── 4 + 5. scroll-driven 3D ──────────────────────────────────────── */
+@supports (animation-timeline:view()){
+  @media(prefers-reduced-motion:no-preference){
+    /* Services: each card rises out of a stack tilted away from you. */
+    .svc-compact{perspective:1100px}
+    .svc-row{
+      animation:svcDeck linear both;animation-timeline:view();
+      animation-range:entry 0% entry 85%;transform-origin:50% 100%;
+    }
+    .svc-row:nth-child(even){animation-range:entry 8% entry 95%}
+    @keyframes svcDeck{from{transform:perspective(1000px) rotateX(42deg) translateY(56px) translateZ(-90px)}}
+
+    /* Experience: older roles unfold forward from behind the current
+       one, like cards lifted off a stack. */
+    .tl-item:not(:first-child) .tl-content{
+      animation-name:tlStack;transform-origin:50% 0;
+    }
+    @keyframes tlStack{from{transform:perspective(1100px) rotateX(-28deg) translateY(-36px) scale(.94)}}
+  }
+}
+/* The three oldest roles are shorter entries: less padding, no
+   highlight line, the Details toggle still opens the rest. */
+.tl-item:nth-child(n+3) .tl-content{padding-top:1rem;padding-bottom:1rem}
+.tl-item:nth-child(n+3) .tl-highlight{display:none}
+
+/* ── 6. contact as a terminal ─────────────────────────────────────── */
+.c-form{
+  position:relative;border-radius:14px;padding:3rem 1.4rem 1.4rem;
+  background:linear-gradient(180deg,rgba(9,20,36,.92),rgba(5,12,24,.92));
+  border:1px solid rgba(0,212,255,.2);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 24px 50px -24px rgba(0,0,0,.8);
+}
+.c-form::before{
+  content:'~/new-project — bash' / '';position:absolute;inset:0 0 auto;height:2.1rem;
+  display:flex;align-items:center;justify-content:center;
+  font:600 11px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.04em;color:var(--muted);
+  border-bottom:1px solid rgba(0,212,255,.14);border-radius:14px 14px 0 0;background:rgba(255,255,255,.025);
+}
+.c-form::after{
+  content:'' / '';position:absolute;top:.72rem;left:.9rem;width:10px;height:10px;border-radius:50%;
+  background:#ff5f57;box-shadow:16px 0 0 #febc2e,32px 0 0 #28c840;
+}
+.c-form .fg label{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.02em;text-transform:none}
+.c-form .fg label::before{content:'> ' / '';color:var(--cyan)}
+.c-form input,.c-form select,.c-form textarea{caret-color:var(--cyan)}
+[data-theme="light"] .c-form{background:#fff;border-color:rgba(0,100,180,.18);box-shadow:0 20px 40px -24px rgba(15,25,42,.3)}
+[data-theme="light"] .c-form::before{background:#f4f6f9;border-bottom-color:rgba(0,100,180,.12)}
+[data-theme="light"] .c-form .fg label::before{color:#0a63b8}
+
+/* ── 7. calm ──────────────────────────────────────────────────────── */
+/* Glow kept for the hero name, the cubes, primary buttons and active
+   states; section headings, figures and labels lose theirs. */
+.sec h2,.sec h2 em,.sec-label,.stat-num,.proj-metric b,.pi-num,.work-group-h,.thanks-heading{text-shadow:none}
+
+/* No functional text under 11px (it was down to 9.3px in places). */
+.stat-lbl,.tz-rel,.built-label,.pi-num,.ad-kicker,.ad-step,.card-live-badge,
+.btn-modal-open,.btn-modal-site,.ptag,.tq-src,.tl-mono,.tl-now,.tl-more,
+.cert-group-count,.cbadge-year,.cbadge-view,.honors-tag,.ci-lbl,
+.modal-badge,.modal-label,.modal-stack-label,.modal-nav-count{font-size:11px}
+.proj-tile .proj-origin{font-size:11px}
+
+/* Side dots: labels only on hover, not a permanent caption. */
+.sdot.active:not(:hover)::after{opacity:0!important}
+
+@media(max-width:600px){#services h2::before,#work h2::before,#experience h2::before{display:none}}
+
+/* ── 8. phone fixes (2026-09-25 review) ───────────────────────────── */
+.swipe-dots{display:none}
+@media(max-width:600px){
+  /* Swipe rows: dots under each row, and the right edge fades so the
+     cut-off card reads as "more this way". */
+  .swipe-dots{display:flex;justify-content:center;gap:.45rem;margin:-.2rem 0 1.4rem}
+  .swipe-dots button{
+    width:7px;height:7px;padding:0;border:0;border-radius:99px;
+    background:rgba(0,212,255,.25);transition:width .25s,background .25s;
+  }
+  .swipe-dots button.on{width:20px;background:var(--cyan)}
+  [data-theme="light"] .swipe-dots button{background:rgba(10,99,184,.22)}
+  [data-theme="light"] .swipe-dots button.on{background:#0a63b8}
+  .work-grid,.work-tiles,.ad-opts{
+    -webkit-mask-image:linear-gradient(90deg,#000 82%,transparent);
+            mask-image:linear-gradient(90deg,#000 82%,transparent);
+  }
+
+  /* Quick-pick: icon above the label so long names stay inside the pill. */
+  .qp-btns{display:grid;grid-template-columns:repeat(3,1fr);gap:.55rem}
+  .qp-btns .qp-btn{flex-direction:column;justify-content:center;gap:.35rem;padding:.7rem .4rem;
+    border-radius:14px;text-align:center;line-height:1.2;font-size:.78rem;min-width:0}
+
+  /* Stats: the split-flap seam crossed the figures at this size. */
+  .stat-item::after{display:none}
+
+  /* Footer: centred, links as tap-sized pills. The sticky CTA hides
+     here, so no extra bottom padding is needed. */
+  footer{align-items:center;text-align:center;padding:1.8rem 1.2rem calc(1.8rem + env(safe-area-inset-bottom,0px))}
+  .f-links{justify-content:center;gap:.6rem}
+  .f-links a{padding:.55rem 1.1rem;border:1px solid rgba(0,212,255,.22);border-radius:99px;min-height:44px;display:inline-flex;align-items:center}
+  [data-theme="light"] .f-links a{border-color:rgba(10,99,184,.22)}
+}

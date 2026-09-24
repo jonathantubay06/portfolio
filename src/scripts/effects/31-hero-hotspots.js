@@ -39,7 +39,9 @@
   // measurement, and it is 14-38 KB, so it is in place before it scrolls
   // into view. A page restored mid-scroll loads it at once.
   const phone = scene.querySelector('source[data-phone]');
-  if (phone && window.matchMedia('(max-width:599px)').matches) {
+  // Armed at every width: a window narrowed to phone size after load
+  // would otherwise keep the 1x1 placeholder.
+  if (phone) {
     const evs = ['scroll', 'pointerdown', 'touchstart', 'keydown'];
     const swap = () => {
       evs.forEach(ev => window.removeEventListener(ev, swap));

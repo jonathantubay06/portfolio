@@ -21,7 +21,8 @@
     "49-proof-sections.css",
     "50-contact-footer-nav.css",
     "51-hero-polish.css",
-    "52-banger.css"
+    "52-banger.css",
+    "53-round4.css"
   ],
   "main": [
     "00-preamble.js",
@@ -70,6 +71,7 @@
     "31-hero-hotspots.js",
     "32-automation-demo.js",
     "33-card-hover-scroll.js",
-    "34-exp-tabs-cert-carousel.js"
+    "34-exp-tabs-cert-carousel.js",
+    "35-swipe-dots.js"
   ]
 }

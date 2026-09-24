@@ -35,10 +35,15 @@
   if (!bar) return;
   const hero = document.querySelector('.hero');
   if (!hero) return;
-  const io = new IntersectionObserver(([entry]) => {
-    bar.classList.toggle('visible', !entry.isIntersecting);
+  // Hidden over the hero, and again once the contact form or footer is
+  // on screen: the button would only cover the thing it points to.
+  const seen = new Set();
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => e.isIntersecting ? seen.add(e.target) : seen.delete(e.target));
+    bar.classList.toggle('visible', seen.size === 0);
   }, { threshold: 0.1 });
-  io.observe(hero);
+  [hero, document.getElementById('contact'), document.querySelector('footer')]
+    .forEach(el => el && io.observe(el));
 })();
 
 
