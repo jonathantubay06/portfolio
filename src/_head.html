@@ -110,7 +110,7 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
 </style>
 
 <!-- Full stylesheet — loads after the critical inline above -->
-<link rel="stylesheet" href="./style.css"/>
+<link rel="stylesheet" href="./style.css" onerror="document.documentElement.classList.add('host-down')"/>
 
 <!-- Structured Data -->
 <script type="application/ld+json">
@@ -159,6 +159,32 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
 <!-- Styles moved to style.css -->
 </head>
 <body>
+<!-- Host hiccup notice: hidden unless the stylesheet fails to load (the
+     host serving the page but erroring on its files, as Netlify's edge did
+     on 2026-09-26). Styled inline because style.css is exactly what failed. -->
+<div id="host-down" role="alert" style="display:none">
+  <style>
+    .host-down #host-down{display:flex!important;position:fixed;inset:0;z-index:2147483647;align-items:center;justify-content:center;padding:24px;background:#060e1a;color:#e8f4ff;font:16px/1.6 system-ui,sans-serif;text-align:center}
+    .host-down body>*:not(#host-down){display:none!important}
+    #host-down .hd-box{max-width:460px}
+    #host-down h1{font-size:26px;margin:0 0 10px;color:#00d4ff}
+    #host-down a{color:#00d4ff}
+    #host-down button{margin-top:18px;padding:12px 26px;border:0;border-radius:99px;background:linear-gradient(90deg,#0e7aff,#00d4ff);color:#03101f;font-weight:700;font-size:15px;cursor:pointer}
+  </style>
+  <div class="hd-box">
+    <h1>Be right back</h1>
+    <p>My hosting provider is having a hiccup, so the site can't load properly right now. It usually clears up within a few minutes, and this page will reload by itself when it does.</p>
+    <p>Need me now? Email <a href="mailto:jonatsbuilds@gmail.com">jonatsbuilds@gmail.com</a></p>
+    <button type="button" onclick="location.reload()">Try again</button>
+  </div>
+</div>
+<script>
+/* While the notice shows, re-check the stylesheet every 20s and reload the
+   page the moment the host serves it again. */
+(function(){var l=document.querySelector('link[rel="stylesheet"][onerror]');if(!l)return;
+setInterval(function(){if(!document.documentElement.classList.contains('host-down'))return;
+fetch(l.href,{cache:'no-store'}).then(function(r){if(r.ok)location.reload()}).catch(function(){})},20000)})();
+</script>
 <!-- ═══════════════════════════════════════════════════════════════
      index.html — Jonathan Tubay Portfolio
      ─────────────────────────────────────────────────────────────
