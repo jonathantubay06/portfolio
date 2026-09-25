@@ -104,3 +104,4 @@
 [data-theme="light"] .footer-mark{border-bottom-color:rgba(10,99,184,.12)}
 @media(max-width:600px){.footer-mark{flex-direction:column;align-items:center;text-align:center}}
 footer{flex-wrap:wrap}
+.is-archived{opacity:.7;cursor:default;pointer-events:none}

@@ -132,10 +132,10 @@
 }
 
 /* ── tier 2 · more builds ───────────────────────────────────────── */
-.work-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem}
+.work-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.25rem}
 
 /* ── tier 3 · the toolkit ───────────────────────────────────────── */
-.work-tiles{display:grid;grid-template-columns:repeat(5,1fr);gap:1rem}
+.work-tiles{display:grid;grid-template-columns:repeat(6,1fr);gap:1rem}
 .proj-tile .proj-thumb{aspect-ratio:4/3}
 .proj-tile .proj-body{padding:1rem 1rem 1.1rem}
 .proj-tile .proj-origin{font-size:.52rem;padding:.18rem .5rem;margin-bottom:.55rem}
@@ -167,6 +167,7 @@
 
 /* ── responsive ─────────────────────────────────────────────────── */
 @media(max-width:1100px){
+  .work-grid{grid-template-columns:repeat(2,1fr)}
   .work-tiles{grid-template-columns:repeat(3,1fr)}
 }
 @media(max-width:900px){
@@ -180,6 +181,7 @@
   .proj-feature .proj-name{font-size:1.3rem}
   .proj-feature .proj-metric b{font-size:1.7rem}
   .work-grid{grid-template-columns:repeat(2,1fr)}
+  .work-tiles{grid-template-columns:repeat(3,1fr)}
 }
 @media(max-width:600px){
   .work-grid{grid-template-columns:1fr}
