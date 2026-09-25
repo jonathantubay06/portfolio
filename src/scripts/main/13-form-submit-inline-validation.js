@@ -50,6 +50,7 @@ function handleSubmit(e) {
   /* Disable button during submit to prevent double-sending */
   btn.disabled    = true;
   btn.textContent = 'Sending...';
+  termLine(form, '$ send --to jonathan', 'run');
   announceForm('Sending your message.');
 
   // Netlify forms: POST to '/' with URL-encoded body — Netlify intercepts this
@@ -76,6 +77,7 @@ function handleSubmit(e) {
     // is what someone who realises they left out a detail will reach for.
     // A drawn tick (54-motion.css) gets ~650ms to land before we leave.
     btn.innerHTML = 'Sent<svg class="form-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+    termLine(form, '✓ delivered — opening confirmation', 'ok');
     announceForm('Message sent. Taking you to the confirmation page.');
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     setTimeout(() => window.location.assign('/thanks/'), reduce ? 0 : 650);
@@ -85,9 +87,24 @@ function handleSubmit(e) {
     btn.textContent = 'Error \u2014 try again'; // — em dash
     btn.disabled    = false;
     shakeForm(form);
+    termLine(form, '✗ send failed — try again', 'err');
     announceForm('Your message could not be sent. Please try again, or email jonatsbuilds@gmail.com directly.');
   });
 }
+/* Terminal status line under the button: "$ send ..." while sending,
+   then delivered / failed. Decorative (aria-hidden); announceForm speaks. */
+function termLine(form, text, state) {
+  let line = form.querySelector('.term-line');
+  if (!line) {
+    line = document.createElement('p');
+    line.className = 'term-line';
+    line.setAttribute('aria-hidden', 'true');
+    form.querySelector('button[type="submit"]').insertAdjacentElement('afterend', line);
+  }
+  line.textContent = text;
+  line.dataset.state = state;
+}
+
 /* Error shake (54-motion.css); restarts cleanly on repeated failures. */
 function shakeForm(form) {
   form.classList.remove('is-shaking');

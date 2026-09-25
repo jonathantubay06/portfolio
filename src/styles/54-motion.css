@@ -74,3 +74,33 @@
 }
 .form-check{display:inline-block;width:1.15em;height:1.15em;vertical-align:-.2em;margin-left:.4rem}
 .form-check path{fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── 5. copy toast (transitions.dev toast): rises 8px out of a 2px blur in
+   250ms, leaves in 350ms. Sits above the phone's sticky CTA bar. ── */
+.copy-toast{filter:blur(var(--blur-small));transform:translateX(-50%) translateY(var(--distance-base)) scale(var(--scale-medium));
+  transition:opacity var(--duration-medium) var(--ease-smooth-out),transform var(--duration-medium) var(--ease-smooth-out),filter var(--duration-medium) var(--ease-smooth-out)}
+.copy-toast.show{filter:none;transform:translateX(-50%);
+  transition-duration:var(--duration-fast)}
+@media(max-width:768px){.copy-toast{bottom:calc(5.5rem + env(safe-area-inset-bottom,0px))}}
+
+/* ── 6. terminal status line under the contact button ── */
+.term-line{margin:.7rem 0 0;font:500 12px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--muted)}
+.term-line[data-state="run"]::after{content:'\2588';margin-left:.35em;color:var(--cyan);animation:termBlink 1s steps(1) infinite}
+.term-line[data-state="ok"]{color:#4ade80}
+.term-line[data-state="err"]{color:#f87171}
+@keyframes termBlink{50%{opacity:0}}
+
+/* ── 7. footer wordmark + availability ── */
+.footer-mark{width:100%;display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:.4rem 1.5rem;
+  padding-bottom:1.1rem;margin-bottom:.4rem;border-bottom:1px solid rgba(0,212,255,.1)}
+.footer-name{margin:0;font:800 clamp(2.2rem,7vw,5.2rem)/1 var(--font-head);letter-spacing:-.02em;
+  background:linear-gradient(180deg,rgba(232,244,255,.9),rgba(0,212,255,.35));-webkit-background-clip:text;background-clip:text;color:transparent}
+.footer-avail{margin:0;display:inline-flex;align-items:center;gap:.5rem;font-size:.85rem;color:var(--muted2,#b8c7d8)}
+.avail-dot{width:8px;height:8px;border-radius:50%;background:#4ade80;box-shadow:0 0 0 0 rgba(74,222,128,.6)}
+@media(prefers-reduced-motion:no-preference){.avail-dot{animation:availPulse 2.4s var(--ease-smooth-out) infinite}}
+@keyframes availPulse{0%{box-shadow:0 0 0 0 rgba(74,222,128,.55)}70%,100%{box-shadow:0 0 0 8px rgba(74,222,128,0)}}
+[data-theme="light"] .footer-name{background:linear-gradient(180deg,#0f192a,rgba(10,99,184,.55));-webkit-background-clip:text;background-clip:text}
+[data-theme="light"] .footer-avail{color:#3d4f63}
+[data-theme="light"] .footer-mark{border-bottom-color:rgba(10,99,184,.12)}
+@media(max-width:600px){.footer-mark{flex-direction:column;align-items:center;text-align:center}}
+footer{flex-wrap:wrap}
