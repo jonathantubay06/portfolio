@@ -22,7 +22,8 @@
     "50-contact-footer-nav.css",
     "51-hero-polish.css",
     "52-banger.css",
-    "53-round4.css"
+    "53-round4.css",
+    "54-motion.css"
   ],
   "main": [
     "00-preamble.js",

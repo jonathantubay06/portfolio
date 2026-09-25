@@ -1,0 +1,76 @@
+/* ═══════════════════════════════════════
+   MOTION PASS (2026-09-25) — transitions.dev token scale
+
+   1. Tokens          the shared duration / easing / distance / scale / blur scale
+   2. Nav drawer      opens and closes instead of popping (was display:none)
+   3. Project modal   open 250ms, close 150ms (was 550ms both ways)
+   4. Contact form    error shake, success check before the thank-you page
+
+   Rules applied: closes are faster than opens, the enter phase carries the
+   distance and blur, stagger stays under 300ms in total, nothing delays a
+   close. Everything below the tokens is off under prefers-reduced-motion.
+═══════════════════════════════════════ */
+
+/* ── 1. tokens ── */
+:root{
+  --duration-stagger:40ms;--duration-micro:80ms;--duration-quick:150ms;
+  --duration-fast:250ms;--duration-medium:350ms;--duration-slow:400ms;--duration-very-slow:500ms;
+  --ease-smooth-out:cubic-bezier(.22,1,.36,1);--ease-bounce:cubic-bezier(.34,1.36,.64,1);
+  --distance-small:6px;--distance-base:8px;
+  --scale-large:.96;--scale-medium:.97;--scale-tiny:.99;
+  --blur-small:2px;--blur-large:8px;
+}
+
+@media(prefers-reduced-motion:no-preference){
+  /* ── 2. nav drawer: a dropdown, so 250ms open / 150ms close ── */
+  .nav-drawer{
+    display:flex;visibility:hidden;opacity:0;pointer-events:none;
+    transform:translateY(calc(var(--distance-base) * -1)) scale(var(--scale-tiny));transform-origin:50% 0;
+    transition:opacity var(--duration-quick) var(--ease-smooth-out),
+               transform var(--duration-quick) var(--ease-smooth-out),
+               visibility 0s linear var(--duration-quick);
+  }
+  .nav-drawer.open{
+    visibility:visible;opacity:1;pointer-events:auto;transform:none;
+    transition:opacity var(--duration-fast) var(--ease-smooth-out),
+               transform var(--duration-fast) var(--ease-smooth-out),
+               visibility 0s;
+  }
+  /* Links arrive one after another: 40ms apart, ~240ms for all six. */
+  .nav-drawer a{opacity:0;transform:translateY(calc(var(--distance-small) * -1));
+    transition:color .2s,opacity var(--duration-quick) var(--ease-smooth-out),transform var(--duration-quick) var(--ease-smooth-out)}
+  .nav-drawer.open a{opacity:1;transform:none;
+    transition:color .2s,opacity var(--duration-fast) var(--ease-smooth-out),transform var(--duration-fast) var(--ease-smooth-out)}
+  .nav-drawer.open a:nth-child(2){transition-delay:0s,calc(var(--duration-stagger) * 1),calc(var(--duration-stagger) * 1)}
+  .nav-drawer.open a:nth-child(3){transition-delay:0s,calc(var(--duration-stagger) * 2),calc(var(--duration-stagger) * 2)}
+  .nav-drawer.open a:nth-child(4){transition-delay:0s,calc(var(--duration-stagger) * 3),calc(var(--duration-stagger) * 3)}
+  .nav-drawer.open a:nth-child(5){transition-delay:0s,calc(var(--duration-stagger) * 4),calc(var(--duration-stagger) * 4)}
+  .nav-drawer.open a:nth-child(n+6){transition-delay:0s,calc(var(--duration-stagger) * 5),calc(var(--duration-stagger) * 5)}
+
+  /* ── 3. project modal: keep the 3D tilt, lose the wait ── */
+  .proj-modal .modal-inner{
+    transform:translateY(var(--distance-base)) rotateX(4deg) scale(var(--scale-large));
+    transition:transform var(--duration-quick) var(--ease-smooth-out);
+  }
+  .proj-modal.open .modal-inner{transform:none;transition:transform var(--duration-fast) var(--ease-smooth-out)}
+
+  /* ── 4. contact form ── */
+  /* Error shake: 8px / 6px segments, 80ms each (tokens: distance-base,
+     distance-small, duration-micro). */
+  .c-form.is-shaking{animation:formShake calc(var(--duration-micro) * 5) var(--ease-smooth-out)}
+  @keyframes formShake{
+    20%{transform:translateX(calc(var(--distance-base) * -1))}
+    40%{transform:translateX(var(--distance-base))}
+    60%{transform:translateX(calc(var(--distance-small) * -1))}
+    80%{transform:translateX(var(--distance-small))}
+  }
+  /* Success check: badge pops in (500ms, bounce, from 8px blur), then the
+     tick draws after an 80ms beat. */
+  .form-check{animation:checkIn var(--duration-very-slow) var(--ease-bounce) both}
+  .form-check path{stroke-dasharray:24;stroke-dashoffset:24;
+    animation:checkDraw var(--duration-fast) var(--ease-smooth-out) var(--duration-micro) forwards}
+  @keyframes checkIn{from{opacity:0;transform:scale(.6);filter:blur(var(--blur-large))}}
+  @keyframes checkDraw{to{stroke-dashoffset:0}}
+}
+.form-check{display:inline-block;width:1.15em;height:1.15em;vertical-align:-.2em;margin-left:.4rem}
+.form-check path{fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}

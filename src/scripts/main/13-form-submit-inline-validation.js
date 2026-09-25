@@ -43,6 +43,7 @@ function handleSubmit(e) {
     // Focus after announcing, on the next tick: moving focus immediately can
     // interrupt a polite live region before it is read out.
     setTimeout(() => invalid[0].focus(), 120);
+    shakeForm(form);
     return; // stop here — don't submit until fields are fixed
   }
 
@@ -73,16 +74,26 @@ function handleSubmit(e) {
     //
     // assign() rather than replace(): Back should return to the form, which
     // is what someone who realises they left out a detail will reach for.
-    btn.textContent = 'Sent ✓';
+    // A drawn tick (54-motion.css) gets ~650ms to land before we leave.
+    btn.innerHTML = 'Sent<svg class="form-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
     announceForm('Message sent. Taking you to the confirmation page.');
-    window.location.assign('/thanks/');
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    setTimeout(() => window.location.assign('/thanks/'), reduce ? 0 : 650);
   })
   .catch(() => {
     // Something went wrong — re-enable so user can try again
     btn.textContent = 'Error \u2014 try again'; // — em dash
     btn.disabled    = false;
+    shakeForm(form);
     announceForm('Your message could not be sent. Please try again, or email jonatsbuilds@gmail.com directly.');
   });
+}
+/* Error shake (54-motion.css); restarts cleanly on repeated failures. */
+function shakeForm(form) {
+  form.classList.remove('is-shaking');
+  void form.offsetWidth; // reflow so the animation can replay
+  form.classList.add('is-shaking');
+  form.addEventListener('animationend', () => form.classList.remove('is-shaking'), { once: true });
 }
 const contactForm = document.querySelector('.c-form');
 if (contactForm) contactForm.addEventListener('submit', handleSubmit);
