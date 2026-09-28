@@ -26,5 +26,8 @@
       }, 100);
     }
   }
-  if (document.readyState === 'complete') start(); else addEventListener('load', start);
+  /* DOMContentLoaded + a beat, not 'load': a hung analytics pixel can hold
+     'load' back for a minute. */
+  if (document.readyState === 'complete') start();
+  else addEventListener('DOMContentLoaded', function () { setTimeout(start, 1500); });
 })();

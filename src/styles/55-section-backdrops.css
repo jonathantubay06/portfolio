@@ -89,3 +89,13 @@ html::after{
 /* The tech-stack strip was see-through; with the circuit layer behind it
    the lines ran through the labels. Give it a solid page-colour base. */
 .built-wrap{background-color:var(--bg)}
+
+/* Phones and tablets (2026-09-28): iOS Safari runs out of GPU memory with
+   several full-screen fixed layers that animate and carry masks, and the
+   tab reloads or goes blank. Touch devices keep the static grid and
+   glows only: no pulse layer, no sweep, no drifting glow. */
+@media (max-width:1023px),(pointer:coarse){
+  html::before,html::after{display:none}
+  main::after{animation:none;will-change:auto}
+  main::before{-webkit-mask-image:none;mask-image:none;opacity:.35}
+}

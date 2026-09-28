@@ -82,3 +82,5 @@
 }
 @keyframes heroCircuit{to{transform:translate3d(480px,480px,0)}}
 @media(max-width:1023px){.hero::before{opacity:.2}.hero-copy::before{right:0;left:-10vw;background:rgba(6,14,26,.55)}}
+/* Touch devices: the hero circuit stays still (see 55-section-backdrops). */
+@media (max-width:1023px),(pointer:coarse){.hero::before{animation:none;top:0;left:0}}

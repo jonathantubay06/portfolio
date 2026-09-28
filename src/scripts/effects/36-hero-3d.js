@@ -288,5 +288,8 @@
   }
 
   function whenIdle() { ('requestIdleCallback' in window) ? requestIdleCallback(boot, { timeout: 2500 }) : setTimeout(boot, 1200); }
-  if (document.readyState === 'complete') whenIdle(); else addEventListener('load', whenIdle);
+  /* Not the load event: a slow third-party beacon (the analytics pixel)
+     can hold 'load' back for a minute, which kept the 3D waiting. */
+  if (document.readyState === 'complete') whenIdle();
+  else addEventListener('DOMContentLoaded', function () { setTimeout(whenIdle, 1500); });
 })();
