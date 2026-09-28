@@ -7,6 +7,8 @@
 ═══════════════════════════════════════ */
 (function () {
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  /* phones: no tab strip to show it, and iOS re-decodes the icon each swap */
+  if (matchMedia('(pointer: coarse)').matches) return;
   function start() {
     var link = document.querySelector('link[rel="icon"][sizes="32x32"]');
     if (!link) return;

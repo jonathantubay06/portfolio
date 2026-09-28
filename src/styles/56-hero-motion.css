@@ -84,3 +84,10 @@
 @media(max-width:1023px){.hero::before{opacity:.2}.hero-copy::before{right:0;left:-10vw;background:rgba(6,14,26,.55)}}
 /* Touch devices: the hero circuit stays still (see 55-section-backdrops). */
 @media (max-width:1023px),(pointer:coarse){.hero::before{animation:none;top:0;left:0}}
+
+/* iPhone white screen (2026-09-28): until it is pinned down, touch devices
+   and narrow screens get none of today's full-screen layers at all, which
+   puts phones back to the pre-2026-09-28 page. */
+@media (max-width:1023px),(pointer:coarse){
+  main::before,main::after,html::before,html::after,.hero::before,.hero-copy::before{content:none!important;display:none!important;animation:none!important}
+}
