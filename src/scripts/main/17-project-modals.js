@@ -26,7 +26,10 @@
 (function(){
   const FOCUSABLE_SEL = 'a[href], button:not([disabled]), input, select, textarea, [tabindex]:not([tabindex="-1"])';
   const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const CAN_VT  = typeof document.startViewTransition === 'function' && !REDUCED;
+  /* Not on WebKit (Safari, and every iPhone browser): its view transition
+     crashed the tab when a modal closed (2026-09-29). */
+  const IS_WEBKIT = /AppleWebKit/.test(navigator.userAgent) && !/Chrome\/|Chromium\/|Edg\//.test(navigator.userAgent);
+  const CAN_VT  = typeof document.startViewTransition === 'function' && !REDUCED && !IS_WEBKIT;
 
   // Reading order of the Work section: freelance, more builds, toolkit.
   const MODAL_ORDER = [

@@ -136,3 +136,11 @@
   .modal-title{font-size:1.15rem}
 }
 
+
+/* Closed overlays must not keep GPU layers (2026-09-29). Twelve closed
+   modals plus the egg overlay each held a full-screen backdrop blur, and
+   Chrome on iPhone ran out of memory and reloaded the tab ("can't open
+   this page"). Hidden when closed; blur only while open. */
+.proj-modal,#egg-overlay{visibility:hidden;transition:opacity .3s,visibility 0s .3s}
+.proj-modal.open,#egg-overlay.open{visibility:visible;transition:opacity .3s,visibility 0s}
+.proj-modal:not(.open) .modal-backdrop,.proj-modal:not(.open) .modal-close,#egg-overlay:not(.open){-webkit-backdrop-filter:none;backdrop-filter:none}
