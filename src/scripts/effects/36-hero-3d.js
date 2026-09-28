@@ -39,7 +39,7 @@
     scene.appendChild(canvas);
 
     var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
-    renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 0.75;
     renderer.setClearColor(0x000000, 0);
@@ -55,7 +55,7 @@
     var warm = new THREE.PointLight(0xff8a33, 4, 5); warm.position.set(1.8, 0.8, 0.8); world.add(warm);
     var lamp = new THREE.PointLight(0xffb060, 3, 1.3); lamp.position.set(-1.42, 0.55, -0.07); world.add(lamp);
 
-    var composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(512, 512, { type: THREE.HalfFloatType }));
+    var composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(512, 512, { type: THREE.HalfFloatType, samples: 4 }));
     composer.addPass(new RenderPass(world, cam));
     var bloom = new UnrealBloomPass(new THREE.Vector2(512, 512), 0.22, 0.4, 0.9);
     composer.addPass(bloom);
