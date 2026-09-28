@@ -1,0 +1,84 @@
+/* ═══════════════════════════════════════
+   HERO MOTION PASS (2026-09-28)
+   The render's overlays (04-hero.css) were so subtle the scene read as
+   a still. Added on top, all in the plate's 1500x1288 SVG space:
+   - a faint always-on glow on the four wires, so they read as live
+   - a second, offset packet on the two long wires
+   - a soft glow behind each cube, lit in the order the data flows
+   - small data bits rising off the laptop lid
+   - a slightly deeper idle float
+   Opacity and transform only; everything is off under reduced motion.
+═══════════════════════════════════════ */
+.fx-base path{fill:none;stroke:#7fe0ff;stroke-width:2.2;stroke-linecap:round;opacity:.22;filter:drop-shadow(0 0 4px rgba(120,230,255,.8))}
+.fx-cube{fill:#38d6ff;opacity:0;mix-blend-mode:screen;filter:blur(28px)}
+.fx-bits rect{fill:#9beeff;opacity:0;filter:drop-shadow(0 0 6px #38d6ff);transform-box:fill-box;transform-origin:center}
+
+@media(prefers-reduced-motion:no-preference){
+  @keyframes heroFloat{0%,100%{translate:0 0}50%{translate:0 -12px}}
+  .fx-wire{stroke-width:4;stroke-dasharray:40 4000}
+  .fx-wire.p2{animation-delay:3.4s}
+  .fx-wire.w2.p2{animation-delay:4.2s}
+  .fx-base path{animation:fxBase 5.2s ease-in-out infinite}
+  .fx-cube{animation:fxCube 5.2s ease-in-out infinite}
+  .fx-cube.c2{animation-delay:1.6s}
+  .fx-cube.c3{animation-delay:3.2s}
+  .fx-bits rect{animation:fxBit 4.8s ease-out infinite}
+  .fx-bits rect:nth-child(2){animation-delay:.8s}
+  .fx-bits rect:nth-child(3){animation-delay:1.6s}
+  .fx-bits rect:nth-child(4){animation-delay:2.4s}
+  .fx-bits rect:nth-child(5){animation-delay:3.2s}
+  .fx-bits rect:nth-child(6){animation-delay:4s}
+  .fx-lamp{fill:#a6ecff}
+  @keyframes fxLamp{0%,100%{opacity:0}8%{opacity:.8}30%{opacity:0}}
+}
+@keyframes fxBase{0%,100%{opacity:.16}50%{opacity:.34}}
+@keyframes fxCube{0%,100%{opacity:0}20%{opacity:.42}45%{opacity:0}}
+@keyframes fxBit{0%{opacity:0;transform:translateY(0) rotate(0)}15%{opacity:.9}100%{opacity:0;transform:translateY(-160px) rotate(90deg)}}
+
+[data-theme="light"] .fx-base path{opacity:.3}
+[data-theme="light"] .fx-cube{mix-blend-mode:normal;fill:#4cc3ff}
+
+/* ── Desktop 3D (36-hero-3d.js) ──
+   The canvas fades in over the plate once the model has loaded; the
+   plate, the SVG overlays and the plate-matched hotspots then step back,
+   since the 3D scene draws and handles all of that itself. */
+.hero-3d{pointer-events:none;position:absolute;inset:-16% -14% -16% -18%;width:132%;height:132%;z-index:3;opacity:0;transition:opacity .9s var(--ease-smooth-out,ease)}
+.has-3d .hero-3d{opacity:1}
+.has-3d .hero-plate,.has-3d .hero-fx,.has-3d .hs{opacity:0;pointer-events:none;transition:opacity .9s ease}
+.hero-3d-tip{position:absolute;z-index:4;pointer-events:none;transform:translate(14px,-130%);padding:.35rem .7rem;border-radius:99px;
+  background:rgba(6,14,26,.85);border:1px solid rgba(0,212,255,.45);color:#e8f4ff;font:600 12px/1.2 var(--font-body);white-space:nowrap;
+  opacity:0;transition:opacity .15s ease}
+.hero-3d-tip.on{opacity:1}
+/* feather the canvas so its rectangle melts into the hero background */
+.hero-3d{-webkit-mask-image:radial-gradient(closest-side at 50% 50%,#000 58%,transparent 98%);mask-image:radial-gradient(closest-side at 50% 50%,#000 58%,transparent 98%)}
+/* the ambient haze behind the plate framed the canvas as a grey box */
+.has-3d .hero-ambient,.has-3d .hero-light{visibility:hidden;animation:none}
+/* Bloom output is opaque, so the canvas clears to black and is screen-
+   blended: black adds nothing, so no rectangle shows round the scene. */
+.hero-3d{mix-blend-mode:normal}
+
+/* ── Hero backdrop: the section circuit, drifting slowly across the whole
+   hero. Strong on the right, 15% behind the copy on the left so the
+   headline and paragraph stay fully readable. Transform-only drift of an
+   oversized layer (one tile per 60s), so nothing repaints. ── */
+.hero::before{
+  content:'';position:absolute;z-index:0;pointer-events:none;
+  top:-480px;left:-480px;right:0;bottom:0;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='480' height='480' fill='none' stroke='%2300d4ff' stroke-opacity='.8' stroke-width='1.5'%3E%3Cpath d='M0 96h120l24 24v96M240 0v72l24 24h120M480 312H360l-24-24v-72M144 480v-96l24-24h96M384 480v-60l-24-24'/%3E%3Cg fill='%2300d4ff' stroke='none'%3E%3Ccircle cx='144' cy='216' r='3.5'/%3E%3Ccircle cx='384' cy='96' r='3.5'/%3E%3Ccircle cx='336' cy='216' r='3.5'/%3E%3Ccircle cx='264' cy='360' r='3.5'/%3E%3Ccircle cx='360' cy='396' r='3.5'/%3E%3C/g%3E%3C/svg%3E") 0 0/480px 480px,
+    linear-gradient(rgba(0,212,255,.04) 1px,transparent 1px) 0 0/64px 64px,
+    linear-gradient(90deg,rgba(0,212,255,.04) 1px,transparent 1px) 0 0/64px 64px;
+  opacity:.28;
+}
+/* The circuit layer moves, so a mask on it would move too. Instead the
+   copy column carries a still shade that sits between the circuit and
+   the text, fading out toward the render. */
+.hero-copy{position:relative;z-index:1;isolation:isolate}
+.hero-art{position:relative;z-index:1}
+.hero-copy::before{content:'';position:absolute;z-index:-1;pointer-events:none;top:-40vh;bottom:-40vh;left:-50vw;right:-18%;
+  background:linear-gradient(90deg,rgba(6,14,26,.72) 0,rgba(6,14,26,.72) 70%,transparent)}
+@media(prefers-reduced-motion:no-preference){
+  .hero::before{animation:heroCircuit 60s linear infinite}
+}
+@keyframes heroCircuit{to{transform:translate3d(480px,480px,0)}}
+@media(max-width:1023px){.hero::before{opacity:.2}.hero-copy::before{right:0;left:-10vw;background:rgba(6,14,26,.55)}}

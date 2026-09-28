@@ -23,7 +23,9 @@
     "51-hero-polish.css",
     "52-banger.css",
     "53-round4.css",
-    "54-motion.css"
+    "54-motion.css",
+    "55-section-backdrops.css",
+    "56-hero-motion.css"
   ],
   "main": [
     "00-preamble.js",
@@ -75,6 +77,7 @@
     "32-automation-demo.js",
     "33-card-hover-scroll.js",
     "34-exp-tabs-cert-carousel.js",
-    "35-swipe-dots.js"
+    "35-swipe-dots.js",
+    "36-hero-3d.js"
   ]
 }
