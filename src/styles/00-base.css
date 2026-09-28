@@ -185,9 +185,11 @@ body{
   background:var(--bg);color:var(--text);
   font-family:var(--font-body);font-size:clamp(15.5px,1.6vw,17px);
   line-height:1.75;
-  opacity:0;animation:page-fadein .5s ease .05s forwards;
+  animation:page-fadein .5s ease .05s backwards;
 }
-@keyframes page-fadein{to{opacity:1}}
+/* Visible by default; the fade only runs when animations do. A resting
+   opacity:0 left some iPhones on a blank page (2026-09-28). */
+@keyframes page-fadein{from{opacity:0}}
 
 /* ── Background gradient ── */
 body::before{
