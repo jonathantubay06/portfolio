@@ -14,6 +14,7 @@
       const d = document.createElement('button');
       d.type = 'button';
       d.tabIndex = -1;
+      d.setAttribute('aria-label', 'Show card ' + (i + 1));
       d.addEventListener('click', () =>
         row.scrollTo({ left: card.offsetLeft - row.offsetLeft - parseFloat(getComputedStyle(row).scrollPaddingInlineStart || 0), behavior: 'smooth' }));
       dots.appendChild(d);

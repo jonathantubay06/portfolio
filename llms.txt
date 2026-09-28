@@ -1,0 +1,27 @@
+# Jonathan Tubay
+
+> Shopify and WordPress developer and automation builder based in Manila, Philippines. 12+ years of experience. Technology Lead at SentryX, and available for freelance projects.
+
+## What I build
+- Shopify stores: custom themes, app integrations, catalog, payments and checkout setup, post-launch support
+- WordPress and WooCommerce sites: new builds and CMS migrations, ACF/Gutenberg, mobile-first and SEO-ready
+- Softr apps on Airtable: client portals, internal dashboards, role-based access
+- Workflow automation: Zapier, n8n and custom code (inventory syncs such as Cin7 to Shopify, reports, alerts)
+- Figma-to-production front-end builds
+
+## Selected work
+- MOEV Solutions: freelance website build (case study linked below)
+- Deirdre P. Malcolm: freelance website build
+- Toolmart Houston: Shopify store and Cin7-to-Shopify inventory and price automation
+- Kingdomland Kids: Shopify store work
+- Sapmok USA: Shopify store revamp
+- Internal tools: KDL Video Health Checker, daily report generators, service and project health dashboards, E.D.I.T.H. and T.H.O.R. assistants
+
+## Proof
+- 11 client and LinkedIn reviews on the site
+- 10+ projects shipped
+
+## Links
+- Portfolio: https://jonathantubay.com/
+- MOEV case study: https://jonathantubay.com/case-studies/moev.html
+- Contact: jonatsbuilds@gmail.com

@@ -237,7 +237,7 @@ for (const [name, content] of Object.entries(outputs)) {
 const STATIC = [
   'img', 'cursors', 'case-studies', 'fonts', 'thanks',
   'favicon.png', 'og-preview.jpg', 'robots.txt',
-  'humans.txt', '404.html',
+  'humans.txt', 'llms.txt', '404.html',
 ];
 let copied = 0;
 for (const item of STATIC) copied += copy(item);

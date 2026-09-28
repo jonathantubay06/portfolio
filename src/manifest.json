@@ -25,7 +25,8 @@
     "53-round4.css",
     "54-motion.css",
     "55-section-backdrops.css",
-    "56-hero-motion.css"
+    "56-hero-motion.css",
+    "57-audit-fixes.css"
   ],
   "main": [
     "00-preamble.js",
@@ -43,6 +44,7 @@
     "16-dynamic-footer-year.js",
     "16b-archive-live-links.js",
     "16c-spinning-favicon.js",
+    "16d-anchor-settle.js",
     "17-project-modals.js",
     "18-hero-render-pointer-parallax.js",
     "19-section-object-motion.js",

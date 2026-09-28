@@ -12,6 +12,13 @@
 (function(){
   const demo = document.getElementById('automation-demo');
   if (!demo) return;
+  /* Phones show the demo collapsed behind one button (keeps the scroll short). */
+  const toggle = demo.querySelector('.ad-toggle');
+  if (toggle) toggle.addEventListener('click', () => {
+    const open = demo.classList.toggle('ad-open');
+    toggle.setAttribute('aria-expanded', open);
+    toggle.textContent = open ? 'Hide the demo' : 'Try the demo';
+  });
   const nodes = [...demo.querySelectorAll('.ad-node')];
   const links = [...demo.querySelectorAll('.ad-link')];
   const log = demo.querySelector('.ad-log');
