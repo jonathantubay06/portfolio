@@ -185,11 +185,9 @@ body{
   background:var(--bg);color:var(--text);
   font-family:var(--font-body);font-size:clamp(15.5px,1.6vw,17px);
   line-height:1.75;
-  animation:page-fadein .5s ease .05s backwards;
 }
-/* Visible by default; the fade only runs when animations do. A resting
-   opacity:0 left some iPhones on a blank page (2026-09-28). */
-@keyframes page-fadein{from{opacity:0}}
+/* No page-level fade (removed 2026-09-28): WebKit could leave the body
+   at the fade's first frame, which is a blank page on iPhone. */
 
 /* ── Background gradient ── */
 body::before{
