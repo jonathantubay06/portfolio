@@ -153,8 +153,22 @@ def gauge():
     im.save(os.path.join(OUT, 'holo-gauge.png'))
 
 
+def holo_code():
+    """Frame for the floating code window; the page types the code lines."""
+    W, H = 360, 240
+    im = Image.new('RGB', (W, H), (8, 20, 38))
+    d = ImageDraw.Draw(im)
+    d.rounded_rectangle((4, 4, W - 4, H - 4), 18, outline=(0, 212, 255), width=4)
+    for i, c in enumerate([(255, 140, 40), (0, 212, 255), (46, 230, 160)]):
+        d.ellipse((20 + i * 20, 18, 32 + i * 20, 30), fill=c)
+    for y in range(52, H - 20, 22):
+        d.rounded_rectangle((24, y, 24 + (y * 37) % 200 + 60, y + 8), 4, fill=(40, 90, 140))
+    im.save(os.path.join(OUT, 'holo-code.png'))
+
+
 desk_mat()
 gauge()
+holo_code()
 holo_chart()
 holo_order()
 storefront()

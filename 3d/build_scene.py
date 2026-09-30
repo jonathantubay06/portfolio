@@ -4,7 +4,9 @@ Run headless (no UI, no MCP needed):
   blender --background --factory-startup --python 3d/build_scene.py -- [--render preview.png]
 
 Named nodes the page script animates: cube_cart, cube_gear, cube_db,
-wire_*, logo_ring. Everything else is static.
+logo_left/right, holo_*, drone (+ drone_prop_*), bot (+ bot_wheel_*),
+rack_led_*. Everything else is static. After export, compress with
+gltf-transform (see the note at the export step).
 """
 import bpy, math, os, sys
 
@@ -226,12 +228,15 @@ def gear_half(name, m, a0, a1, teeth=6):
 logo = bpy.data.objects.new('logo_gear', None)
 scene.collection.objects.link(logo)
 logo.location = (-0.25, 1.75, 1.3)
-g1 = gear_half('logo_left', M_CYAN, math.radians(92), math.radians(268))
-g2 = gear_half('logo_right', M_ORANGE, math.radians(-88), math.radians(88))
+# The page spins the halves. Each half mesh hangs under its own empty:
+# gltf-transform's quantizer rewrites the transform of mesh nodes, so the
+# page only ever rotates/scales empties (pivot stays at the gear centre).
 bpy.ops.mesh.primitive_cylinder_add(radius=0.3, depth=0.06, location=(0, 0, 0), rotation=(math.radians(90), 0, 0))
 dial = bpy.context.object; dial.name = 'logo_dial'; dial.data.materials.append(M_DIAL)
-for o in (g1, g2, dial):
-    o.parent = logo
+dial.parent = logo
+for nm, m, a0, a1 in (('logo_left', M_CYAN, 92, 268), ('logo_right', M_ORANGE, -88, 88)):
+    e = bpy.data.objects.new(nm, None); scene.collection.objects.link(e); e.parent = logo
+    g = gear_half(nm + '_mesh', m, math.radians(a0), math.radians(a1)); g.parent = e
 logo.scale = (1.0, 1.0, 1.0)
 # face the page camera, which sits ~18deg to the right of front
 logo.rotation_euler = (0, 0, math.radians(18))
@@ -284,6 +289,89 @@ hd = bpy.context.object; hd.name = 'bag_handle'; hd.data.materials.append(M_BAG)
 M_GAUGE = mat('holo_gauge', image=os.path.join(TEX, 'holo-gauge.png'), emit_image=True, strength=1.0)
 plane('holo_gauge', 0.32, 0.32, (1.75, 0.0, 0.8), (math.radians(90), 0, math.radians(-35)), M_GAUGE)
 
+# ── round 4: moving eCommerce props (the page animates them) ──────────
+# Built around the origin under a named empty, then the empty is placed.
+# The page moves/rotates the empties only (see the quantizer note above).
+def empty(name, loc=(0, 0, 0), par=None):
+    e = bpy.data.objects.new(name, None); scene.collection.objects.link(e)
+    e.location = loc
+    if par: e.parent = par
+    return e
+
+
+def cyl(name, r, depth, loc, m, rot=(0, 0, 0), verts=16):
+    bpy.ops.mesh.primitive_cylinder_add(radius=r, depth=depth, location=loc, rotation=rot, vertices=verts)
+    o = bpy.context.object; o.name = name; o.data.materials.append(m)
+    return o
+
+
+def under(par, *objs):
+    for o in objs: o.parent = par
+
+
+M_ACC_C = mat('accent_cyan', (0.0, 0.5, 0.8), emit=(0.0, 0.8, 1.0), strength=3)
+M_ACC_O = mat('accent_orange', (1.0, 0.45, 0.1), emit=(1.0, 0.45, 0.08), strength=3)
+M_BOX = mat('parcel', (0.42, 0.27, 0.13), rough=0.8)
+M_TAPE = mat('parcel_tape', (0.75, 0.6, 0.4), rough=0.6)
+M_LED_C = mat('led_cyan', emit=(0.0, 0.85, 1.0), strength=4)
+M_LED_G = mat('led_green', emit=(0.1, 1.0, 0.5), strength=4)
+M_LED_O = mat('led_orange', emit=(1.0, 0.5, 0.1), strength=4)
+
+# delivery drone with a parcel (the page flies it round the desk)
+drone = empty('drone')
+under(drone,
+      box('drone_body', (0.16, 0.16, 0.045), (0, 0, 0), M_ALU, bevel=0.012),
+      box('drone_top', (0.08, 0.08, 0.018), (0, 0, 0.03), M_ACC_C, bevel=0.006),
+      box('drone_box', (0.1, 0.1, 0.08), (0, 0, -0.11), M_BOX, bevel=0.006),
+      box('drone_tape', (0.102, 0.022, 0.082), (0, 0, -0.11), M_TAPE, bevel=0),
+      cyl('drone_line_a', 0.003, 0.05, (0.03, 0, -0.045), M_DARK, verts=6),
+      cyl('drone_line_b', 0.003, 0.05, (-0.03, 0, -0.045), M_DARK, verts=6),
+      box('drone_nose', (0.02, 0.05, 0.012), (0.085, 0, 0), M_ACC_O, bevel=0))
+for i in range(4):
+    a = math.radians(45 + i * 90); ex, ey = 0.12 * math.cos(a), 0.12 * math.sin(a)
+    under(drone,
+          box(f'drone_arm_{i}', (0.15, 0.018, 0.012), (ex / 2, ey / 2, 0), M_DARK, bevel=0, rot=(0, 0, a)),
+          cyl(f'drone_motor_{i}', 0.02, 0.03, (ex, ey, 0.01), M_DARK, verts=12))
+    pe = empty(f'drone_prop_{i}', (ex, ey, 0.03), drone)
+    # children of a placed empty sit at its origin (parent= keeps local)
+    under(pe, box(f'drone_blade_{i}', (0.13, 0.014, 0.003), (0, 0, 0), M_ACC_C if i % 2 else M_DARK, bevel=0))
+drone.location = (0.3, -0.75, 1.0)
+
+# server rack beside the tablet, blinking status LEDs (page blinks rack_led_*)
+rack = empty('rack')
+under(rack, box('rack_frame', (0.26, 0.24, 0.46), (0, 0, 0.23), M_DARK, bevel=0.012),
+      box('rack_top', (0.24, 0.012, 0.008), (0, -0.121, 0.455), M_ACC_C, bevel=0))
+LEDS = (M_LED_G, M_LED_C, M_LED_O)
+for u in range(4):
+    z = 0.07 + u * 0.1
+    under(rack, box(f'rack_unit_{u}', (0.23, 0.012, 0.08), (0, -0.12, z), M_ALU, bevel=0.004))
+    for k in range(3):
+        under(rack, box(f'rack_led_{u * 3 + k}', (0.018, 0.006, 0.012), (-0.085 + k * 0.03, -0.127, z + 0.018), LEDS[k], bevel=0))
+    under(rack, box(f'rack_slot_{u}', (0.1, 0.004, 0.01), (0.05, -0.127, z - 0.012), M_DARK, bevel=0))
+rack.location = (1.66, 0.62, 0.0)
+rack.rotation_euler = (0, 0, math.radians(-12))
+
+# little cart robot that shuttles along the front of the desk mat
+bot = empty('bot')
+under(bot,
+      box('bot_body', (0.16, 0.11, 0.05), (0, 0, 0.045), M_ALU, bevel=0.01),
+      box('bot_stripe', (0.162, 0.112, 0.01), (0, 0, 0.035), M_ACC_O, bevel=0),
+      box('bot_eye', (0.006, 0.07, 0.022), (0.08, 0, 0.055), M_ACC_C, bevel=0),
+      box('bot_tray', (0.13, 0.095, 0.01), (0, 0, 0.075), M_DARK, bevel=0.003),
+      box('bot_parcel', (0.065, 0.06, 0.05), (-0.01, 0, 0.105), M_BOX, bevel=0.004),
+      cyl('bot_mast', 0.004, 0.06, (-0.06, 0.035, 0.1), M_DARK, verts=6))
+bpy.ops.mesh.primitive_uv_sphere_add(radius=0.01, location=(-0.06, 0.035, 0.135), segments=10, ring_count=6)
+bl = bpy.context.object; bl.name = 'bot_led'; bl.data.materials.append(M_LED_O); bl.parent = bot
+for i, (wx, wy) in enumerate([(0.05, 0.06), (-0.05, 0.06), (0.05, -0.06), (-0.05, -0.06)]):
+    we = empty(f'bot_wheel_{i}', (wx, wy, 0.022), bot)
+    under(we, cyl(f'bot_tyre_{i}', 0.022, 0.018, (0, 0, 0), M_DARK, rot=(math.radians(90), 0, 0), verts=12),
+          cyl(f'bot_hub_{i}', 0.008, 0.02, (0, 0, 0), M_ACC_C, rot=(math.radians(90), 0, 0), verts=8))
+bot.location = (-0.2, -0.47, 0.002)
+
+# floating code window (the page types into it)
+M_CODE = mat('holo_code', image=os.path.join(TEX, 'holo-code.png'), emit_image=True, strength=1.0)
+plane('holo_code', 0.58, 0.39, (1.15, 0.3, 1.9), (math.radians(90), 0, math.radians(-22)), M_CODE)
+
 # ── lights (exported as KHR punctual; the page adds its own too) ─────
 def light(kind, loc, energy, color, size=1.0):
     ld = bpy.data.lights.new(kind + '_l', kind)
@@ -303,13 +391,24 @@ light('POINT', (0.2, 0.2, 1.9), 60, (0.2, 0.75, 1.0))
 light('POINT', (1.6, -0.6, 0.8), 25, (1.0, 0.55, 0.2))
 
 # ── export ───────────────────────────────────────────────────────────
-for o in scene.objects:
-    for m in o.modifiers:
-        pass
-bpy.ops.export_scene.gltf(filepath=os.path.join(OUT_DIR, 'scene.glb'), export_format='GLB',
+# Blender writes an uncompressed 3d/scene.raw.glb (git-ignored); then
+# gltf-transform packs it into img/hero3d/scene.glb: meshopt geometry
+# (the page wires MeshoptDecoder), WebP textures capped at 512px. The
+# scene graph is kept as is (no flatten/join/instance/palette), because
+# the page animates nodes and tunes materials by name.
+RAW = os.path.join(HERE, 'scene.raw.glb')
+GLB = os.path.join(OUT_DIR, 'scene.glb')
+bpy.ops.export_scene.gltf(filepath=RAW, export_format='GLB',
                           export_apply=True, export_image_format='WEBP', export_image_quality=80,
                           export_lights=False, export_yup=True)
-print('exported', os.path.getsize(os.path.join(OUT_DIR, 'scene.glb')) // 1024, 'KB')
+print('exported raw', os.path.getsize(RAW) // 1024, 'KB')
+import subprocess
+cmd = (f'npx -y @gltf-transform/cli@4 optimize "{RAW}" "{GLB}" --compress meshopt --texture-compress webp '
+       '--texture-size 512 --flatten false --join false --instance false --palette false --simplify false')
+if subprocess.run(cmd, shell=True).returncode == 0:
+    print('compressed', os.path.getsize(GLB) // 1024, 'KB')
+else:
+    print('gltf-transform failed; run by hand:', cmd)
 
 # ── optional preview render ──────────────────────────────────────────
 if RENDER:
