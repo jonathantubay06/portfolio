@@ -393,51 +393,88 @@ def join(name, objs):
     return o
 
 
-# Dumpling: pale cream, short curly coat (lumpy balls over smooth
-# shapes), round head, short muzzle, button nose, long straight beige
-# ears hanging like a bob, plumed tail, no collar. Asleep, curled on the
-# book stack. The page breathes dog_body (scale) and flicks
-# dog_ear_l/r and dog_tail (rotation), so each sits under its own empty.
+# Dumpling: pale cream pom x poodle, short clipped curly coat, round
+# head, short muzzle, button nose, long straight beige ears hanging like
+# a bob, plumed tail, no collar. Asleep, curled on the book stack, head
+# on her front paws, tail wrapped round the side facing the camera.
+# Each part is a few ellipsoids fused by a voxel remesh into one smooth
+# silhouette, then a small noise push along the normals for the curls.
+# The page breathes dog_body (scale) and flicks dog_ear_l/r and dog_tail
+# (rotation), so each sits under its own empty.
 M_FUR = mat('dog_fur', (0.93, 0.87, 0.76), rough=0.9)
-M_EAR = mat('dog_ear', (0.62, 0.47, 0.3), rough=0.85)
+M_EAR = mat('dog_ear', (0.6, 0.46, 0.31), rough=0.85)
 M_NOSE = mat('dog_nose', (0.035, 0.015, 0.008), rough=0.3)
-import random
-rnd = random.Random(7)
+from mathutils import noise as _noise, Vector as _V
+
+
+def blob(name, specs, m, voxel=0.0045, fur=0.0018, freq=65, ratio=0.2):
+    """Fuse (center, radii) ellipsoids into one smooth furry mesh."""
+    o = join(name, [ball(f'{name}_{k}', 1, c, m, r, 3) for k, (c, r) in enumerate(specs)])
+    for typ, kw in (('REMESH', dict(mode='VOXEL', voxel_size=voxel)),
+                    ('SMOOTH', dict(factor=0.9, iterations=8))):
+        md = o.modifiers.new(typ, typ)
+        for k, v in kw.items(): setattr(md, k, v)
+        bpy.ops.object.modifier_apply(modifier=md.name)
+    o.data.update()
+    for v in o.data.vertices:
+        q = v.co * freq
+        v.co += v.normal * fur * (_noise.noise(q) + 0.5 * _noise.noise(q * 2.1))
+    md = o.modifiers.new('dec', 'DECIMATE'); md.ratio = ratio
+    bpy.ops.object.modifier_apply(modifier=md.name)
+    if not o.data.materials: o.data.materials.append(m)
+    bpy.ops.object.shade_smooth()
+    print('DOGTRIS', name, sum(len(p.vertices) - 2 for p in o.data.polygons))
+    return o
+
+
 dog = empty('dog')
 body_e = empty('dog_body', (0, 0, 0), dog)
-parts = [ball('dog_torso', 1, (0, 0, 0.055), M_FUR, (0.12, 0.085, 0.058), 3),
-         ball('dog_haunch', 1, (-0.06, -0.055, 0.05), M_FUR, (0.06, 0.04, 0.045)),
-         ball('dog_paw_a', 1, (0.135, -0.05, 0.016), M_FUR, (0.04, 0.019, 0.016)),
-         ball('dog_paw_b', 1, (0.13, -0.01, 0.014), M_FUR, (0.038, 0.018, 0.015))]
-# curly coat: small lumps scattered over the upper half of the torso
-for k in range(26):
-    a, e = rnd.uniform(0, 2 * math.pi), rnd.uniform(0.15, 1.35)
-    x, y, z = 0.12 * math.cos(a) * math.cos(e), 0.085 * math.sin(a) * math.cos(e), 0.055 + 0.058 * math.sin(e)
-    parts.append(ball(f'dog_curl_{k}', rnd.uniform(0.022, 0.03), (x * 0.92, y * 0.92, z * 0.97), M_FUR))
-under(body_e, join('dog_body_mesh', parts))
+under(body_e, blob('dog_body_mesh', [
+    ((0.045, 0.0, 0.046), (0.055, 0.052, 0.043)),     # chest
+    ((-0.012, 0.01, 0.05), (0.06, 0.058, 0.046)),    # back / ribs
+    ((-0.062, -0.012, 0.047), (0.052, 0.06, 0.044)),  # hips
+    ((-0.05, -0.058, 0.03), (0.04, 0.022, 0.03)),    # thigh on the camera side
+    ((0.0, -0.068, 0.012), (0.036, 0.016, 0.012)),   # hind foot tucked forward
+    ((0.1, 0.022, 0.014), (0.05, 0.017, 0.014)),     # front leg (far)
+    ((0.102, -0.024, 0.014), (0.05, 0.017, 0.014)),  # front leg (near)
+], M_FUR))
 # head rests on the front paws, turned a little toward the viewer
-head_e = empty('dog_head', (0.115, -0.03, 0.068), dog)
-hp = [ball('dog_skull', 0.058, (0, 0, 0), M_FUR, (1, 0.96, 0.9), 3),
-      ball('dog_muzzle', 1, (0.05, 0, -0.016), M_FUR, (0.032, 0.03, 0.024))]
-for k in range(7):
-    a = k / 7 * 2 * math.pi
-    hp.append(ball(f'dog_tuft_{k}', 0.02, (0.012 * math.cos(a) - 0.008, 0.03 * math.sin(a), 0.045 + 0.006 * math.cos(a * 2)), M_FUR))
-hm = join('dog_head_mesh', hp)
-nose = ball('dog_nose', 0.011, (0.082, 0, -0.008), M_NOSE, (1, 1.15, 0.85))
-eyes = [box(f'dog_eye_{s}', (0.004, 0.02, 0.0035), (0.052, s * 0.025, 0.014), M_NOSE, bevel=0, rot=(math.radians(-s * 12), 0, math.radians(s * 18))) for s in (-1, 1)]
+head_e = empty('dog_head', (0.12, -0.004, 0.06), dog)
+head_e.rotation_euler = (math.radians(-6), math.radians(8), math.radians(-10))
+hm = blob('dog_head_mesh', [
+    ((0, 0, 0), (0.055, 0.058, 0.051)),              # round skull
+    ((0.05, 0, -0.014), (0.031, 0.028, 0.022)),      # short round muzzle
+    ((-0.004, 0, 0.029), (0.037, 0.044, 0.032)),     # topknot fluff
+], M_FUR, voxel=0.0035, fur=0.0016)
+nose = ball('dog_nose', 0.0098, (0.08, 0, -0.007), M_NOSE, (0.9, 1.2, 0.85))
+eyes = []
+for s in (-1, 1):
+    e = ball(f'dog_eye_{s}', 1, (0.048, s * 0.026, 0.006), M_NOSE, (0.003, 0.012, 0.0026))
+    e.rotation_euler = (math.radians(s * 14), 0, math.radians(s * 22))
+    eyes.append(e)
 under(head_e, hm, nose, *eyes)
+# long straight bob ears from the top of the skull, flaring a bit outward
 for s, nm in ((1, 'dog_ear_l'), (-1, 'dog_ear_r')):
-    ee = empty(nm, (0.0, s * 0.048, 0.03), head_e)
-    under(ee, ball(nm + '_mesh', 1, (0.006, s * 0.012, -0.05), M_EAR, (0.024, 0.014, 0.058)))
-tail_e = empty('dog_tail', (-0.115, 0.01, 0.075), dog)
-tl = [ball(f'dog_plume_{k}', r, p, M_FUR) for k, (r, p) in enumerate([
-    (0.03, (-0.012, 0, 0.012)), (0.034, (-0.01, 0, 0.05)), (0.032, (0.02, 0, 0.075)),
-    (0.028, (0.055, 0, 0.078)), (0.022, (0.082, 0, 0.065))])]
-under(tail_e, join('dog_tail_mesh', tl))
+    ee = empty(nm, (0.004, s * 0.044, 0.03), head_e)
+    ee.rotation_euler = (math.radians(s * 9), 0, 0)
+    under(ee, blob(nm + '_mesh', [
+        ((0.006, s * 0.004, -0.014), (0.024, 0.01, 0.028)),
+        ((0.01, s * 0.007, -0.048), (0.03, 0.011, 0.03)),
+        ((0.012, s * 0.008, -0.07), (0.028, 0.01, 0.016)),
+    ], M_EAR, voxel=0.003, fur=0.0007, freq=120, ratio=0.2))
+# plumed tail from the rump, wrapping round the near side
+tail_e = empty('dog_tail', (-0.1, -0.025, 0.062), dog)
+under(tail_e, blob('dog_tail_mesh', [
+    ((0, 0, 0.004), (0.026, 0.026, 0.026)),
+    ((0.0, -0.03, 0.012), (0.032, 0.03, 0.03)),
+    ((0.03, -0.056, 0.006), (0.034, 0.03, 0.028)),
+    ((0.066, -0.066, -0.006), (0.03, 0.026, 0.024)),
+    ((0.096, -0.068, -0.018), (0.021, 0.019, 0.017)),
+], M_FUR, voxel=0.0045, fur=0.003, freq=70, ratio=0.2))
 BOOK_TOP = 0.028 + 2 * 0.052 + 0.025
 dog.location = (0.6, 0.83, BOOK_TOP)
 dog.rotation_euler = (0, 0, math.radians(-40))
-dog.scale = (1.2, 1.2, 1.2)
+dog.scale = (1.45, 1.45, 1.45)
 
 # small floating wall shelf, back left: a trophy and a "5 stars" plaque
 M_TROPHY = mat('trophy', (0.95, 0.62, 0.2), rough=0.3, metal=0.5, emit=(1.0, 0.62, 0.15), strength=0.5)
@@ -535,7 +572,7 @@ if RENDER:
         scene.render.resolution_x, scene.render.resolution_y = 975, 837
     elif CAMV == 'dog':
         tgt.location = dog.location + __import__('mathutils').Vector((0.02, -0.02, 0.06))
-        cam.location = tgt.location + __import__('mathutils').Vector((0.12, -0.6, 0.27))
+        cam.location = tgt.location + __import__('mathutils').Vector((0.2, -0.85, 0.4))
         cam.data.lens = 60
         scene.render.resolution_x, scene.render.resolution_y = 800, 600
     else:
