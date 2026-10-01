@@ -128,10 +128,10 @@ for i, name in enumerate(['moev', 'sapmok', 'Deirdre']):
 bpy.ops.mesh.primitive_cylinder_add(radius=0.11, depth=0.2, location=(-1.25, 0.55, 0.1)); p = bpy.context.object; p.name = 'pot'; p.data.materials.append(M_POT)
 for k in range(9):
     a = k * 2 * math.pi / 9
-    bpy.ops.mesh.primitive_uv_sphere_add(radius=0.05, location=(-1.25 + 0.1 * math.cos(a), 0.55 + 0.1 * math.sin(a), 0.3 + 0.03 * (k % 3)))
+    bpy.ops.mesh.primitive_uv_sphere_add(radius=0.05, location=(-1.25 + 0.1 * math.cos(a), 0.55 + 0.1 * math.sin(a), 0.3 + 0.03 * (k % 3)), segments=14, ring_count=8)
     lf = bpy.context.object; lf.name = f'leaf_{k}'; lf.scale = (2.4, 0.5, 0.18)
     lf.rotation_euler = (math.radians(20), math.radians(-35), a); lf.data.materials.append(M_LEAF)
-bpy.ops.mesh.primitive_cylinder_add(radius=0.012, depth=0.42, location=(1.35, -0.62, 0.015), rotation=(0, math.radians(90), math.radians(28)))
+bpy.ops.mesh.primitive_cylinder_add(radius=0.012, depth=0.42, location=(1.5, -0.9, 0.015), rotation=(0, math.radians(90), math.radians(8)))
 pen = bpy.context.object; pen.name = 'pen'; pen.data.materials.append(M_PEN)
 
 # ── floating icon cubes ──────────────────────────────────────────────
@@ -253,7 +253,7 @@ M_PHONE = mat('phone_screen', emit=(0.0, 0.5, 0.9), strength=0.6)
 plane('phone_screen', 0.18, 0.37, (0.75, -0.55, 0.024), (0, 0, math.radians(20)), M_PHONE)
 bpy.ops.mesh.primitive_cylinder_add(radius=0.07, depth=0.16, location=(-0.95, -0.35, 0.08))
 mug = bpy.context.object; mug.name = 'mug'; mug.data.materials.append(mat('mug', (0.9, 0.9, 0.92), rough=0.3))
-bpy.ops.mesh.primitive_torus_add(major_radius=0.045, minor_radius=0.012, location=(-0.875, -0.35, 0.08), rotation=(math.radians(90), 0, 0))
+bpy.ops.mesh.primitive_torus_add(major_radius=0.045, minor_radius=0.012, location=(-0.875, -0.35, 0.08), rotation=(math.radians(90), 0, 0), major_segments=20, minor_segments=8)
 bpy.context.object.name = 'mug_handle'; bpy.context.object.data.materials.append(bpy.data.materials['mug'])
 
 # ── round 3 set dressing ─────────────────────────────────────────────
@@ -276,14 +276,14 @@ for i, col in enumerate([(0.85, 0.85, 0.88), (0.9, 0.35, 0.1), (0.05, 0.35, 0.6)
 
 # headphones, front right
 M_HP = mat('headphones', (0.03, 0.03, 0.035), rough=0.35)
-bpy.ops.mesh.primitive_torus_add(major_radius=0.16, minor_radius=0.018, location=(1.25, -0.25, 0.03)); hp = bpy.context.object; hp.name = 'headphones_band'; hp.scale = (1, 0.75, 1); hp.data.materials.append(M_HP)
+bpy.ops.mesh.primitive_torus_add(major_radius=0.16, minor_radius=0.018, location=(1.25, -0.25, 0.03), major_segments=32, minor_segments=8); hp = bpy.context.object; hp.name = 'headphones_band'; hp.scale = (1, 0.75, 1); hp.data.materials.append(M_HP)
 for dx in (-0.16, 0.16):
     bpy.ops.mesh.primitive_cylinder_add(radius=0.07, depth=0.05, location=(1.25 + dx, -0.25, 0.03)); c = bpy.context.object; c.data.materials.append(M_HP); c.name = 'headphones_cup'
 
 # floating shopping bag near the cart cube (the page bobs holo_*)
 M_BAG = mat('holo_bag_mat', (1.0, 0.5, 0.12), rough=0.4, emit=(1.0, 0.45, 0.1), strength=0.4)
 bag = box('holo_bag', (0.2, 0.09, 0.22), (-1.2, 0.35, 1.65), M_BAG, bevel=0.01, rot=(0, 0, math.radians(20)))
-bpy.ops.mesh.primitive_torus_add(major_radius=0.05, minor_radius=0.008, location=(-1.2, 0.35, 1.78), rotation=(math.radians(90), 0, math.radians(20)))
+bpy.ops.mesh.primitive_torus_add(major_radius=0.05, minor_radius=0.008, location=(-1.2, 0.35, 1.78), rotation=(math.radians(90), 0, math.radians(20)), major_segments=20, minor_segments=8)
 hd = bpy.context.object; hd.name = 'bag_handle'; hd.data.materials.append(M_BAG); hd.parent = bag; hd.matrix_parent_inverse = bag.matrix_world.inverted()
 
 # uptime gauge panel (the page draws the ring)
@@ -425,9 +425,9 @@ def fur_mat(name, color, rough=0.92, curl=0.9):
 # one apricot-cream all over (ref #EBD3AE-#F2E0C4), muzzle a shade paler,
 # ears a touch more golden (#D9B88A). Values are linear and pushed warm,
 # because the cool key light bleaches cream toward white on the page.
-M_FUR = fur_mat('dog_fur', (0.68, 0.47, 0.25), curl=1.1)
-M_MUZ = fur_mat('dog_muzzle', (0.74, 0.56, 0.36), curl=0.6)
-M_EAR = fur_mat('dog_ear', (0.6, 0.38, 0.15), rough=0.9, curl=1.2)
+M_FUR = fur_mat('dog_fur', (0.78, 0.46, 0.19), curl=1.1)
+M_MUZ = fur_mat('dog_muzzle', (0.78, 0.56, 0.32), curl=0.6)
+M_EAR = fur_mat('dog_ear', (0.66, 0.33, 0.08), rough=0.9, curl=1.3)
 M_NOSE = mat('dog_nose', (0.03, 0.012, 0.006), rough=0.12)
 from mathutils import noise as _noise, Vector as _V
 
@@ -601,8 +601,8 @@ head_e.scale = (1.3, 1.3, 1.3)
 hm = blob('dog_head_mesh', [
     ((0, 0, 0), (0.056, 0.06, 0.05)),                # round skull
     ((0.044, 0, -0.018), (0.024, 0.027, 0.019)),     # short round muzzle
-    ((0.03, 0.03, -0.014), (0.024, 0.024, 0.022)),   # puffy cheek
-    ((0.03, -0.03, -0.014), (0.024, 0.024, 0.022)),  # puffy cheek
+    ((0.03, 0.032, -0.014), (0.027, 0.027, 0.024)),  # puffy cheek
+    ((0.03, -0.032, -0.014), (0.027, 0.027, 0.024)), # puffy cheek
     # no topknot pompom: the user disliked the ball on her head
 ], M_FUR, voxel=0.0035, fur=0.0012, freq=100, ratio=0.075, nubs=115, nub_r=(0.0042, 0.0058),
    hide=lambda c, n: n.z < -0.7 and c.z < -0.035,
@@ -632,12 +632,12 @@ for s, nm in ((1, 'dog_ear_l'), (-1, 'dog_ear_r')):
     ee = empty(nm, (0.004, s * 0.052, 0.022), head_e)
     ee.rotation_euler = (math.radians(s * 9), 0, 0)
     under(ee, blob(nm + '_mesh', [
-        ((0.004, s * 0.004, -0.008), (0.02, 0.012, 0.02)),
-        ((0.008, s * 0.008, -0.03), (0.026, 0.014, 0.024)),
-        ((0.012, s * 0.011, -0.054), (0.03, 0.015, 0.024)),
-        ((0.016, s * 0.012, -0.074), (0.026, 0.013, 0.016)),
-    ], M_EAR, voxel=0.003, fur=0.0022, freq=110, ratio=0.09, wave=(0.5, 260),
-       nubs=38, nub_r=(0.0042, 0.0056), keep=lambda co, n, s=s: n.y * s > -0.2 and rim(n, 0.6), seed=7 + s))
+        ((0.004, s * 0.004, -0.008), (0.022, 0.013, 0.022)),
+        ((0.008, s * 0.009, -0.03), (0.029, 0.016, 0.026)),
+        ((0.012, s * 0.012, -0.055), (0.033, 0.017, 0.027)),
+        ((0.016, s * 0.013, -0.077), (0.029, 0.015, 0.018)),
+    ], M_EAR, voxel=0.003, fur=0.0026, freq=110, ratio=0.09, wave=(0.5, 260),
+       nubs=50, nub_r=(0.0042, 0.0056), keep=lambda co, n, s=s: n.y * s > -0.2 and rim(n, 0.6), seed=7 + s))
 # puffy curly pompom plume on the rump
 tail_e = empty('dog_tail', (-0.1, -0.025, 0.066), dog)
 under(tail_e, blob('dog_tail_mesh', [
@@ -690,6 +690,166 @@ under(lab, box('label_strip', (0.074, 0.1, 0.002), (0, -0.05, 0), M_PAPER, bevel
       box('label_addr', (0.04, 0.008, 0.0025), (-0.008, -0.035, 0), M_LED_O, bevel=0))
 prn.location = (0.62, -0.22, 0.0)
 prn.rotation_euler = (0, 0, math.radians(-25))
+
+
+# ── round 6: Dumpling's siblings, desk calendar, parcels on a scale ──
+# Three sitting pups on the free desk corner, front right. Names live in
+# consts (swap here and in 36-hero-3d.js PUPS). Each pup is an empty
+# <name> with <name>_body, <name>_head, <name>_eyes (blink = scale),
+# <name>_ear_l/_r and <name>_tail under it; the page only moves those
+# empties. No collars or harnesses.
+MOCHI, TOFU, POCHI = 'mochi', 'tofu', 'pochi'
+M_P_WHITE = fur_mat('pup_white', (0.8, 0.78, 0.74), rough=0.85, curl=0.25)
+M_P_TAN = fur_mat('pup_tan', (0.6, 0.32, 0.12), rough=0.85, curl=0.25)
+M_P_BLACK = fur_mat('pup_black', (0.03, 0.025, 0.025), rough=0.6, curl=0.2)
+M_P_CREAM = fur_mat('pup_cream', (0.92, 0.66, 0.32), rough=0.95, curl=0.7)
+M_P_GOLD = fur_mat('pup_gold', (0.85, 0.52, 0.2), rough=0.95, curl=0.7)
+M_GLINT = mat('pup_glint', (1, 1, 1), emit=(1, 1, 1), strength=1.0)
+M_EYE = mat('pup_eye', (0.02, 0.012, 0.008), rough=0.08)
+
+
+def paint(o, rules):
+    """Per-face markings: rules = [(material, test(center, normal))], first
+    match wins; centres are in the part's own (spec) space."""
+    off = o.location
+    for m, _ in rules:
+        if m.name not in [x.name for x in o.data.materials if x]: o.data.materials.append(m)
+    idx = {x.name: i for i, x in enumerate(o.data.materials)}
+    for p in o.data.polygons:
+        c = p.center + off
+        for m, test in rules:
+            if test(c, p.normal): p.material_index = idx[m.name]; break
+
+
+def pup(name, coat, ear_m, tail_m, shaggy=False, muzzle=0.03, ears='semi', tail='curl',
+        body_rules=(), head_rules=(), seed=20):
+    root = empty(name)
+    fur = dict(fur=0.0042, freq=45, nubs=0, wave=(0.35, 300)) if shaggy else dict(fur=0.0008, freq=40, nubs=0)
+    be = empty(name + '_body', (0, 0, 0), root)
+    b = blob(name + '_body_mesh', [
+        ((-0.01, 0, 0.06), (0.042, 0.042, 0.05)),          # back / belly
+        ((0.024, 0, 0.088), (0.034, 0.038, 0.055)),        # upright chest
+        ((-0.034, 0, 0.034), (0.042, 0.05, 0.034)),        # rump
+        ((-0.012, 0.04, 0.028), (0.04, 0.018, 0.028)),     # thighs
+        ((-0.012, -0.04, 0.028), (0.04, 0.018, 0.028)),
+        ((0.026, 0.043, 0.007), (0.03, 0.014, 0.008)),     # hind feet
+        ((0.026, -0.043, 0.007), (0.03, 0.014, 0.008)),
+        ((0.042, 0.017, 0.036), (0.012, 0.012, 0.036)),    # front legs
+        ((0.042, -0.017, 0.036), (0.012, 0.012, 0.036)),
+        ((0.052, 0.017, 0.007), (0.018, 0.013, 0.008)),    # front paws
+        ((0.052, -0.017, 0.007), (0.018, 0.013, 0.008)),
+        ((0.03, 0, 0.125), (0.028, 0.032, 0.03)),          # neck
+    ], coat, voxel=0.0045, ratio=0.06, seed=seed, keep=lambda co, n: rim(n, 0.6) and n.z > -0.3,
+       hide=lambda c, n: n.z < -0.6 and c.z < 0.006, **fur)
+    if body_rules: paint(b, body_rules)
+    under(be, b)
+    he = empty(name + '_head', (0.042, 0, 0.152), root)
+    hf = dict(fur=0.0032, freq=50, nubs=0) if shaggy else dict(fur=0.0006, freq=40, nubs=0)
+    h = blob(name + '_head_mesh', [
+        ((0, 0, 0), (0.045, 0.044, 0.04)),                 # skull
+        ((0.01 + muzzle, 0, -0.014), (muzzle, 0.022, 0.018)),  # muzzle
+        ((0.022, 0.022, -0.012), (0.02, 0.018, 0.018)),    # cheeks
+        ((0.022, -0.022, -0.012), (0.02, 0.018, 0.018)),
+    ], coat, voxel=0.0035, ratio=0.07, seed=seed + 1,
+       keep=lambda co, n: rim(n, 0.6) and n.z > -0.3 and co.x < 0.025, **hf)
+    if head_rules: paint(h, head_rules)
+    nx = 0.012 + 2 * muzzle
+    face = [ball(name + '_nose', 0.0085, (nx, 0, -0.006), M_NOSE, (0.85, 1.25, 0.85)),
+            ball(name + '_tongue', 1, (nx - 0.012, 0, -0.03), M_TONGUE, (0.008, 0.008, 0.0045))]
+    for s in (-1, 1):
+        face.append(arc(f'{name}_mouth_{s}', [(nx - 0.002, 0, -0.013), (nx - 0.006, s * 0.008, -0.024), (nx - 0.016, s * 0.015, -0.02)], 0.0011, M_NOSE))
+    under(he, h, *face)
+    ey = empty(name + '_eyes', (0.036, 0, 0.008), he)
+    for s in (-1, 1):
+        under(ey, ball(f'{name}_eye_{s}', 1, (0, s * 0.02, 0), M_EYE, (0.0055, 0.0075, 0.0085)),
+              ball(f'{name}_glint_{s}', 1, (0.004, s * 0.018, 0.003), M_GLINT, (0.0016, 0.0022, 0.0022), sub=1))
+    for s, nm in ((1, '_ear_l'), (-1, '_ear_r')):
+        ee = empty(name + nm, (-0.006, s * 0.03, 0.028), he)
+        if ears == 'soft':     # Tofu: bigger soft ears, tips folded over
+            ee.rotation_euler = (math.radians(s * -48), 0, 0)
+            sp = [((0, 0, 0.012), (0.011, 0.02, 0.018)), ((0.006, 0, 0.03), (0.009, 0.016, 0.014)),
+                  ((0.018, 0, 0.036), (0.014, 0.013, 0.007))]
+        elif ears == 'semi':   # upright with the tip folding forward
+            ee.rotation_euler = (math.radians(s * -38), 0, 0)
+            sp = [((0, 0, 0.012), (0.009, 0.016, 0.017)), ((0.004, 0, 0.03), (0.007, 0.012, 0.014)),
+                  ((0.014, 0, 0.038), (0.012, 0.01, 0.006))]
+        else:                  # soft floppy ears hanging beside the face
+            ee.rotation_euler = (math.radians(s * -62), 0, 0)
+            sp = [((0, 0, 0.01), (0.01, 0.018, 0.016)), ((0.01, 0, 0.026), (0.012, 0.016, 0.014)),
+                  ((0.022, 0, 0.03), (0.012, 0.013, 0.008))]
+        m = ear_m(s) if callable(ear_m) else ear_m
+        under(ee, blob(name + nm + '_mesh', sp, m, voxel=0.0028, ratio=0.12, seed=seed + 3 + s,
+                       **(dict(fur=0.002, freq=80) if shaggy else dict(fur=0.0004, freq=40))))
+    te = empty(name + '_tail', (-0.07, 0, 0.03), root)
+    if tail == 'curl':         # aspin tail curled up behind the back
+        tsp = [((-0.008, 0, 0.012), (0.011, 0.011, 0.014)), ((-0.016, 0, 0.034), (0.009, 0.009, 0.014)),
+               ((-0.008, 0, 0.056), (0.009, 0.009, 0.01)), ((0.004, 0, 0.062), (0.008, 0.008, 0.008))]
+    else:                      # fluffy plume swept round the feet
+        tsp = [((-0.004, -0.02, 0.008), (0.016, 0.016, 0.01)), ((0.02, -0.05, 0.009), (0.03, 0.016, 0.011)),
+               ((0.06, -0.064, 0.009), (0.022, 0.014, 0.009))]
+    under(te, blob(name + '_tail_mesh', tsp, tail_m, voxel=0.0035, ratio=0.1, seed=seed + 7,
+                   **(dict(fur=0.0035, freq=50) if shaggy else dict(fur=0.0004, freq=40))))
+    return root
+
+
+# Mochi: white aspin with tan over the head, ears and back; white muzzle,
+# blaze and chest. Tofu: shaggy cream retriever mix with soft ears and a
+# plume. Pochi: white aspin, black over one eye and ear, a tan cheek.
+WHITE_FACE = lambda c, n: c.z < -0.006 or (abs(c.y) < 0.006 and c.x > 0.02 and c.z < 0.03)
+mochi = pup(MOCHI, M_P_WHITE, M_P_TAN, M_P_TAN, muzzle=0.03, seed=21,
+            body_rules=[(M_P_TAN, lambda c, n: c.x < 0.0 and c.z > 0.05 and n.x < 0.3),
+                        (M_P_TAN, lambda c, n: abs(c.y) > 0.026 and c.z > 0.06 and c.x < 0.03),
+                        (M_P_TAN, lambda c, n: c.x < -0.03 and c.z > 0.03 and abs(c.y) < 0.03)],
+            head_rules=[(M_P_WHITE, WHITE_FACE), (M_P_TAN, lambda c, n: True)])
+tofu = pup(TOFU, M_P_CREAM, M_P_GOLD, M_P_CREAM, shaggy=True, muzzle=0.022, ears='soft', tail='plume', seed=31)
+pochi = pup(POCHI, M_P_WHITE, lambda s: M_P_BLACK if s < 0 else M_P_WHITE, M_P_WHITE, muzzle=0.028, seed=41,
+            head_rules=[(M_P_BLACK, lambda c, n: c.y < -0.004 and c.z > -0.006 and c.x < 0.04),
+                        (M_P_TAN, lambda c, n: c.y < -0.012 and c.z > -0.02 and c.x < 0.04)])
+# facing the page camera (it looks from about -83deg); Pochi turns a bit
+# toward Dumpling on the books
+for o, loc, rz, sc, head_z in ((mochi, (1.08, -0.62), -70, 1.46, 0), (tofu, (1.34, -0.73), -86, 1.36, 12),
+                               (pochi, (1.6, -0.6), -100, 1.38, 30)):
+    o.location = (*loc, 0.0); o.rotation_euler = (0, 0, math.radians(rz)); o.scale = (sc,) * 3
+    bpy.data.objects[o.name + '_head'].rotation_euler = (0, 0, math.radians(head_z))
+
+# stand-up flip calendar, front right; the page draws the notes on
+# cal_page and swings cal_flip (hinged at the top ring) over the back
+# image only so the UVs survive gltf-transform's prune (the page paints it)
+M_CAL = mat('cal_paper', rough=0.7, image=os.path.join(TEX, 'desk-mat.png'), emit_image=True, strength=0.3)
+cal = empty('cal')
+under(cal, box('cal_base', (0.17, 0.08, 0.018), (0, 0, 0.009), M_DARK, bevel=0.004))
+tilt = empty('cal_tilt', (0, 0.012, 0.018), cal); tilt.rotation_euler = (math.radians(-14), 0, 0)
+under(tilt, box('cal_back', (0.156, 0.006, 0.135), (0, 0.006, 0.0675), M_ALU, bevel=0.003),
+      plane('cal_page', 0.146, 0.116, (0, -0.001, 0.062), (math.radians(90), 0, 0), M_CAL))
+for dx in (-0.04, 0.04):
+    under(tilt, cyl('cal_ring', 0.006, 0.008, (dx, -0.003, 0.124), M_ALU, rot=(0, math.radians(90), 0), verts=10))
+fl = empty('cal_flip', (0, -0.003, 0.12), tilt)
+under(fl, plane('cal_flip_page', 0.146, 0.116, (0, 0, -0.058), (math.radians(90), 0, 0), M_CAL))
+cal.location = (1.72, -0.24, 0.0); cal.rotation_euler = (0, 0, math.radians(6)); cal.scale = (1.3, 1.3, 1.3)
+
+# little parcel stack on a digital scale beside the label printer; the
+# page draws the weight on scale_lcd and bumps parcel_top each order
+M_LCD = mat('scale_lcd', rough=0.4, image=os.path.join(TEX, 'desk-mat.png'), emit_image=True, strength=1.0)
+pk = empty('parcels')
+
+
+def parcel(nm, size, loc, rz=0.0, par=pk):
+    sx, sy, sz = size
+    e = empty(nm, loc, par); e.rotation_euler = (0, 0, math.radians(rz))
+    under(e, box(nm + '_box', size, (0, 0, sz / 2), M_BOX, bevel=0.004),
+          box(nm + '_tape', (sx + 0.002, 0.016, sz + 0.002), (0, 0, sz / 2), M_TAPE, bevel=0),
+          box(nm + '_label', (sx * 0.42, 0.003, sz * 0.42), (sx * 0.2, -sy / 2 - 0.001, sz * 0.5), M_PAPER, bevel=0),
+          box(nm + '_code', (sx * 0.3, 0.004, sz * 0.08), (sx * 0.2, -sy / 2 - 0.001, sz * 0.38), M_DARK, bevel=0))
+    return e
+
+
+under(pk, box('scale_base', (0.15, 0.14, 0.018), (0, 0, 0.009), M_ALU, bevel=0.005),
+      box('scale_plate', (0.13, 0.12, 0.006), (0, 0, 0.021), M_DARK, bevel=0.002),
+      plane('scale_lcd', 0.07, 0.014, (0, -0.0705, 0.009), (math.radians(90), 0, 0), M_LCD))
+parcel('parcel_top', (0.1, 0.09, 0.07), (0, 0, 0.024), 4)
+parcel('parcel_a', (0.13, 0.11, 0.085), (0.15, 0.03, 0), -10)
+parcel('parcel_b', (0.09, 0.08, 0.06), (0.15, 0.03, 0.085), 14)
+pk.location = (0.86, -0.1, 0.0); pk.rotation_euler = (0, 0, math.radians(8))
 
 
 # ── lights (exported as KHR punctual; the page adds its own too) ─────
@@ -745,6 +905,11 @@ if RENDER:
         cam.location = (2.0, -6.3, 3.2); tgt.location = (0.2, 0.1, 0.62)
         cam.data.sensor_fit = 'VERTICAL'; cam.data.angle = math.radians(30)
         scene.render.resolution_x, scene.render.resolution_y = 975, 837
+    elif CAMV == 'pups':
+        tgt.location = (1.33, -0.6, 0.17)
+        cam.location = tgt.location + __import__('mathutils').Vector((0.45, -1.9, 0.75))
+        cam.data.lens = 60
+        scene.render.resolution_x, scene.render.resolution_y = 900, 560
     elif CAMV == 'dog':
         tgt.location = dog.location + __import__('mathutils').Vector((0.02, -0.02, 0.06))
         cam.location = tgt.location + __import__('mathutils').Vector((0.24, -1.0, 0.47))
@@ -761,7 +926,7 @@ if RENDER:
         # where named props land on the page (canvas box 498,31 975x837 at 1440x900)
         from bpy_extras.object_utils import world_to_camera_view
         bpy.context.view_layer.update()
-        for nm in ('dog', 'shelf', 'printer', 'bot', 'holo_bag', 'cube_cart', 'holo_chart', 'lamp_bulb', 'book_2'):
+        for nm in ('dog', 'shelf', 'printer', 'bot', 'holo_bag', 'cube_cart', 'holo_chart', 'lamp_bulb', 'book_2', 'mochi', 'tofu', 'pochi', 'cal', 'parcels', 'mug'):
             o = bpy.data.objects.get(nm)
             if o:
                 c = world_to_camera_view(scene, cam, o.matrix_world.translation)

@@ -19,6 +19,10 @@
    props, double-click the robot, desk sheen, lamp dust, a Manila-time
    sky behind the desk, Dumpling asleep on the books, a reviews shelf and
    a label printer that prints with every order.
+   Round 6: Dumpling's siblings Mochi, Tofu and Pochi sit on the front
+   right (wag, head tilt, breathing, a blink), a flip calendar that
+   ticks off a task every 8s, parcels on a scale that weighs each order,
+   and steam off the coffee mug.
 ═══════════════════════════════════════ */
 (function () {
   var stage = document.getElementById('heroStage');
@@ -43,6 +47,18 @@
     dog: { label: 'Dumpling, chief morale officer' },
     shelf: { label: 'Read the reviews', href: '#testimonials' }
   };
+
+  /* the pups: node name in scene.glb -> hover label (names swap here and
+     in 3d/build_scene.py). wag = tail rhythm (rad/s), amp = wag size,
+     tilt = head-tilt period (s), blink = seconds between blinks. */
+  var MOCHI = 'Mochi', TOFU = 'Tofu', POCHI = 'Pochi';
+  var PUPS = {
+    mochi: { label: MOCHI + ', head of security', wag: 9, amp: 0.45, tilt: 9.5, blink: 4.3 },
+    tofu: { label: TOFU + ', snack inspector', wag: 5.5, amp: 0.3, tilt: 7.1, blink: 5.9 },
+    pochi: { label: POCHI + ', QA tester', wag: 13, amp: 0.38, tilt: 11.3, blink: 3.7 }
+  };
+  Object.keys(PUPS).forEach(function (k) { OWN[k] = { label: PUPS[k].label }; });
+  OWN.cal = { label: 'Done list' }; OWN.parcels = { label: 'Packed & weighed' };
 
   function boot() {
     Promise.all([
@@ -105,6 +121,7 @@
     var cubes = [], wires = [], holos = [], floats = [], leds = [], halves = [], picks = [];
     var logo = null, drone = null, props = [], bot = null, wheels = [], hover = null;
     var flow = null, sparks = null, orders = null, dust = null, sky = null, dog = {}, printer = null;
+    var pups = [], cal = null, weigh = null, steam = null;
     var zc = new THREE.Vector3(), zcam = new THREE.Vector3(), look = new THREE.Vector3();
     var loader = new GLTFLoader(); loader.setMeshoptDecoder(MeshoptDecoder);
     loader.load('img/hero3d/scene.glb', function (g) {
@@ -130,6 +147,7 @@
         if (o.name === 'bot') { bot = o; o.userData.p0 = o.position.clone(); }
         if (/^bot_wheel_/.test(o.name)) wheels.push(o);
         if ((/^rack_led_/.test(o.name) || o.name === 'bot_led') && o.material) { o.material = o.material.clone(); leds.push(o); }
+        if (PUPS[o.name]) pups.push({ cfg: PUPS[o.name], root: o });
         if (/^dog_(body|head|ear_l|ear_r|tail)$/.test(o.name)) { dog[o.name.slice(4)] = o; o.userData.p0 = o.position.clone(); o.userData.r0 = o.rotation.clone(); }
         /* Blender's emission strengths read hot under ACES; tame them */
         if (o.material && o.material.emissiveIntensity) {
@@ -150,6 +168,15 @@
       g.scene.getObjectByName('laptop_screen').getWorldPosition(zc);
       zcam.set(0, 0.242, 0.97).multiplyScalar(3.8).add(zc);
       printer = labelPrinter(g.scene);
+      pups.forEach(function (p) {
+        ['body', 'head', 'eyes', 'tail'].forEach(function (k) {
+          var o = g.scene.getObjectByName(p.root.name + '_' + k);
+          if (o) { o.userData.p0 = o.position.clone(); o.userData.r0 = o.rotation.clone(); o.userData.s0 = o.scale.clone(); }
+          p[k] = o;
+        });
+        p.ph = Math.random() * 6;
+      });
+      cal = deskCalendar(g.scene); weigh = parcelScale(g.scene); steam = mugSteam(g.scene);
       deskSheen(g.scene);
       dust = lampDust(); sky = skyPanel();
       /* drifting data motes around the desk */
@@ -271,6 +298,7 @@
           var p = pool[0]; for (var i = 1; i < 3; i++) if (pool[i].t0 < p.t0) p = pool[i];
           draw(p); p.t0 = t; p.sp.visible = true; next = t + 3.4;
           if (printer) printer.print(t);
+          if (weigh) weigh.bump(t);
         }
         for (var k = 0; k < 3; k++) {
           var q = pool[k], a = t - q.t0;
@@ -305,6 +333,98 @@
       };
       api.print = function (t) { t0 = t; };
       return api;
+    }
+
+    /* canvas-backed texture on a named mesh (UVs from Blender: flipY off) */
+    function paintSlot(root, name, w, h) {
+      var mesh = root.getObjectByName(name);
+      if (!mesh || !mesh.material) return null;
+      var c = document.createElement('canvas'); c.width = w; c.height = h;
+      var tex = new THREE.CanvasTexture(c); tex.flipY = false; tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
+      var m = mesh.material = mesh.material.clone();
+      m.map = tex; m.emissiveMap = tex; m.emissive.set(0xffffff); m.emissiveIntensity = 0.32; m.needsUpdate = true;
+      return { g: c.getContext('2d'), tex: tex, m: m, mesh: mesh };
+    }
+
+    /* ── flip calendar: every 8s the top note swings up over the rings,
+       flutters and fades, showing the next ticked-off task underneath */
+    function deskCalendar(root) {
+      var NOTES = ['Launch', 'Sync Cin7', 'Ship orders', 'Fix checkout', 'Go live'];
+      var page = paintSlot(root, 'cal_page', 256, 204), top = paintSlot(root, 'cal_flip_page', 256, 204);
+      var hinge = root.getObjectByName('cal_flip');
+      if (!page || !top || !hinge) return null;
+      top.m.transparent = true;
+      var r0 = hinge.rotation.x, PERIOD = 8, last = -1;
+      function draw(s, k) {
+        var g = s.g, w = NOTES[k % NOTES.length];
+        g.fillStyle = '#f4f1ea'; g.fillRect(0, 0, 256, 204);
+        g.fillStyle = '#e8572a'; g.fillRect(0, 0, 256, 44);
+        g.fillStyle = '#fff'; g.font = '700 22px system-ui,sans-serif'; g.textAlign = 'center'; g.fillText('TODAY', 128, 30);
+        g.fillStyle = '#142032'; g.font = '800 ' + (w.length > 9 ? 31 : 38) + 'px system-ui,sans-serif'; g.fillText(w, 128, 116);
+        g.fillStyle = '#14aa78'; g.beginPath(); g.arc(128, 160, 22, 0, 7); g.fill();
+        g.strokeStyle = '#fff'; g.lineWidth = 5; g.lineCap = 'round'; g.beginPath(); g.moveTo(117, 161); g.lineTo(125, 169); g.lineTo(139, 151); g.stroke();
+        s.tex.needsUpdate = true;
+      }
+      return function (t) {
+        var cyc = Math.floor(t / PERIOD), u = (t % PERIOD - (PERIOD - 1.4)) / 1.4;
+        if (cyc !== last) { last = cyc; draw(top, cyc); draw(page, cyc + 1); }
+        if (u < 0) { hinge.rotation.x = r0; top.m.opacity = 1; top.mesh.visible = true; return; }
+        var e = ease(u);
+        hinge.rotation.x = r0 - e * 3.3 + Math.sin(u * 18) * 0.12 * (1 - u);
+        top.m.opacity = 1 - ease((u - 0.55) / 0.45);
+        top.mesh.visible = top.m.opacity > 0.01;
+      };
+    }
+
+    /* ── parcel scale: each order the top box hops and the display
+       counts up to a new weight */
+    function parcelScale(root) {
+      var lcd = paintSlot(root, 'scale_lcd', 160, 32), box = root.getObjectByName('parcel_top');
+      if (!lcd) return null;
+      lcd.m.emissiveIntensity = 1.1;
+      var W = [1.24, 0.86, 2.31, 0.47, 1.68, 3.05], k = 0, from = 1.24, to = 1.24, t0 = -9, shown = -1;
+      var p0 = box ? box.position.clone() : null;
+      function draw(v) {
+        var g = lcd.g; g.fillStyle = '#061a12'; g.fillRect(0, 0, 160, 32);
+        g.fillStyle = '#3dffa0'; g.font = '700 24px ui-monospace,Consolas,monospace'; g.textAlign = 'center';
+        g.fillText(v.toFixed(2) + ' kg', 80, 25); lcd.tex.needsUpdate = true;
+      }
+      var api = function (t) {
+        var u = t - t0;
+        if (box) box.position.y = p0.y + (u < 0.5 ? Math.sin(u / 0.5 * Math.PI) * 0.02 : 0);
+        var v = u < 0.5 ? 0 : u < 1.3 ? from + (to - from) * ease((u - 0.5) / 0.8) : to;
+        v = Math.round(v * 100) / 100;
+        if (v !== shown) { shown = v; draw(v); }
+      };
+      api.bump = function (t) { from = 0; k = (k + 1) % W.length; to = W[k]; t0 = t; };
+      return api;
+    }
+
+    /* ── mug steam: a few soft wisps rise, sway and fade, recycled */
+    function mugSteam(root) {
+      var mug = root.getObjectByName('mug');
+      if (!mug) return null;
+      var c = document.createElement('canvas'); c.width = 64; c.height = 128;
+      var g = c.getContext('2d');
+      /* one curling stroke, blurred into a wisp */
+      g.filter = 'blur(5px)'; g.strokeStyle = 'rgba(255,244,228,.9)'; g.lineWidth = 9; g.lineCap = 'round';
+      g.beginPath(); g.moveTo(32, 120); g.bezierCurveTo(10, 90, 54, 64, 30, 36); g.bezierCurveTo(18, 22, 36, 12, 34, 6); g.stroke();
+      var tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+      var top = new THREE.Vector3(); mug.getWorldPosition(top); top.y += 0.09;
+      var N = 5, list = [];
+      for (var i = 0; i < N; i++) {
+        var sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, color: 0xfff1dc, transparent: true, opacity: 0, depthWrite: false }));
+        sp.renderOrder = 4; rig.add(sp); list.push({ s: sp, o: i / N, side: i % 2 ? 1 : -1 });
+      }
+      return function (t) {
+        for (var i = 0; i < N; i++) {
+          var w = list[i], u = (t / 3.6 + w.o) % 1, s = 0.07 + u * 0.09;
+          w.s.position.set(top.x + Math.sin(t * 1.3 + i * 2) * 0.02 * u + w.side * 0.012, top.y + u * 0.32, top.z + Math.cos(t * 0.9 + i) * 0.015 * u);
+          w.s.scale.set(s * 0.55, s, 1);
+          w.s.material.rotation = w.side * (0.15 + u * 0.4) * Math.sin(t * 0.7 + i);
+          w.s.material.opacity = Math.sin(u * Math.PI) * 0.26;
+        }
+      };
     }
 
     /* ── desk sheen: a tiny environment of glowing strips, prefiltered
@@ -644,6 +764,25 @@
         var tw = t % 5.2, wag = tw < 1.1 ? Math.sin(tw * 17) * Math.sin(tw / 1.1 * Math.PI) * 0.35 : 0;
         if (dog.tail) dog.tail.rotation.y = dog.tail.userData.r0.y + wag + Math.sin(t * 0.8) * 0.04;
       }
+      /* the pups: breathing, a wag each to its own beat, a head tilt now
+         and then (about the snout axis) and a quick blink */
+      for (i = 0; i < pups.length; i++) {
+        var P = pups[i], C = P.cfg, pt = t + P.ph, pb = Math.sin(pt * 2.4) * 0.5 + 0.5;
+        if (P.body) P.body.scale.set(P.body.userData.s0.x * (1 + pb * 0.03), P.body.userData.s0.y * (1 + pb * 0.012), P.body.userData.s0.z * (1 + pb * 0.03));
+        if (P.tail) P.tail.rotation.y = P.tail.userData.r0.y + Math.sin(pt * C.wag) * C.amp * (0.6 + 0.4 * Math.sin(pt * 0.37));
+        if (P.head) {
+          var hu = (pt % C.tilt) / 1.6, tl = hu < 1 ? Math.sin(hu * Math.PI) : 0;
+          P.head.rotation.x = P.head.userData.r0.x + tl * 0.32 * (i % 2 ? -1 : 1);
+          P.head.position.y = P.head.userData.p0.y + pb * 0.002;
+        }
+        if (P.eyes && C.blink) {
+          var bu = (pt % C.blink) / 0.18;
+          P.eyes.scale.y = P.eyes.userData.s0.y * (bu < 1 ? 1 - Math.sin(bu * Math.PI) * 0.9 : 1);
+        }
+      }
+      if (cal) cal(t);
+      if (weigh) weigh(t);
+      if (steam) steam(t);
       if (screens && t - lastDraw > 1 / 30) { screens(t); lastDraw = t; }
       if (motes) { motes.rotation.y = t * 0.03; motes.position.y = Math.sin(t * 0.4) * 0.05; }
 
