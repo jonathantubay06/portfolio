@@ -167,7 +167,7 @@
     '    float gx=aP.z*gw+sin(uT*0.11+ph)*14.0;',
     '    p=vec2(aP.x>0.5?W-gx:gx,aP.y*H+cos(uT*0.09+ph)*18.0);',
     '    float gut=smoothstep(560.0,660.0,abs(p.x-W*0.5));',
-    '    size=3.0;a=gut*smoothstep(uHeroB-40.0,uHeroB+200.0,p.y)*mix(0.27,0.14,uLight);',
+    '    size=2.2;a=gut*smoothstep(uHeroB-40.0,uHeroB+200.0,p.y)*mix(0.27,0.14,uLight);',
     '    if(uLight>0.5)col=vec3(0.04,0.39,0.72);',
     '    vSoft=0.2;}',
     '  vC=vec4(col*a,a);',
@@ -176,7 +176,7 @@
   ].join('\n');
 
   var FS_PTS = 'precision mediump float;varying vec4 vC;varying float vSoft;uniform float uLines;' +
-    'void main(){if(uLines>0.5){gl_FragColor=vC*0.55;return;}' +
+    'void main(){if(uLines>0.5){gl_FragColor=vC*0.35;return;}' +
     'float r=length(gl_PointCoord*2.0-1.0);float m=1.0-smoothstep(vSoft,1.0,r);' +
     'if(vSoft<0.01)m=exp(-r*r*3.2)*(1.0-smoothstep(0.85,1.0,r));gl_FragColor=vC*m;}';
 
@@ -217,8 +217,8 @@
     /* bokeh, weighted to the right two-thirds */
     for (i = 0; i < 46; i++) { add(0.3 + 0.72 * Math.sqrt(rnd()), rnd(), rnd(), rnd(), 1); nHero++; }
     /* plexus: loose nodes scattered in each gutter, each linked to at most
-       3 near neighbours (distances judged on a 360x900 gutter) */
-    var nNodes = 0, lines = [], NODES = 30;
+       2 near neighbours within 85px (judged on a 360x900 gutter) */
+    var nNodes = 0, lines = [], NODES = 46;
     function link(a, b) { lines.push(a[0], a[1], a[2], a[3], 2, b[0], b[1], b[2], b[3], 2); }
     for (r = 0; r < 2; r++) {
       var ns = [];
@@ -229,9 +229,9 @@
         ns.forEach(function (b, bi) {
           if (bi <= ai) return;
           var d = Math.hypot((a[2] - b[2]) * 360, (a[1] - b[1]) * 900);
-          if (d < 135) near.push([d, b]);
+          if (d < 85) near.push([d, b]);
         });
-        near.sort(function (p, q) { return p[0] - q[0]; }).slice(0, 3).forEach(function (n) { link(a, n[1]); });
+        near.sort(function (p, q) { return p[0] - q[0]; }).slice(0, 2).forEach(function (n) { link(a, n[1]); });
       });
     }
     var ptBuf = gl.createBuffer();
