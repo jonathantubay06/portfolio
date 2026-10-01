@@ -162,13 +162,10 @@
     '    a*=heroMask(p)*(0.6+0.4*sin(uT*0.5+ph));',
     '    if(aP.w>0.8)col=vec3(1.0,0.55,0.16);',
     '  }else{',
-    /* ring id, angle, radius fraction, phase */
-    '    float id=aP.x,left=step(id,1.5),lower=mod(id,2.0);',
-    '    float cxL=(W*0.5-600.0)*0.5-30.0;',
-    '    vec2 c=vec2(left>0.5?cxL:W-cxL,H*(lower>0.5?0.74:0.30));',
-    '    float R=mix(165.0,205.0,lower)*aP.z+sin(uT*0.3+aP.w*6.2831)*9.0;',
-    '    float ang=aP.y+uT*0.025*(left>0.5?1.0:-1.0)*(lower>0.5?-1.0:1.0);',
-    '    p=c+vec2(cos(ang),sin(ang))*R;',
+    /* side (0 left / 1 right), y fraction, x fraction across the gutter, phase */
+    '    float gw=max(W*0.5-560.0,90.0),ph=aP.w*6.2831;',
+    '    float gx=aP.z*gw+sin(uT*0.11+ph)*14.0;',
+    '    p=vec2(aP.x>0.5?W-gx:gx,aP.y*H+cos(uT*0.09+ph)*18.0);',
     '    float gut=smoothstep(560.0,660.0,abs(p.x-W*0.5));',
     '    size=3.0;a=gut*smoothstep(uHeroB-40.0,uHeroB+200.0,p.y)*mix(0.27,0.14,uLight);',
     '    if(uLight>0.5)col=vec3(0.04,0.39,0.72);',
@@ -219,24 +216,24 @@
     var nHero = COLS * ROWS;
     /* bokeh, weighted to the right two-thirds */
     for (i = 0; i < 46; i++) { add(0.3 + 0.72 * Math.sqrt(rnd()), rnd(), rnd(), rnd(), 1); nHero++; }
-    /* plexus: 4 rings, each an outer loop of 16 and an inner loop of 10 */
-    var rings = [], OUT = 16, IN = 10;
-    for (r = 0; r < 4; r++) {
-      var ring = [];
-      for (i = 0; i < OUT; i++) ring.push([r, (i + rnd() * 0.5) / OUT * 6.2832, 0.9 + rnd() * 0.22, rnd()]);
-      for (i = 0; i < IN; i++) ring.push([r, (i + rnd() * 0.5) / IN * 6.2832, 0.55 + rnd() * 0.15, rnd()]);
-      rings.push(ring);
-    }
-    var nNodes = 0, lines = [];
+    /* plexus: loose nodes scattered in each gutter, each linked to at most
+       3 near neighbours (distances judged on a 360x900 gutter) */
+    var nNodes = 0, lines = [], NODES = 30;
     function link(a, b) { lines.push(a[0], a[1], a[2], a[3], 2, b[0], b[1], b[2], b[3], 2); }
-    rings.forEach(function (ring) {
-      ring.forEach(function (n) { add(n[0], n[1], n[2], n[3], 2); nNodes++; });
-      for (i = 0; i < OUT; i++) { link(ring[i], ring[(i + 1) % OUT]); if (i % 3 === 0) link(ring[i], ring[(i + 2) % OUT]); }
-      for (i = 0; i < IN; i++) {
-        link(ring[OUT + i], ring[OUT + (i + 1) % IN]);
-        link(ring[OUT + i], ring[Math.round(i * OUT / IN) % OUT]);
-      }
-    });
+    for (r = 0; r < 2; r++) {
+      var ns = [];
+      for (i = 0; i < NODES; i++) ns.push([r, rnd(), 0.08 + rnd() * 0.84, rnd()]);
+      ns.forEach(function (n) { add(n[0], n[1], n[2], n[3], 2); nNodes++; });
+      ns.forEach(function (a, ai) {
+        var near = [];
+        ns.forEach(function (b, bi) {
+          if (bi <= ai) return;
+          var d = Math.hypot((a[2] - b[2]) * 360, (a[1] - b[1]) * 900);
+          if (d < 135) near.push([d, b]);
+        });
+        near.sort(function (p, q) { return p[0] - q[0]; }).slice(0, 3).forEach(function (n) { link(a, n[1]); });
+      });
+    }
     var ptBuf = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, ptBuf);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(v), gl.STATIC_DRAW);
