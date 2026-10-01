@@ -184,7 +184,10 @@ for (const f of manifest.styles) {
 }
 const styleCss = minify.css(concat('styles', manifest.styles));
 const mainJs = minify.js(concat('scripts/main', manifest.main));
-const effectsJs = minify.js(concat('scripts/effects', manifest.effects));
+// The GLB sits under img/ (cached immutable for a year), so its URL carries
+// a content hash: a rebuilt scene reaches returning visitors.
+const glbV = crypto.createHash('sha256').update(fs.readFileSync(path.join(__dirname, 'img/hero3d/scene.glb'))).digest('hex').slice(0, 8);
+const effectsJs = minify.js(concat('scripts/effects', manifest.effects)).replace(/scene.glb'/g, "scene.glb?v=" + glbV + "'");
 
 /** Fixed name -> hashed name, for rewriting references. */
 const HASHED = {
