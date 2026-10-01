@@ -1,0 +1,266 @@
+/* ═══════════════════════════════════════
+   SECTION MOTION (desktop only)
+   Added 2026-10-02. Motion and depth for the sections below the hero,
+   driven by 38-section-motion.js (DOM effects) and 39-section-3d.js
+   (the shared WebGL renderer: featured-project laptops + Dumpling).
+
+   Everything here is scoped to html.sm-on, which the script sets only
+   when (min-width:1024px) and (pointer:fine) and
+   (prefers-reduced-motion:no-preference) all match. Phones, tablets and
+   reduced-motion visitors get none of it: no new layers, no 3D.
+
+   Rules of the file: transform/opacity only for anything that moves;
+   decorative layers sit BEHIND text (z-index:-1 inside an isolated
+   parent, or clipped to a screenshot), never over it; loops only run
+   while their section is on screen (.sm-vis, set by an observer).
+═══════════════════════════════════════ */
+
+/* ── 11 · heading scan + tilting numerals ───────────────────────────
+   .sm-scan is a soft band injected into each section h2. The h2s are
+   already position:relative + isolation:isolate (53-round4.css), so
+   z-index:-1 paints it above the h2's own background but under the
+   letters. It crosses once when the heading arrives. */
+.sm-on .sec h2,.sm-on #testimonials h2,.sm-on #contact h2{perspective:700px}
+.sm-scan{
+  position:absolute;z-index:-1;inset:-8% -4%;pointer-events:none;overflow:hidden;
+  border-radius:12px;
+}
+.sm-scan::before{
+  content:'';position:absolute;top:0;bottom:0;left:0;width:38%;
+  background:linear-gradient(100deg,transparent 0%,rgba(0,212,255,.0) 20%,rgba(0,212,255,.22) 48%,rgba(140,235,255,.34) 52%,rgba(0,212,255,.0) 80%,transparent 100%);
+  transform:translateX(-110%) skewX(-18deg);opacity:0;
+}
+.sm-scan::after{        /* the thin bright scan line riding the band */
+  content:'';position:absolute;top:6%;bottom:6%;left:0;width:2px;
+  background:linear-gradient(180deg,transparent,rgba(160,240,255,.9),transparent);
+  transform:translateX(-20px);opacity:0;
+}
+.sm-in .sm-scan::before{animation:smScanBand 1.5s cubic-bezier(.45,0,.25,1) .15s both}
+.sm-in .sm-scan::after{animation:smScanLine 1.5s cubic-bezier(.45,0,.25,1) .15s both}
+@keyframes smScanBand{0%{transform:translateX(-110%) skewX(-18deg);opacity:0}15%{opacity:1}85%{opacity:1}100%{transform:translateX(290%) skewX(-18deg);opacity:0}}
+@keyframes smScanLine{0%{transform:translateX(-20px);opacity:0}15%{opacity:1}85%{opacity:1}100%{transform:translateX(var(--sm-w,900px));opacity:0}}
+[data-theme="light"] .sm-scan::before{background:linear-gradient(100deg,transparent 20%,rgba(10,120,220,.14) 48%,rgba(10,120,220,.2) 52%,transparent 80%)}
+[data-theme="light"] .sm-scan::after{background:linear-gradient(180deg,transparent,rgba(10,120,220,.55),transparent)}
+
+/* The outlined 01/02/03 numerals and the gear behind them turn a few
+   degrees toward the pointer. The script writes an axis (--sm-ax/ay)
+   and an angle (--sm-a) on the h2; the individual rotate property
+   composes with the existing translate (numeral) and the gearSpin
+   transform (gear), so neither existing animation is disturbed. */
+.sm-on #services h2::before,.sm-on #work h2::before,.sm-on #experience h2::before{
+  rotate:var(--sm-ax,0) var(--sm-ay,1) 0 var(--sm-a,0deg);
+  transition:rotate .5s cubic-bezier(.2,.7,.3,1);
+}
+.sm-on #services h2::after,.sm-on #work h2::after,.sm-on #experience h2::after{
+  rotate:var(--sm-ax,0) var(--sm-ay,1) 0 calc(var(--sm-a,0deg) * .6);
+  transition:rotate .6s cubic-bezier(.2,.7,.3,1);
+}
+
+/* ── 1 · service icons: halo + contact shadow ───────────────────────
+   The pointer tilt itself is 27-service-icon-tilt.js. These add a
+   cyan halo behind the render and a soft shadow under it, both
+   opacity/scale on spans the script positions once per hover. */
+.sm-on .svc-ico-3d{position:relative;z-index:1}
+.sm-halo,.sm-shadow{position:absolute;pointer-events:none;opacity:0;z-index:0}
+.sm-halo{
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(0,212,255,.42) 0%,rgba(0,212,255,.14) 42%,transparent 70%);
+  transform:scale(.6);
+  transition:opacity .35s ease,transform .5s cubic-bezier(.2,.7,.3,1);
+}
+.sm-shadow{
+  height:12px;border-radius:50%;
+  background:radial-gradient(ellipse,rgba(0,0,0,.55),transparent 70%);
+  transform:scale(.5,.6);
+  transition:opacity .35s ease,transform .5s cubic-bezier(.2,.7,.3,1);
+}
+.svc-row:hover .sm-halo{opacity:1;transform:scale(1.25)}
+.svc-row:hover .sm-shadow{opacity:.9;transform:scale(1,1)}
+[data-theme="light"] .sm-halo{background:radial-gradient(circle,rgba(10,120,220,.28) 0%,rgba(10,120,220,.08) 45%,transparent 70%)}
+[data-theme="light"] .sm-shadow{background:radial-gradient(ellipse,rgba(10,40,80,.3),transparent 70%)}
+
+/* ── 2 · process steps light up in sequence ─────────────────────────
+   .sm-lit arrives with the row. Each step gets a glow plate behind it
+   and the path under the row draws from 01 to 04 in step with them. */
+.sm-on .process-inline{position:relative;isolation:isolate}
+.sm-on .pi-step{position:relative}
+.sm-pglow{
+  position:absolute;z-index:-1;inset:-.55rem -.8rem;border-radius:12px;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 50%,rgba(0,212,255,.2),transparent 70%);
+  box-shadow:inset 0 0 0 1px rgba(0,212,255,.28);
+  opacity:0;transform:scale(.85);
+}
+.sm-lit .sm-pglow{animation:smStepLit 1.4s cubic-bezier(.2,.7,.3,1) both}
+.sm-lit .pi-step:nth-child(3) .sm-pglow{animation-delay:.45s}
+.sm-lit .pi-step:nth-child(5) .sm-pglow{animation-delay:.9s}
+.sm-lit .pi-step:nth-child(7) .sm-pglow{animation-delay:1.35s}
+/* bright on arrival, then settles to a faint resting plate */
+@keyframes smStepLit{0%{opacity:0;transform:scale(.85)}30%{opacity:1;transform:scale(1.04)}100%{opacity:.45;transform:scale(1)}}
+.sm-ppath{
+  position:absolute;z-index:-1;bottom:.42rem;height:2px;border-radius:2px;pointer-events:none;
+  background:linear-gradient(90deg,rgba(0,212,255,.15),var(--cyan),#4ade80);
+  box-shadow:0 0 10px rgba(0,212,255,.6);
+  transform-origin:left center;transform:scaleX(0);opacity:.9;
+}
+.sm-lit .sm-ppath{animation:smPath 1.45s cubic-bezier(.45,0,.4,1) .1s both}
+@keyframes smPath{to{transform:scaleX(1)}}
+.sm-pdot{
+  position:absolute;z-index:-1;bottom:calc(.42rem - 3px);width:8px;height:8px;margin-left:-4px;border-radius:50%;pointer-events:none;
+  background:#fff;box-shadow:0 0 10px var(--cyan),0 0 22px rgba(0,212,255,.7);opacity:0;
+}
+.sm-lit .sm-pdot{animation:smPdot 1.45s cubic-bezier(.45,0,.4,1) .1s both}
+@keyframes smPdot{0%{opacity:0;transform:translateX(0)}10%{opacity:1}90%{opacity:1}100%{opacity:0;transform:translateX(var(--sm-pw,400px))}}
+[data-theme="light"] .sm-pglow{background:radial-gradient(ellipse,rgba(10,120,220,.12),transparent 70%);box-shadow:inset 0 0 0 1px rgba(10,120,220,.22)}
+
+/* ── 3 · automation demo: 3D tiles, flip on fire, packet trail ─────
+   The face already leans back (rotateX 14deg); preserve-3d lets the
+   logo tile stand 18px proud of it, with a darker edge underneath so it
+   reads as a block. Firing flips the tile a full turn on Y. */
+.sm-on .ad-face{transform-style:preserve-3d}
+.sm-on .ad-face .ptile{
+  transform:translateZ(18px);
+  box-shadow:0 5px 0 -1px rgba(0,0,0,.45),0 10px 18px -6px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.25);
+}
+.sm-vis .ad-face .ptile{animation:smTileBob 4.2s ease-in-out infinite}
+.sm-vis .ad-node:nth-child(3) .ptile{animation-delay:-1.4s}
+.sm-vis .ad-node:nth-child(5) .ptile{animation-delay:-2.8s}
+@keyframes smTileBob{0%,100%{rotate:y -10deg}50%{rotate:y 10deg}}
+.sm-on .ad-node.is-fired .ptile{animation:smTileFlip .7s cubic-bezier(.3,.7,.3,1) both}
+@keyframes smTileFlip{0%{rotate:y 0deg;translate:0 0}45%{translate:0 -6px}100%{rotate:y 360deg;translate:0 0}}
+/* the packet: brighter core plus a comet tail trailing behind it */
+.sm-on .ad-packet{width:14px;height:14px}
+.sm-on .ad-packet::before{
+  content:'';position:absolute;right:50%;top:50%;width:46px;height:4px;margin-top:-2px;border-radius:4px;
+  background:linear-gradient(90deg,transparent,rgba(0,212,255,.75));
+  transform-origin:right center;
+}
+.sm-on .ad-link.is-flowing::after{       /* landing flash where the packet arrives */
+  content:'';position:absolute;right:-6px;top:50%;width:14px;height:14px;margin-top:-7px;border-radius:50%;
+  background:radial-gradient(circle,#fff,rgba(74,222,128,.6) 50%,transparent 72%);
+  opacity:0;animation:smLand .5s ease-out .65s both;
+}
+@keyframes smLand{0%{opacity:0;transform:scale(.4)}40%{opacity:1;transform:scale(1.6)}100%{opacity:0;transform:scale(2.2)}}
+[data-theme="light"] .sm-on .ad-face .ptile{box-shadow:0 5px 0 -1px rgba(10,40,80,.25),0 10px 18px -6px rgba(10,40,80,.3),inset 0 1px 0 rgba(255,255,255,.4)}
+
+/* ── 4 · light sweep across the screenshot ──────────────────────────
+   Lives inside .proj-thumb (overflow:hidden), so it is clipped to the
+   screenshot and can never cross the card's text. One pass per hover. */
+.sm-sweep{
+  position:absolute;z-index:3;top:-10%;bottom:-10%;left:0;width:45%;pointer-events:none;
+  background:linear-gradient(105deg,transparent 20%,rgba(255,255,255,.07) 42%,rgba(255,255,255,.2) 50%,rgba(255,255,255,.07) 58%,transparent 80%);
+  transform:translateX(-120%) skewX(-12deg);opacity:0;
+}
+.proj-card.sm-swept .sm-sweep{animation:smSweep 1.1s cubic-bezier(.45,0,.25,1) both}
+@keyframes smSweep{0%{transform:translateX(-120%) skewX(-12deg);opacity:0}12%{opacity:1}88%{opacity:1}100%{transform:translateX(260%) skewX(-12deg);opacity:0}}
+
+/* ── 5 / 10 · slots for the shared 3D renderer ──────────────────────
+   2D canvases the WebGL renderer copies into (39-section-3d.js). The
+   script measures free space before placing one and skips it if the
+   slot would overlap any text. pointer-events:none: purely visual. */
+.sm-slot{position:absolute;z-index:2;pointer-events:none;opacity:0;transition:opacity .8s ease}
+.sm-slot.is-live{opacity:1}
+.sm-on .proj-feature .proj-body{position:relative}
+.sm-on .c-layout{position:relative}
+
+/* ── 6 · reviews drift in depth + rising stars ──────────────────────
+   perspective on the rail gives every card its own angle by position,
+   like a slow carousel. The drift uses translate/rotate (individual
+   properties) so it composes with the hover lift. Z only goes back
+   (negative) so a card never grows past the rail's clip. */
+.sm-on .testi-rail{perspective:1500px;perspective-origin:50% 40%}
+.sm-on .tq{isolation:isolate}
+.sm-vis .tq{animation:smDrift 9s ease-in-out infinite alternate}
+.sm-vis .tq:nth-child(3n+1){animation-delay:-3s}
+.sm-vis .tq:nth-child(3n+2){animation-delay:-6s;animation-duration:10.5s}
+@keyframes smDrift{
+  0%  {translate:0 0 -6px;rotate:y 2.2deg}
+  50% {translate:0 -3px -16px;rotate:y -1.4deg}
+  100%{translate:0 0 -4px;rotate:y -2.4deg}
+}
+.sm-stars{position:absolute;z-index:-1;inset:0;overflow:hidden;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .6s ease}
+.tq.sm-active .sm-stars{opacity:1}
+.sm-star{
+  position:absolute;bottom:-6px;width:4px;height:4px;border-radius:50%;
+  background:#ffd66b;box-shadow:0 0 6px rgba(255,214,107,.9);opacity:0;
+}
+.sm-vis .tq.sm-active .sm-star{animation:smRise 4.8s linear infinite}
+@keyframes smRise{0%{transform:translateY(0) scale(.6);opacity:0}15%{opacity:.85}80%{opacity:.5}100%{transform:translateY(-240px) scale(1);opacity:0}}
+[data-theme="light"] .sm-star{background:#e0a400;box-shadow:0 0 6px rgba(224,164,0,.6)}
+
+/* ── 7 · timeline glow draws down + markers pulse ───────────────────
+   The rail itself (49-proof-sections.css) keeps drawing; this lays a
+   glowing copy over it plus a bright head, both scaled/moved by the
+   script from scroll progress. Markers get a ring that pulses once
+   when the head passes them. */
+.sm-tlglow{
+  position:absolute;left:0;top:0;width:2px;height:100%;z-index:1;pointer-events:none;
+  background:linear-gradient(180deg,var(--cyan),rgba(0,212,255,.55));
+  box-shadow:0 0 8px rgba(0,212,255,.7),0 0 18px rgba(0,212,255,.35);
+  transform-origin:top;transform:scaleY(0);
+}
+.sm-tlhead{
+  position:absolute;left:-4px;top:-5px;width:10px;height:10px;border-radius:50%;z-index:2;pointer-events:none;
+  background:#fff;box-shadow:0 0 10px var(--cyan),0 0 24px rgba(0,212,255,.8);
+  opacity:0;transition:opacity .3s;
+}
+.sm-tlhead.is-on{opacity:1}
+.sm-on .tl-marker{overflow:visible}
+.sm-ring{position:absolute;inset:-2px;border-radius:50%;border:2px solid var(--cyan);opacity:0;pointer-events:none}
+.sm-hit .tl-marker{background:var(--cyan);box-shadow:0 0 8px rgba(0,212,255,.7)}
+.sm-hit .sm-ring{animation:smRing 1.1s ease-out 2}
+@keyframes smRing{0%{transform:scale(1);opacity:.9}100%{transform:scale(3.2);opacity:0}}
+[data-theme="light"] .sm-tlglow{background:linear-gradient(180deg,#0a78dc,rgba(10,120,220,.5));box-shadow:0 0 8px rgba(10,120,220,.45)}
+[data-theme="light"] .sm-tlhead{box-shadow:0 0 10px #0a78dc,0 0 20px rgba(10,120,220,.5)}
+[data-theme="light"] .sm-ring{border-color:#0a78dc}
+
+/* ── 8 · company badges spin half a turn in 3D on hover ─────────────
+   A half turn on Y would leave the monogram mirrored, so it swaps
+   faces at the edge-on midpoint: it reads as one half turn and lands
+   readable. */
+.sm-on .tl-head:hover .tl-mono{animation:smBadge .7s cubic-bezier(.3,.7,.3,1)}
+@keyframes smBadge{
+  0%     {transform:perspective(260px) rotateY(0)}
+  49.9%  {transform:perspective(260px) rotateY(90deg)}
+  50%    {transform:perspective(260px) rotateY(-90deg)}
+  100%   {transform:perspective(260px) rotateY(0)}
+}
+
+/* ── 9 · envelope waiting + paper plane on send ─────────────────────
+   The envelope sits in the empty space under the contact cards while
+   the form is in use. On a successful send the plane is built over the
+   submit button (position:fixed, created only then, removed after),
+   folds its wings and flies off up-right trailing a streak. */
+.sm-env{
+  position:absolute;z-index:2;width:46px;height:34px;pointer-events:none;
+  opacity:0;transform:translateY(10px) rotate(-6deg);transition:opacity .4s ease,transform .5s cubic-bezier(.2,.7,.3,1);
+}
+.sm-env.is-on{opacity:1;transform:translateY(0) rotate(-6deg)}
+.sm-env.is-on svg{animation:smEnvBob 2.6s ease-in-out infinite}
+.sm-env.is-gone{opacity:0;transform:translateY(-14px) rotate(-6deg) scale(.6)}
+.sm-env svg{display:block;width:100%;height:100%;overflow:visible}
+@keyframes smEnvBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+
+.sm-plane{position:fixed;z-index:9000;left:0;top:0;width:64px;height:40px;pointer-events:none;transform-style:preserve-3d;perspective:400px}
+.sm-plane-body{position:absolute;inset:0;transform-style:preserve-3d;animation:smFly .46s cubic-bezier(.5,0,.75,.4) .15s both}
+.sm-wing{
+  position:absolute;left:0;width:100%;height:50%;
+  background:linear-gradient(90deg,#d8f6ff,#fff);
+  clip-path:polygon(0 0,100% 100%,0 100%);
+  transform-origin:50% 100%;
+  animation:smFoldA .15s ease-out both;
+}
+.sm-wing.b{top:50%;clip-path:polygon(0 0,100% 0,0 100%);transform-origin:50% 0;background:linear-gradient(90deg,#9fdcf2,#e6f8ff);animation-name:smFoldB}
+.sm-wing.a{top:0}
+@keyframes smFoldA{from{transform:rotateX(0)}to{transform:rotateX(58deg)}}
+@keyframes smFoldB{from{transform:rotateX(0)}to{transform:rotateX(-58deg)}}
+.sm-trail{
+  position:absolute;right:92%;top:50%;width:160px;height:3px;margin-top:-1.5px;border-radius:3px;
+  background:linear-gradient(90deg,transparent,rgba(0,212,255,.85));
+  transform-origin:right center;transform:scaleX(0);
+  animation:smTrail .46s ease-out .15s both;
+}
+@keyframes smTrail{0%{transform:scaleX(0);opacity:1}60%{transform:scaleX(1);opacity:1}100%{transform:scaleX(1);opacity:0}}
+@keyframes smFly{
+  0%  {transform:translate(0,0) rotate(-8deg) scale(1)}
+  100%{transform:translate(var(--sm-fx,900px),var(--sm-fy,-700px)) rotate(-28deg) scale(.55)}
+}
