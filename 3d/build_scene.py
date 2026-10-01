@@ -425,9 +425,6 @@ def fur_mat(name, color, rough=0.92, curl=0.9):
 # one apricot-cream all over (ref #EBD3AE-#F2E0C4), muzzle a shade paler,
 # ears a touch more golden (#D9B88A). Values are linear and pushed warm,
 # because the cool key light bleaches cream toward white on the page.
-M_FUR = fur_mat('dog_fur', (0.78, 0.46, 0.19), curl=1.1)
-M_MUZ = fur_mat('dog_muzzle', (0.78, 0.56, 0.32), curl=0.6)
-M_EAR = fur_mat('dog_ear', (0.66, 0.33, 0.08), rough=0.9, curl=1.3)
 M_NOSE = mat('dog_nose', (0.03, 0.012, 0.006), rough=0.12)
 from mathutils import noise as _noise, Vector as _V
 
@@ -564,92 +561,57 @@ def arc(name, pts, r, m):
     return o
 
 
-M_BLUSH = mat('dog_blush', (0.95, 0.32, 0.3), rough=0.8)
-M_BLUSH.node_tree.nodes['Principled BSDF'].inputs['Alpha'].default_value = 0.35
-try: M_BLUSH.surface_render_method = 'BLENDED'
-except Exception: M_BLUSH.blend_method = 'BLEND'
 M_TONGUE = mat('dog_tongue', (0.85, 0.22, 0.25), rough=0.45)
 
 
 VIEW = _V((0.72, -0.58, 0.39))
 rim = lambda n, w=0.5: abs(n.dot(VIEW)) < w     # silhouette band seen from the page camera
 
+# Dumpling herself: a photo cut-out billboard (tex/dumpling-cutout.png,
+# play-bow, facing left, tail up) standing on the book stack. A vertical
+# plane facing -Y (the page camera), bottom edge on the book; the page
+# breathes dog_body (scale) and yaw-follows `dog` a little. dog_shadow is
+# a soft blob under her feet. `dog` stays the root (the Contact section
+# clones it).
+CUT_H = 0.34
+CUT_W = CUT_H * 436 / 512
+def cut_mat(name, png):
+    m = mat(name, image=os.path.join(TEX, png), emit_image=True, strength=0.35, rough=1.0)
+    b = m.node_tree.nodes['Principled BSDF']
+    t = [n for n in m.node_tree.nodes if n.type == 'TEX_IMAGE'][0]
+    m.node_tree.links.new(t.outputs['Alpha'], b.inputs['Alpha'])
+    try: m.surface_render_method = 'DITHERED'
+    except Exception: m.blend_method = 'HASHED'
+    return m
+
+
+# body and tail plume are separate layers (3d/make_dog_layers.py splits
+# tex/dumpling-cutout.png); the page wags the `dog_tail` empty round the
+# plane normal at the tail base.
+M_CUT = cut_mat('dog_cutout', 'dumpling-body.png')
+M_TAIL = cut_mat('dog_tail_cutout', 'dumpling-tail.png')
+M_SHAD = mat('dog_shadow', (0, 0, 0), rough=1.0, image=os.path.join(TEX, 'dog-shadow.png'))
+_b = M_SHAD.node_tree.nodes['Principled BSDF']
+_t = [n for n in M_SHAD.node_tree.nodes if n.type == 'TEX_IMAGE'][0]
+M_SHAD.node_tree.links.remove(_b.inputs['Base Color'].links[0]); _b.inputs['Base Color'].default_value = (0, 0, 0, 1)
+M_SHAD.node_tree.links.new(_t.outputs['Alpha'], _b.inputs['Alpha'])
+try: M_SHAD.surface_render_method = 'BLENDED'
+except Exception: M_SHAD.blend_method = 'BLEND'
+
 dog = empty('dog')
 body_e = empty('dog_body', (0, 0, 0), dog)
-# chubby, compact puppy body; short stubby legs; round front paws tucked
-# under the chin with tiny toe bumps
-toes = [ball(f'dog_toe_{s}{k}', 1, (0.121, s * 0.024 + k * 0.0085, 0.009), M_FUR, (0.0065, 0.006, 0.0055), 1)
-        for s in (-1, 1) for k in (-1, 0, 1)]
-under(body_e, blob('dog_body_mesh', [
-    ((0.03, 0.0, 0.046), (0.056, 0.058, 0.047)),     # chest
-    ((-0.022, 0.006, 0.052), (0.062, 0.064, 0.052)),  # round back
-    ((-0.066, -0.01, 0.046), (0.05, 0.062, 0.046)),   # hips
-    ((-0.046, -0.06, 0.028), (0.036, 0.022, 0.028)),  # thigh on the camera side
-    ((-0.004, -0.068, 0.011), (0.03, 0.017, 0.011)),  # hind foot tucked forward
-    ((0.08, 0.024, 0.014), (0.032, 0.018, 0.014)),    # stubby front leg (far)
-    ((0.08, -0.024, 0.014), (0.032, 0.018, 0.014)),   # stubby front leg (near)
-    ((0.108, 0.024, 0.013), (0.017, 0.02, 0.013)),    # round paw (far)
-    ((0.108, -0.024, 0.013), (0.017, 0.02, 0.013)),   # round paw (near)
-], M_FUR, fur=0.0022, freq=90, ratio=0.07, nubs=85, nub_r=(0.0062, 0.0085),
-   keep=lambda co, n: n.z > 0.05 and co.x < 0.07 and rim(n), seed=3, extra=toes,
-   hide=lambda c, n: n.z < -0.55 and c.z < 0.012))
-# big round puppy head (modelled at the old size, scaled 1.3x by its empty),
-# resting on the paws, turned a little toward the viewer
-head_e = empty('dog_head', (0.118, -0.004, 0.064), dog)
-head_e.rotation_euler = (math.radians(-6), math.radians(8), math.radians(-10))
-head_e.scale = (1.3, 1.3, 1.3)
-hm = blob('dog_head_mesh', [
-    ((0, 0, 0), (0.056, 0.06, 0.05)),                # round skull
-    ((0.044, 0, -0.018), (0.024, 0.027, 0.019)),     # short round muzzle
-    ((0.03, 0.032, -0.014), (0.027, 0.027, 0.024)),  # puffy cheek
-    ((0.03, -0.032, -0.014), (0.027, 0.027, 0.024)), # puffy cheek
-    # no topknot pompom: the user disliked the ball on her head
-], M_FUR, voxel=0.0035, fur=0.0012, freq=100, ratio=0.075, nubs=115, nub_r=(0.0042, 0.0058),
-   hide=lambda c, n: n.z < -0.7 and c.z < -0.035,
-   keep=lambda co, n: n.z > -0.2 and rim(n, 0.55) and not (co.x > 0.03 and abs(co.y) < 0.045 and co.z < 0.03), seed=5)
-hm.data.materials.append(M_MUZ)
-for p in hm.data.polygons:                           # paler muzzle
-    c = p.center
-    if c.x > 0.034 and c.z < 0.0 and abs(c.y) < 0.03: p.material_index = 1
-nose = ball('dog_nose', 0.0112, (0.069, 0, -0.012), M_NOSE, (0.9, 1.25, 0.85))
-face = [nose, ball('dog_tongue', 1, (0.058, 0.004, -0.035), M_TONGUE, (0.0065, 0.006, 0.0028))]
-for s in (-1, 1):
-    # happy closed eye: a soft ^ arc with a little lash flick at the outer end
-    pts = []
-    for i in range(7):
-        u = i / 6 * 2 - 1
-        y = s * (0.026 + u * 0.0095); z = 0.004 + 0.0045 * (1 - u * u)
-        x = 0.0565 * math.sqrt(max(0.0, 1 - (y / 0.06) ** 2 - (z / 0.054) ** 2)) + 0.002
-        pts.append((x, y, z))
-    face.append(arc(f'dog_eye_{s}', pts, 0.0013, M_NOSE))
-    lx, ly, lz = pts[-1]
-    face.append(arc(f'dog_lash_{s}', [(lx, ly, lz), (lx - 0.002, ly + s * 0.004, lz - 0.0025)], 0.0009, M_NOSE))
-    bl = ball(f'dog_blush_{s}', 1, (0.044, s * 0.04, -0.008), M_BLUSH, (0.006, 0.011, 0.007))
-    bl.rotation_euler = (0, 0, math.radians(s * 50)); face.append(bl)
-under(head_e, hm, *face)
-# curly wavy ears: ringlets hanging beside the face, a touch more golden
-for s, nm in ((1, 'dog_ear_l'), (-1, 'dog_ear_r')):
-    ee = empty(nm, (0.004, s * 0.052, 0.022), head_e)
-    ee.rotation_euler = (math.radians(s * 9), 0, 0)
-    under(ee, blob(nm + '_mesh', [
-        ((0.004, s * 0.004, -0.008), (0.022, 0.013, 0.022)),
-        ((0.008, s * 0.009, -0.03), (0.029, 0.016, 0.026)),
-        ((0.012, s * 0.012, -0.055), (0.033, 0.017, 0.027)),
-        ((0.016, s * 0.013, -0.077), (0.029, 0.015, 0.018)),
-    ], M_EAR, voxel=0.003, fur=0.0026, freq=110, ratio=0.09, wave=(0.5, 260),
-       nubs=50, nub_r=(0.0042, 0.0056), keep=lambda co, n, s=s: n.y * s > -0.2 and rim(n, 0.6), seed=7 + s))
-# puffy curly pompom plume on the rump
-tail_e = empty('dog_tail', (-0.1, -0.025, 0.066), dog)
-under(tail_e, blob('dog_tail_mesh', [
-    ((0, 0, 0.004), (0.02, 0.02, 0.02)),
-    ((0.004, -0.022, 0.018), (0.024, 0.024, 0.026)),
-    ((0.024, -0.05, 0.026), (0.042, 0.04, 0.038)),   # the pompom
-], M_FUR, voxel=0.0045, fur=0.0015, freq=80, ratio=0.075, nubs=60, nub_r=(0.006, 0.008),
-   keep=lambda co, n: rim(n, 0.6) and n.z > -0.3, seed=9))
+under(body_e, plane('dog_body_mesh', CUT_W, CUT_H, (0, 0, CUT_H / 2), (math.radians(90), 0, 0), M_CUT))
+_px = lambda x, y: ((x / 436 - 0.5) * CUT_W, (1 - y / 512) * CUT_H)   # source pixel -> plane x, z
+_pv = _px(318, 160)                       # tail base (make_dog_layers.PIVOT)
+_tc = _px(232 + 102, 8 + 90)              # tail crop centre (TAIL_BOX)
+tail_e = empty('dog_tail', (_pv[0], -0.003, _pv[1]), body_e)   # a hair in front: no z-fight
+under(tail_e, plane('dog_tail_mesh', CUT_W * 204 / 436, CUT_H * 180 / 512,
+                    (_tc[0] - _pv[0], 0, _tc[1] - _pv[1]), (math.radians(90), 0, 0), M_TAIL))
+under(dog, plane('dog_shadow', CUT_W * 1.15, 0.2, (0.0, 0.03, 0.002), (0, 0, 0), M_SHAD))
 BOOK_TOP = 0.028 + 2 * 0.052 + 0.025
-dog.location = (0.6, 0.83, BOOK_TOP)
-dog.rotation_euler = (0, 0, math.radians(-40))
-dog.scale = (1.65, 1.65, 1.65)
+dog.location = (0.6, 0.8, BOOK_TOP)
+# face the page camera (it sits ~11deg right of straight-on from here)
+dog.rotation_euler = (0, 0, math.radians(11))
 
 # small floating wall shelf, back left: a trophy and a "5 stars" plaque
 M_TROPHY = mat('trophy', (0.95, 0.62, 0.2), rough=0.3, metal=0.5, emit=(1.0, 0.62, 0.15), strength=0.5)

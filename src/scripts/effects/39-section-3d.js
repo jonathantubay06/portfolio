@@ -276,8 +276,20 @@
     if (!src) return;
     var scene = new T.Scene(); lights(scene, false);
     var dog = src.clone(true);
-    /* turn her three-quarters toward the form (she faces +X in the file) */
-    dog.position.set(0, 0, 0); dog.rotation.set(0, -2.45, 0);
+    /* she is a photo card facing +Z (the camera); a slight turn toward
+       the form only, so the flat card never shows edge-on */
+    dog.position.set(0, 0, 0); dog.rotation.set(0, 0.12, 0);
+    dog.traverse(function (o) {
+      if (o.name === 'dog_shadow') o.visible = false;   /* this view draws its own */
+      if (o.isMesh && o.material && /^dog_(tail_)?cutout$/.test(o.material.name)) {
+        var dm = o.material = o.material.clone();
+        dm.transparent = false; dm.alphaTest = 0.4; dm.depthWrite = true; dm.side = T.DoubleSide;
+        dm.metalness = 0; dm.roughness = 1; dm.emissive = new T.Color(1, 1, 1); dm.emissiveMap = dm.map; dm.emissiveIntensity = 0.45;
+          /* clamp: repeat-wrap pulled the paws row onto the card's top edge (stray dashes) */
+          if (dm.map) { dm.map.wrapS = dm.map.wrapT = T.ClampToEdgeWrapping; dm.map.needsUpdate = true; }
+        dm.needsUpdate = true;
+      }
+    });
     var walker = new T.Group(); walker.add(dog); scene.add(walker);
     dog.updateMatrixWorld(true);
     var box = new T.Box3().setFromObject(dog), size = new T.Vector3(), ctr = new T.Vector3();
@@ -294,7 +306,7 @@
     });
 
     var cam = new T.PerspectiveCamera(26, 1.6, 0.01, 50);
-    cam.position.set(0, S * 0.9, S * 2.35); cam.lookAt(0, S * 0.24, 0);
+    cam.position.set(0, S * 0.62, S * 2.7); cam.lookAt(0, S * 0.5, 0);
     var W = 300, H = 190;
     var v = { scene: scene, cam: cam, canvas: slot(layout, 'sm-dog'), ready: true };
     function place() {
@@ -313,9 +325,21 @@
     /* walk-in: starts the first time she is on screen. A slide with a
        small trot bob (she is modelled lying down, so she glides in low),
        then the head comes up and the tail starts. */
-    var t0 = -1, look = 0, walkX = S * 2.4;
+    var t0 = -1, look = 0, walkX = S * 2.4, lastT = 0, wag = 0, hopAt = 0;
+    /* a hop every 4-7 s once she has arrived: squash, up, stretch, land */
+    function hop(t) {
+      var u = (t - hopAt) / 0.95, r = { h: 0, sx: 1, sy: 1, on: u >= 0 && u < 1 };
+      if (u >= 1) { hopAt = t + 4 + Math.random() * 3; return r; }
+      if (u < 0) return r;
+      var q;
+      if (u < 0.22) { q = Math.sin(u / 0.22 * Math.PI / 2); r.sy = 1 - 0.1 * q; r.sx = 1 + 0.06 * q; }
+      else if (u < 0.72) { q = (u - 0.22) / 0.5; r.h = Math.sin(q * Math.PI); var st = Math.sin(Math.min(1, q * 1.6) * Math.PI) * 0.09; r.sy = 1 + st; r.sx = 1 - st * 0.5; }
+      else { q = Math.sin((u - 0.72) / 0.28 * Math.PI); r.sy = 1 - 0.08 * q; r.sx = 1 + 0.05 * q; }
+      return r;
+    }
     v.update = function (t) {
-      if (t0 < 0) t0 = t;
+      if (t0 < 0) { t0 = t; hopAt = t + 3 + Math.random() * 3; }
+      var dt = Math.min(0.05, Math.max(0, t - lastT)); lastT = t;
       var a = t - t0, k = Math.min(1, a / 1.6), e = 1 - Math.pow(1 - k, 3);
       walker.position.x = walkX * (1 - e);
       walker.position.y = k < 1 ? Math.abs(Math.sin(a * 11)) * S * 0.035 * (1 - k) : 0;
@@ -328,12 +352,20 @@
         parts.head.rotation.z = parts.head.userData.r0.z + upE * 0.38;
         parts.head.rotation.y = parts.head.userData.r0.y + look * 0.3 + Math.sin(t * 0.7) * 0.05 * upE;
       }
-      var wagRate = busy ? 16 : 9;
-      if (parts.tail) parts.tail.rotation.y = parts.tail.userData.r0.y + Math.sin(t * wagRate) * 0.4 * upE;
+      var hp = up >= 1 ? hop(t) : { h: 0, sx: 1, sy: 1, on: false };
+      if (parts.tail) {
+        wag += dt * (hp.on || busy ? 17 : 7.5) * upE;
+        parts.tail.rotation.z = parts.tail.userData.r0.z + Math.sin(wag) * (hp.on ? 0.2 : 0.15) * upE;
+      }
       if (parts.body) {
         var br = Math.sin(t * 2.1) * 0.5 + 0.5, s0 = parts.body.userData.s0;
-        parts.body.scale.set(s0.x * (1 + br * 0.012), s0.y * (1 + br * 0.04), s0.z * (1 + br * 0.02));
+        parts.body.scale.set(s0.x * (1 + br * 0.014) * hp.sx, s0.y * (1 + br * (busy ? 0.045 : 0.035)) * hp.sy, s0.z);
+        parts.body.position.y = parts.body.userData.p0.y + Math.sin(t * 1.05) * S * 0.012 * upE + hp.h * S * 0.11;
       }
+      if (hp.h || hp.on) { var sk = 1 - hp.h * 0.4; sh.scale.set(sk, sk, 1); sh.material.opacity = 0.4 * (1 - hp.h * 0.6); }
+      else sh.scale.set(1, 1, 1);
+      /* a glance at the form while someone types (the card leans a touch) */
+      dog.rotation.y = 0.12 + look * 0.12 + Math.sin(t * 0.7) * 0.03 * upE;
       var et = t % 6.1, ew = et < 0.45 ? Math.sin(et / 0.45 * Math.PI) * 0.3 : 0;
       if (parts.ear_l) parts.ear_l.rotation.x = parts.ear_l.userData.r0.x + ew;
     };

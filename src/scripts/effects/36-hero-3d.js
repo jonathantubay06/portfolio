@@ -120,7 +120,20 @@
     var motes = null, screens = null, lastDraw = -1, lastT = 0, skyT = 0;
     var cubes = [], wires = [], holos = [], floats = [], leds = [], halves = [], picks = [];
     var logo = null, drone = null, props = [], bot = null, wheels = [], hover = null;
-    var flow = null, sparks = null, orders = null, dust = null, sky = null, dog = {}, printer = null;
+    var flow = null, sparks = null, orders = null, dust = null, sky = null, dog = {}, dogW = new THREE.Vector3(), printer = null;
+    /* Dumpling's hop: idle until hopAt, then 0.95 s of squash -> up ->
+       stretch -> land squash. h = height 0..1, sx/sy = scale factors. */
+    var hopAt = 3 + Math.random() * 3, dogWag = 0;
+    function dogHop(t) {
+      var u = (t - hopAt) / 0.95, r = { h: 0, sx: 1, sy: 1, on: u >= 0 && u < 1 };
+      if (u >= 1) { hopAt = t + 4 + Math.random() * 3; return r; }
+      if (u < 0) return r;
+      var q;
+      if (u < 0.22) { q = Math.sin(u / 0.22 * Math.PI / 2); r.sy = 1 - 0.1 * q; r.sx = 1 + 0.06 * q; }
+      else if (u < 0.72) { q = (u - 0.22) / 0.5; r.h = Math.sin(q * Math.PI); var st = Math.sin(Math.min(1, q * 1.6) * Math.PI) * 0.09; r.sy = 1 + st; r.sx = 1 - st * 0.5; }
+      else { q = Math.sin((u - 0.72) / 0.28 * Math.PI); r.sy = 1 - 0.08 * q; r.sx = 1 + 0.05 * q; }
+      return r;
+    }
     var pups = [], cal = null, weigh = null, steam = null;
     var zc = new THREE.Vector3(), zcam = new THREE.Vector3(), look = new THREE.Vector3();
     var loader = new GLTFLoader(); loader.setMeshoptDecoder(MeshoptDecoder);
@@ -148,9 +161,21 @@
         if (/^bot_wheel_/.test(o.name)) wheels.push(o);
         if ((/^rack_led_/.test(o.name) || o.name === 'bot_led') && o.material) { o.material = o.material.clone(); leds.push(o); }
         if (PUPS[o.name]) pups.push({ cfg: PUPS[o.name], root: o });
-        if (/^dog_(body|head|ear_l|ear_r|tail)$/.test(o.name)) { dog[o.name.slice(4)] = o; o.userData.p0 = o.position.clone(); o.userData.r0 = o.rotation.clone(); }
+        if (/^dog_(body|head|ear_l|ear_r|tail|shadow)$/.test(o.name)) { dog[o.name.slice(4)] = o; o.userData.p0 = o.position.clone(); o.userData.r0 = o.rotation.clone(); o.userData.s0 = o.scale.clone(); }
+        if (o.name === 'dog') { dog.root = o; o.userData.r0 = o.rotation.clone(); o.userData.p0 = o.position.clone(); }
+        /* Dumpling is a photo cut-out: crisp alpha edge, both faces, and a
+           soft self-glow so the cream coat is not greyed by the cool key */
+        if (o.isMesh && o.material && /^dog_(tail_)?cutout$/.test(o.material.name)) {
+          var dm = o.material = o.material.clone();
+          dm.transparent = false; dm.alphaTest = 0.4; dm.depthWrite = true; dm.side = THREE.DoubleSide;
+          dm.metalness = 0; dm.roughness = 1; dm.emissive = new THREE.Color(1, 1, 1); dm.emissiveMap = dm.map; dm.emissiveIntensity = 0.45;
+          /* clamp: repeat-wrap pulled the paws row onto the card's top edge (stray dashes) */
+          if (dm.map) { dm.map.wrapS = dm.map.wrapT = THREE.ClampToEdgeWrapping; dm.map.needsUpdate = true; }
+          dm.userData.keepEmissive = true; dm.needsUpdate = true;
+        }
+        if (o.isMesh && o.material && o.material.name === 'dog_shadow') { o.material = o.material.clone(); o.material.transparent = true; o.material.depthWrite = false; o.material.opacity = 0.55; }
         /* Blender's emission strengths read hot under ACES; tame them */
-        if (o.material && o.material.emissiveIntensity) {
+        if (o.material && o.material.emissiveIntensity && !o.material.userData.keepEmissive) {
           var n = o.material.name || '';
           o.material.emissiveIntensity = /edge/.test(n) ? 0.9 : /wire/.test(n) ? 1.1 : /cube/.test(n) ? 0.35 : /logo/.test(n) ? 0.35 : /holo/.test(n) ? 0.5 : /bulb/.test(n) ? 3 : /plaque|trophy/.test(n) ? 0.9 : /desk_mat/.test(n) ? 0.6 : /accent/.test(n) ? 0.7 : 0.38;
         }
@@ -753,16 +778,31 @@
       if (printer) printer(t);
       if (dust) dust(t, 1.1 - mood * 0.5);
       if (sky && t - skyT > 60) { sky(); skyT = t; }
-      /* Dumpling: slow breaths, an ear twitch now and then, a tail flick */
+      /* Dumpling (photo billboard): breaths, a bob, a hop every 4-7 s
+         (squash, up, stretch, land squash) and the tail plume wagging on
+         its own empty (dog_tail, pivot at the tail base) */
       if (dog.body) {
-        var br = Math.sin(t * 2.1) * 0.5 + 0.5;
-        dog.body.scale.set(1 + br * 0.012, 1 + br * 0.05, 1 + br * 0.03);
-        if (dog.head) dog.head.position.y = dog.head.userData.p0.y + br * 0.0025;
-        var et = t % 7.3, ew = et < 0.5 ? Math.sin(et / 0.5 * Math.PI * 2) * Math.sin(et / 0.5 * Math.PI) : 0;
-        if (dog.ear_l) dog.ear_l.rotation.x = dog.ear_l.userData.r0.x + ew * 0.35;
-        if (dog.ear_r) dog.ear_r.rotation.x = dog.ear_r.userData.r0.x - (t % 11.1 < 0.4 ? Math.sin((t % 11.1) / 0.4 * Math.PI) * 0.3 : 0);
-        var tw = t % 5.2, wag = tw < 1.1 ? Math.sin(tw * 17) * Math.sin(tw / 1.1 * Math.PI) * 0.35 : 0;
-        if (dog.tail) dog.tail.rotation.y = dog.tail.userData.r0.y + wag + Math.sin(t * 0.8) * 0.04;
+        var hp = dogHop(t), br = Math.sin(t * 2.1) * 0.5 + 0.5, bs = dog.body.userData.s0;
+        dog.body.scale.set(bs.x * (1 + br * 0.014) * hp.sx, bs.y * (1 + br * 0.035) * hp.sy, bs.z);
+        dog.body.position.y = dog.body.userData.p0.y + Math.sin(t * 1.05) * 0.004 + hp.h * 0.055;
+        if (dog.shadow) {
+          var ss = dog.shadow.userData.s0, sk = 1 - hp.h * 0.4;
+          dog.shadow.scale.set(ss.x * sk, ss.y, ss.z * sk);
+          dog.shadow.material.opacity = 0.55 * (1 - hp.h * 0.6);
+        }
+        if (dog.tail) {
+          dogWag += dt * (hp.on ? 17 : 7.5);
+          dog.tail.rotation.z = dog.tail.userData.r0.z + Math.sin(dogWag) * (hp.on ? 0.2 : 0.15);
+        }
+      }
+      if (dog.root && dog.root.parent) {
+        /* camera position in the dog's parent frame (the rig tilts) */
+        cam.getWorldPosition(dogW); dog.root.parent.worldToLocal(dogW);
+        var cx = dogW.x - dog.root.position.x, cz = dogW.z - dog.root.position.z;
+        var yaw = Math.atan2(cx, cz), base = dog.root.userData.r0.y;
+        /* the card faces +Z in its own frame; follow 35% of the offset */
+        var off = Math.atan2(Math.sin(yaw - base), Math.cos(yaw - base));
+        dog.root.rotation.y = base + Math.max(-0.35, Math.min(0.35, off * 0.35));
       }
       /* the pups: breathing, a wag each to its own beat, a head tilt now
          and then (about the snout axis) and a quick blink */
