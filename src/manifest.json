@@ -26,7 +26,8 @@
     "54-motion.css",
     "55-section-backdrops.css",
     "56-hero-motion.css",
-    "57-audit-fixes.css"
+    "57-audit-fixes.css",
+    "58-live-wallpaper.css"
   ],
   "main": [
     "00-preamble.js",
@@ -80,6 +81,7 @@
     "33-card-hover-scroll.js",
     "34-exp-tabs-cert-carousel.js",
     "35-swipe-dots.js",
-    "36-hero-3d.js"
+    "36-hero-3d.js",
+    "37-live-wallpaper.js"
   ]
 }
