@@ -603,7 +603,7 @@ hm = blob('dog_head_mesh', [
     ((0.044, 0, -0.018), (0.024, 0.027, 0.019)),     # short round muzzle
     ((0.03, 0.03, -0.014), (0.024, 0.024, 0.022)),   # puffy cheek
     ((0.03, -0.03, -0.014), (0.024, 0.024, 0.022)),  # puffy cheek
-    ((-0.012, 0, 0.058), (0.032, 0.034, 0.028)),     # topknot pompom
+    # no topknot pompom: the user disliked the ball on her head
 ], M_FUR, voxel=0.0035, fur=0.0012, freq=100, ratio=0.075, nubs=115, nub_r=(0.0042, 0.0058),
    hide=lambda c, n: n.z < -0.7 and c.z < -0.035,
    keep=lambda co, n: n.z > -0.2 and rim(n, 0.55) and not (co.x > 0.03 and abs(co.y) < 0.045 and co.z < 0.03), seed=5)
