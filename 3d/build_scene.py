@@ -401,13 +401,51 @@ def join(name, objs):
 # silhouette, then a small noise push along the normals for the curls.
 # The page breathes dog_body (scale) and flicks dog_ear_l/r and dog_tail
 # (rotation), so each sits under its own empty.
-M_FUR = mat('dog_fur', (0.93, 0.87, 0.76), rough=0.9)
-M_EAR = mat('dog_ear', (0.6, 0.46, 0.31), rough=0.85)
-M_NOSE = mat('dog_nose', (0.035, 0.015, 0.008), rough=0.3)
+UV_SPAN, CURL_TILES = 0.4, 8.8   # about 22 curl tiles per metre
+
+
+def fur_mat(name, color, rough=0.92, curl=0.9):
+    """Warm cream coat: flat colour + a tiled curl normal map (tex/dog-curls.png)."""
+    m = mat(name, color, rough=rough)
+    nt = m.node_tree; bsdf = nt.nodes['Principled BSDF']
+    tex = nt.nodes.new('ShaderNodeTexImage')
+    tex.image = bpy.data.images.load(os.path.join(TEX, 'dog-curls.png'), check_existing=True)
+    tex.image.colorspace_settings.name = 'Non-Color'
+    # UVs span 0-1 over UV_SPAN metres (so they quantize); tiling comes from
+    # a Mapping node, exported as KHR_texture_transform
+    uvn = nt.nodes.new('ShaderNodeUVMap')
+    mp = nt.nodes.new('ShaderNodeMapping'); mp.inputs['Scale'].default_value = (CURL_TILES, CURL_TILES, 1)
+    nt.links.new(uvn.outputs['UV'], mp.inputs['Vector']); nt.links.new(mp.outputs['Vector'], tex.inputs['Vector'])
+    nm = nt.nodes.new('ShaderNodeNormalMap'); nm.inputs['Strength'].default_value = curl
+    nt.links.new(tex.outputs['Color'], nm.inputs['Color'])
+    nt.links.new(nm.outputs['Normal'], bsdf.inputs['Normal'])
+    return m
+
+
+# one apricot-cream all over (ref #EBD3AE-#F2E0C4), muzzle a shade paler,
+# ears a touch more golden (#D9B88A). Values are linear and pushed warm,
+# because the cool key light bleaches cream toward white on the page.
+M_FUR = fur_mat('dog_fur', (0.66, 0.45, 0.24))
+M_MUZ = fur_mat('dog_muzzle', (0.74, 0.56, 0.36), curl=0.6)
+M_EAR = fur_mat('dog_ear', (0.55, 0.35, 0.16), rough=0.9, curl=1.0)
+M_NOSE = mat('dog_nose', (0.03, 0.012, 0.006), rough=0.3)
 from mathutils import noise as _noise, Vector as _V
 
 
-def blob(name, specs, m, voxel=0.0045, fur=0.0018, freq=65, ratio=0.2):
+def curl_uv(o, k=1 / UV_SPAN):
+    """Box-projected UVs at a fixed world scale so curls stay the same size
+    on every part (the remesh leaves no UVs)."""
+    me = o.data
+    uv = me.uv_layers.new(name='UVMap')
+    for p in me.polygons:
+        ax = max(range(3), key=lambda i: abs(p.normal[i]))
+        u, w = [(1, 2), (0, 2), (0, 1)][ax]
+        for li in p.loop_indices:
+            c = me.vertices[me.loops[li].vertex_index].co
+            uv.data[li].uv = (c[u] * k + 0.5, c[w] * k + 0.5)
+
+
+def blob(name, specs, m, voxel=0.0045, fur=0.0018, freq=65, ratio=0.2, wave=None):
     """Fuse (center, radii) ellipsoids into one smooth furry mesh."""
     o = join(name, [ball(f'{name}_{k}', 1, c, m, r, 3) for k, (c, r) in enumerate(specs)])
     for typ, kw in (('REMESH', dict(mode='VOXEL', voxel_size=voxel)),
@@ -418,10 +456,15 @@ def blob(name, specs, m, voxel=0.0045, fur=0.0018, freq=65, ratio=0.2):
     o.data.update()
     for v in o.data.vertices:
         q = v.co * freq
-        v.co += v.normal * fur * (_noise.noise(q) + 0.5 * _noise.noise(q * 2.1))
+        # soft tufts: ridged noise gives a fuzzy, uneven fringe (not big lumps)
+        t = 1 - abs(_noise.noise(q * 2.6))
+        d = _noise.noise(q) + 0.5 * _noise.noise(q * 2.1) + 0.6 * t * t
+        if wave: d += wave[0] * math.sin(v.co.z * wave[1] + v.co.x * 40)
+        v.co += v.normal * fur * d
     md = o.modifiers.new('dec', 'DECIMATE'); md.ratio = ratio
     bpy.ops.object.modifier_apply(modifier=md.name)
     if not o.data.materials: o.data.materials.append(m)
+    curl_uv(o)
     bpy.ops.object.shade_smooth()
     print('DOGTRIS', name, sum(len(p.vertices) - 2 for p in o.data.polygons))
     return o
@@ -437,44 +480,55 @@ under(body_e, blob('dog_body_mesh', [
     ((0.0, -0.068, 0.012), (0.036, 0.016, 0.012)),   # hind foot tucked forward
     ((0.1, 0.022, 0.014), (0.05, 0.017, 0.014)),     # front leg (far)
     ((0.102, -0.024, 0.014), (0.05, 0.017, 0.014)),  # front leg (near)
-], M_FUR))
+    ((0.148, 0.022, 0.012), (0.017, 0.019, 0.012)),  # fluffy paw (far)
+    ((0.15, -0.024, 0.012), (0.017, 0.019, 0.012)),  # fluffy paw (near)
+], M_FUR, fur=0.0028, freq=90, ratio=0.11))
 # head rests on the front paws, turned a little toward the viewer
 head_e = empty('dog_head', (0.12, -0.004, 0.06), dog)
 head_e.rotation_euler = (math.radians(-6), math.radians(8), math.radians(-10))
 hm = blob('dog_head_mesh', [
-    ((0, 0, 0), (0.055, 0.058, 0.051)),              # round skull
-    ((0.05, 0, -0.014), (0.031, 0.028, 0.022)),      # short round muzzle
-    ((-0.004, 0, 0.029), (0.037, 0.044, 0.032)),     # topknot fluff
-], M_FUR, voxel=0.0035, fur=0.0016)
-nose = ball('dog_nose', 0.0098, (0.08, 0, -0.007), M_NOSE, (0.9, 1.2, 0.85))
+    ((0, 0, 0), (0.056, 0.06, 0.052)),               # round skull
+    ((0.048, 0, -0.016), (0.03, 0.03, 0.022)),       # short round muzzle
+    ((-0.006, 0, 0.032), (0.04, 0.048, 0.036)),      # fluffy topknot
+    ((-0.018, 0, 0.05), (0.026, 0.032, 0.02)),       # topknot crown tuft
+], M_FUR, voxel=0.0035, fur=0.0024, freq=100, ratio=0.12)
+hm.data.materials.append(M_MUZ)
+for p in hm.data.polygons:                           # paler muzzle
+    c = p.center
+    if c.x > 0.034 and c.z < 0.004: p.material_index = 1
+nose = ball('dog_nose', 0.0098, (0.078, 0, -0.008), M_NOSE, (0.9, 1.25, 0.85))
 eyes = []
 for s in (-1, 1):
-    e = ball(f'dog_eye_{s}', 1, (0.048, s * 0.026, 0.006), M_NOSE, (0.003, 0.012, 0.0026))
+    e = ball(f'dog_eye_{s}', 1, (0.047, s * 0.026, 0.006), M_NOSE, (0.003, 0.012, 0.0026))
     e.rotation_euler = (math.radians(s * 14), 0, math.radians(s * 22))
     eyes.append(e)
 under(head_e, hm, nose, *eyes)
-# long straight bob ears from the top of the skull, flaring a bit outward
+# long feathered ears hanging beside the face, wavy and widening at the tip
 for s, nm in ((1, 'dog_ear_l'), (-1, 'dog_ear_r')):
-    ee = empty(nm, (0.004, s * 0.044, 0.03), head_e)
-    ee.rotation_euler = (math.radians(s * 9), 0, 0)
+    ee = empty(nm, (0.004, s * 0.05, 0.026), head_e)
+    ee.rotation_euler = (math.radians(s * 7), 0, 0)
     under(ee, blob(nm + '_mesh', [
-        ((0.006, s * 0.004, -0.014), (0.024, 0.01, 0.028)),
-        ((0.01, s * 0.007, -0.048), (0.03, 0.011, 0.03)),
-        ((0.012, s * 0.008, -0.07), (0.028, 0.01, 0.016)),
-    ], M_EAR, voxel=0.003, fur=0.0007, freq=120, ratio=0.2))
-# plumed tail from the rump, wrapping round the near side
+        ((0.004, s * 0.004, -0.008), (0.022, 0.012, 0.022)),
+        ((0.008, s * 0.008, -0.036), (0.03, 0.014, 0.028)),
+        ((0.012, s * 0.011, -0.064), (0.034, 0.015, 0.028)),
+        ((0.016, s * 0.012, -0.088), (0.03, 0.013, 0.018)),
+        ((0.03, s * 0.012, -0.096), (0.014, 0.011, 0.012)),   # feathered tip
+        ((-0.006, s * 0.012, -0.094), (0.014, 0.011, 0.012)),
+    ], M_EAR, voxel=0.003, fur=0.0026, freq=110, ratio=0.11, wave=(0.6, 180)))
+# fluffy curly plume from the rump, wrapping round the near side
 tail_e = empty('dog_tail', (-0.1, -0.025, 0.062), dog)
 under(tail_e, blob('dog_tail_mesh', [
-    ((0, 0, 0.004), (0.026, 0.026, 0.026)),
-    ((0.0, -0.03, 0.012), (0.032, 0.03, 0.03)),
-    ((0.03, -0.056, 0.006), (0.034, 0.03, 0.028)),
-    ((0.066, -0.066, -0.006), (0.03, 0.026, 0.024)),
-    ((0.096, -0.068, -0.018), (0.021, 0.019, 0.017)),
-], M_FUR, voxel=0.0045, fur=0.003, freq=70, ratio=0.2))
+    ((0, 0, 0.004), (0.024, 0.024, 0.024)),
+    ((0.0, -0.03, 0.014), (0.034, 0.032, 0.032)),
+    ((0.03, -0.058, 0.01), (0.038, 0.034, 0.032)),
+    ((0.068, -0.07, -0.002), (0.034, 0.03, 0.028)),
+    ((0.1, -0.072, -0.014), (0.026, 0.024, 0.022)),
+    ((0.122, -0.066, -0.02), (0.016, 0.016, 0.014)),
+], M_FUR, voxel=0.0045, fur=0.0045, freq=80, ratio=0.12))
 BOOK_TOP = 0.028 + 2 * 0.052 + 0.025
 dog.location = (0.6, 0.83, BOOK_TOP)
 dog.rotation_euler = (0, 0, math.radians(-40))
-dog.scale = (1.45, 1.45, 1.45)
+dog.scale = (1.65, 1.65, 1.65)
 
 # small floating wall shelf, back left: a trophy and a "5 stars" plaque
 M_TROPHY = mat('trophy', (0.95, 0.62, 0.2), rough=0.3, metal=0.5, emit=(1.0, 0.62, 0.15), strength=0.5)
@@ -545,7 +599,7 @@ RAW = os.path.join(HERE, 'scene.raw.glb')
 GLB = os.path.join(OUT_DIR, 'scene.glb')
 bpy.ops.export_scene.gltf(filepath=RAW, export_format='GLB',
                           export_apply=True, export_image_format='WEBP', export_image_quality=80,
-                          export_lights=False, export_yup=True)
+                          export_lights=False, export_yup=True, export_tangents=False)
 print('exported raw', os.path.getsize(RAW) // 1024, 'KB')
 import subprocess
 cmd = (f'npx -y @gltf-transform/cli@4 optimize "{RAW}" "{GLB}" --compress meshopt --texture-compress webp '
@@ -572,7 +626,7 @@ if RENDER:
         scene.render.resolution_x, scene.render.resolution_y = 975, 837
     elif CAMV == 'dog':
         tgt.location = dog.location + __import__('mathutils').Vector((0.02, -0.02, 0.06))
-        cam.location = tgt.location + __import__('mathutils').Vector((0.2, -0.85, 0.4))
+        cam.location = tgt.location + __import__('mathutils').Vector((0.24, -1.0, 0.47))
         cam.data.lens = 60
         scene.render.resolution_x, scene.render.resolution_y = 800, 600
     else:
