@@ -815,7 +815,7 @@ for o, loc, rz, sc, head_z in ((mochi, (1.08, -0.62), -70, 1.46, 0), (tofu, (1.3
 # stand-up flip calendar, front right; the page draws the notes on
 # cal_page and swings cal_flip (hinged at the top ring) over the back
 # image only so the UVs survive gltf-transform's prune (the page paints it)
-M_CAL = mat('cal_paper', rough=0.7, image=os.path.join(TEX, 'desk-mat.png'), emit_image=True, strength=0.3)
+M_CAL = mat('cal_paper', rough=0.7, image=os.path.join(TEX, 'desk-mat.png'), emit_image=True, strength=0.65)
 cal = empty('cal')
 under(cal, box('cal_base', (0.17, 0.08, 0.018), (0, 0, 0.009), M_DARK, bevel=0.004))
 tilt = empty('cal_tilt', (0, 0.012, 0.018), cal); tilt.rotation_euler = (math.radians(-14), 0, 0)
@@ -825,7 +825,7 @@ for dx in (-0.04, 0.04):
     under(tilt, cyl('cal_ring', 0.006, 0.008, (dx, -0.003, 0.124), M_ALU, rot=(0, math.radians(90), 0), verts=10))
 fl = empty('cal_flip', (0, -0.003, 0.12), tilt)
 under(fl, plane('cal_flip_page', 0.146, 0.116, (0, 0, -0.058), (math.radians(90), 0, 0), M_CAL))
-cal.location = (1.72, -0.24, 0.0); cal.rotation_euler = (0, 0, math.radians(6)); cal.scale = (1.3, 1.3, 1.3)
+cal.location = (1.55, 0.12, 0.0); cal.rotation_euler = (0, 0, math.radians(-12)); cal.scale = (1.55, 1.55, 1.55)
 
 # little parcel stack on a digital scale beside the label printer; the
 # page draws the weight on scale_lcd and bumps parcel_top each order

@@ -349,7 +349,7 @@
     /* ── flip calendar: every 8s the top note swings up over the rings,
        flutters and fades, showing the next ticked-off task underneath */
     function deskCalendar(root) {
-      var NOTES = ['Launch', 'Sync Cin7', 'Ship orders', 'Fix checkout', 'Go live'];
+      var NOTES = ['Launch', 'Sync', 'Ship orders', 'Fix checkout', 'Go live'];
       var page = paintSlot(root, 'cal_page', 256, 204), top = paintSlot(root, 'cal_flip_page', 256, 204);
       var hinge = root.getObjectByName('cal_flip');
       if (!page || !top || !hinge) return null;
