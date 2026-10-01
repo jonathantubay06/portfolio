@@ -166,7 +166,28 @@ def holo_code():
     im.save(os.path.join(OUT, 'holo-code.png'))
 
 
+def plaque():
+    """Face of the little "5 stars" plaque on the wall shelf."""
+    import math
+    from PIL import ImageFont
+    W, H = 256, 160
+    im = Image.new('RGB', (W, H), (14, 26, 46))
+    d = ImageDraw.Draw(im)
+    d.rounded_rectangle((5, 5, W - 5, H - 5), 16, outline=(255, 176, 72), width=6)
+    f = ImageFont.truetype('C:/Windows/Fonts/segoeuib.ttf', 70)
+    def star(cx, cy, R):
+        d.polygon([(cx + R * (1 if i % 2 == 0 else 0.42) * math.sin(i * math.pi / 5),
+                    cy - R * (1 if i % 2 == 0 else 0.42) * math.cos(i * math.pi / 5)) for i in range(10)], fill=(255, 176, 50))
+    # "5 *" on top, a row of small stars under it
+    d.text((100, 62), '5', font=f, fill=(255, 236, 200), anchor='mm')
+    star(162, 64, 36)
+    for k in range(5):
+        star(48 + k * 40, 124, 14)
+    im.save(os.path.join(OUT, 'plaque.png'))
+
+
 desk_mat()
+plaque()
 gauge()
 holo_code()
 holo_chart()

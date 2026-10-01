@@ -49,6 +49,9 @@
   background:rgba(6,14,26,.85);border:1px solid rgba(0,212,255,.45);color:#e8f4ff;font:600 12px/1.2 var(--font-body);white-space:nowrap;
   opacity:0;transition:opacity .15s ease}
 .hero-3d-tip.on{opacity:1}
+/* the robot's "beep!" speech bubble (double-click it), pinned above it */
+.hero-3d-beep{transform:translate(-50%,-100%);background:#f2fbff;border-color:#f2fbff;color:#0a1628;font-weight:800}
+.hero-3d-beep::after{content:"";position:absolute;left:50%;bottom:-6px;margin-left:-5px;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid #f2fbff}
 /* feather the canvas so its rectangle melts into the hero background */
 .hero-3d{-webkit-mask-image:radial-gradient(closest-side at 50% 50%,#000 58%,transparent 98%);mask-image:radial-gradient(closest-side at 50% 50%,#000 58%,transparent 98%)}
 /* the ambient haze behind the plate framed the canvas as a grey box */

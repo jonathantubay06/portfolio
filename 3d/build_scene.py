@@ -270,7 +270,8 @@ bpy.ops.mesh.primitive_cone_add(radius1=0.13, radius2=0.05, depth=0.16, location
 bpy.ops.mesh.primitive_uv_sphere_add(radius=0.045, location=(-1.42, 0.07, 0.64)); bpy.context.object.data.materials.append(M_BULB); bpy.context.object.name = 'lamp_bulb'
 
 # stack of books, back right of the laptop
-for i, col in enumerate([(0.9, 0.35, 0.1), (0.05, 0.35, 0.6), (0.85, 0.85, 0.88)]):
+# top book is blue so the cream dog asleep on it stands out
+for i, col in enumerate([(0.85, 0.85, 0.88), (0.9, 0.35, 0.1), (0.05, 0.35, 0.6)]):
     box(f'book_{i}', (0.42, 0.3, 0.05), (0.55, 0.85, 0.028 + i * 0.052), mat(f'book_{i}', col, rough=0.6), bevel=0.006, rot=(0, 0, math.radians(8 - i * 7)))
 
 # headphones, front right
@@ -372,6 +373,113 @@ bot.location = (-0.2, -0.47, 0.002)
 M_CODE = mat('holo_code', image=os.path.join(TEX, 'holo-code.png'), emit_image=True, strength=1.0)
 plane('holo_code', 0.58, 0.39, (1.15, 0.3, 1.9), (math.radians(90), 0, math.radians(-22)), M_CODE)
 
+# ── round 5: Dumpling, the wall shelf, the label printer ─────────────
+def ball(name, r, loc, m, sc=(1, 1, 1), sub=2):
+    """Low-poly ball (icosphere) scaled into an ellipsoid; scale applied."""
+    bpy.ops.mesh.primitive_ico_sphere_add(radius=r, location=loc, subdivisions=sub)
+    o = bpy.context.object; o.name = name; o.scale = sc
+    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
+    o.data.materials.append(m); bpy.ops.object.shade_smooth()
+    return o
+
+
+def join(name, objs):
+    """Merge meshes into one (one draw call per material, not per ball)."""
+    bpy.ops.object.select_all(action='DESELECT')
+    for o in objs: o.select_set(True)
+    bpy.context.view_layer.objects.active = objs[0]
+    bpy.ops.object.join()
+    o = bpy.context.object; o.name = name
+    return o
+
+
+# Dumpling: pale cream, short curly coat (lumpy balls over smooth
+# shapes), round head, short muzzle, button nose, long straight beige
+# ears hanging like a bob, plumed tail, no collar. Asleep, curled on the
+# book stack. The page breathes dog_body (scale) and flicks
+# dog_ear_l/r and dog_tail (rotation), so each sits under its own empty.
+M_FUR = mat('dog_fur', (0.93, 0.87, 0.76), rough=0.9)
+M_EAR = mat('dog_ear', (0.62, 0.47, 0.3), rough=0.85)
+M_NOSE = mat('dog_nose', (0.035, 0.015, 0.008), rough=0.3)
+import random
+rnd = random.Random(7)
+dog = empty('dog')
+body_e = empty('dog_body', (0, 0, 0), dog)
+parts = [ball('dog_torso', 1, (0, 0, 0.055), M_FUR, (0.12, 0.085, 0.058), 3),
+         ball('dog_haunch', 1, (-0.06, -0.055, 0.05), M_FUR, (0.06, 0.04, 0.045)),
+         ball('dog_paw_a', 1, (0.135, -0.05, 0.016), M_FUR, (0.04, 0.019, 0.016)),
+         ball('dog_paw_b', 1, (0.13, -0.01, 0.014), M_FUR, (0.038, 0.018, 0.015))]
+# curly coat: small lumps scattered over the upper half of the torso
+for k in range(26):
+    a, e = rnd.uniform(0, 2 * math.pi), rnd.uniform(0.15, 1.35)
+    x, y, z = 0.12 * math.cos(a) * math.cos(e), 0.085 * math.sin(a) * math.cos(e), 0.055 + 0.058 * math.sin(e)
+    parts.append(ball(f'dog_curl_{k}', rnd.uniform(0.022, 0.03), (x * 0.92, y * 0.92, z * 0.97), M_FUR))
+under(body_e, join('dog_body_mesh', parts))
+# head rests on the front paws, turned a little toward the viewer
+head_e = empty('dog_head', (0.115, -0.03, 0.068), dog)
+hp = [ball('dog_skull', 0.058, (0, 0, 0), M_FUR, (1, 0.96, 0.9), 3),
+      ball('dog_muzzle', 1, (0.05, 0, -0.016), M_FUR, (0.032, 0.03, 0.024))]
+for k in range(7):
+    a = k / 7 * 2 * math.pi
+    hp.append(ball(f'dog_tuft_{k}', 0.02, (0.012 * math.cos(a) - 0.008, 0.03 * math.sin(a), 0.045 + 0.006 * math.cos(a * 2)), M_FUR))
+hm = join('dog_head_mesh', hp)
+nose = ball('dog_nose', 0.011, (0.082, 0, -0.008), M_NOSE, (1, 1.15, 0.85))
+eyes = [box(f'dog_eye_{s}', (0.004, 0.02, 0.0035), (0.052, s * 0.025, 0.014), M_NOSE, bevel=0, rot=(math.radians(-s * 12), 0, math.radians(s * 18))) for s in (-1, 1)]
+under(head_e, hm, nose, *eyes)
+for s, nm in ((1, 'dog_ear_l'), (-1, 'dog_ear_r')):
+    ee = empty(nm, (0.0, s * 0.048, 0.03), head_e)
+    under(ee, ball(nm + '_mesh', 1, (0.006, s * 0.012, -0.05), M_EAR, (0.024, 0.014, 0.058)))
+tail_e = empty('dog_tail', (-0.115, 0.01, 0.075), dog)
+tl = [ball(f'dog_plume_{k}', r, p, M_FUR) for k, (r, p) in enumerate([
+    (0.03, (-0.012, 0, 0.012)), (0.034, (-0.01, 0, 0.05)), (0.032, (0.02, 0, 0.075)),
+    (0.028, (0.055, 0, 0.078)), (0.022, (0.082, 0, 0.065))])]
+under(tail_e, join('dog_tail_mesh', tl))
+BOOK_TOP = 0.028 + 2 * 0.052 + 0.025
+dog.location = (0.6, 0.83, BOOK_TOP)
+dog.rotation_euler = (0, 0, math.radians(-40))
+dog.scale = (1.2, 1.2, 1.2)
+
+# small floating wall shelf, back left: a trophy and a "5 stars" plaque
+M_TROPHY = mat('trophy', (0.95, 0.62, 0.2), rough=0.3, metal=0.5, emit=(1.0, 0.62, 0.15), strength=0.5)
+M_PLAQUE = mat('plaque_face', image=os.path.join(TEX, 'plaque.png'), emit_image=True, strength=0.9)
+shelf = empty('shelf')
+under(shelf,
+      box('shelf_plank', (0.56, 0.14, 0.026), (0, 0, 0), M_ALU, bevel=0.006),
+      box('shelf_glow', (0.54, 0.004, 0.006), (0, -0.071, -0.014), M_ACC_C, bevel=0),
+      box('shelf_bracket_a', (0.018, 0.12, 0.06), (-0.2, 0.01, -0.042), M_DARK, bevel=0.003),
+      box('shelf_bracket_b', (0.018, 0.12, 0.06), (0.2, 0.01, -0.042), M_DARK, bevel=0.003),
+      box('trophy_base', (0.07, 0.07, 0.03), (-0.14, 0, 0.028), M_DARK, bevel=0.004),
+      cyl('trophy_stem', 0.009, 0.04, (-0.14, 0, 0.062), M_TROPHY, verts=10))
+bpy.ops.mesh.primitive_cone_add(radius1=0.016, radius2=0.042, depth=0.062, location=(-0.14, 0, 0.111), vertices=16)
+cup = bpy.context.object; cup.name = 'trophy_cup'; cup.data.materials.append(M_TROPHY); cup.parent = shelf
+for s in (-1, 1):
+    bpy.ops.mesh.primitive_torus_add(major_radius=0.017, minor_radius=0.004, location=(-0.14 + s * 0.042, 0, 0.115), rotation=(math.radians(90), 0, 0), major_segments=12, minor_segments=6)
+    hd = bpy.context.object; hd.name = 'trophy_handle'; hd.data.materials.append(M_TROPHY); hd.parent = shelf
+pl = box('plaque', (0.21, 0.02, 0.135), (0.08, 0.02, 0.083), M_DARK, bevel=0.004, rot=(math.radians(-8), 0, 0)); pl.parent = shelf
+pf = plane('plaque_face', 0.19, 0.118, (0.08, 0.0085, 0.084), (math.radians(82), 0, 0), M_PLAQUE); pf.parent = shelf
+shelf.location = (-1.62, 1.1, 1.1)
+shelf.scale = (1.05, 1.05, 1.05)
+shelf.rotation_euler = (0, 0, math.radians(18))
+
+# label printer by the robot's turn-around point; the page slides the
+# label (printer_label) out each time an order pops, then drops it
+M_PRN = mat('printer', (0.16, 0.17, 0.2), rough=0.4, metal=0.2)
+M_PAPER = mat('label_paper', (0.92, 0.92, 0.9), rough=0.7, emit=(0.8, 0.85, 0.9), strength=0.25)
+prn = empty('printer')
+under(prn,
+      box('printer_body', (0.14, 0.12, 0.07), (0, 0, 0.035), M_PRN, bevel=0.012),
+      box('printer_lid', (0.12, 0.08, 0.012), (0, 0.012, 0.072), M_DARK, bevel=0.004),
+      box('printer_slot', (0.09, 0.004, 0.008), (0, -0.061, 0.03), M_DARK, bevel=0),
+      box('printer_stripe', (0.142, 0.122, 0.006), (0, 0, 0.012), M_ACC_O, bevel=0))
+pled = box('printer_led', (0.012, 0.012, 0.004), (0.045, -0.035, 0.072), M_LED_G, bevel=0); pled.parent = prn
+lab = empty('printer_label', (0, -0.06, 0.03), prn)
+under(lab, box('label_strip', (0.074, 0.1, 0.002), (0, -0.05, 0), M_PAPER, bevel=0),
+      box('label_code', (0.05, 0.022, 0.0025), (0, -0.075, 0), M_DARK, bevel=0),
+      box('label_addr', (0.04, 0.008, 0.0025), (-0.008, -0.035, 0), M_LED_O, bevel=0))
+prn.location = (0.62, -0.22, 0.0)
+prn.rotation_euler = (0, 0, math.radians(-25))
+
+
 # ── lights (exported as KHR punctual; the page adds its own too) ─────
 def light(kind, loc, energy, color, size=1.0):
     ld = bpy.data.lights.new(kind + '_l', kind)
@@ -411,18 +519,40 @@ else:
     print('gltf-transform failed; run by hand:', cmd)
 
 # ── optional preview render ──────────────────────────────────────────
+# --cam page  matches the page camera (36-hero-3d.js camBase/target, fov 30)
+# --cam dog   close-up on Dumpling;  default: the wide 3/4 studio view
+CAMV = argv[argv.index('--cam') + 1] if '--cam' in argv else 'studio'
 if RENDER:
     cam = bpy.data.objects.new('cam', bpy.data.cameras.new('cam'))
     scene.collection.objects.link(cam)
-    cam.location = (3.3, -3.6, 2.9)
     tr = cam.constraints.new('TRACK_TO')
-    tgt = bpy.data.objects.new('tgt', None); scene.collection.objects.link(tgt); tgt.location = (0.1, 0.2, 0.7)
+    tgt = bpy.data.objects.new('tgt', None); scene.collection.objects.link(tgt)
     tr.target = tgt
-    cam.data.lens = 42
+    scene.render.resolution_x, scene.render.resolution_y = 1200, 1030
+    if CAMV == 'page':
+        cam.location = (2.0, -6.3, 3.2); tgt.location = (0.2, 0.1, 0.62)
+        cam.data.sensor_fit = 'VERTICAL'; cam.data.angle = math.radians(30)
+        scene.render.resolution_x, scene.render.resolution_y = 975, 837
+    elif CAMV == 'dog':
+        tgt.location = dog.location + __import__('mathutils').Vector((0.02, -0.02, 0.06))
+        cam.location = tgt.location + __import__('mathutils').Vector((0.12, -0.6, 0.27))
+        cam.data.lens = 60
+        scene.render.resolution_x, scene.render.resolution_y = 800, 600
+    else:
+        cam.location = (3.3, -3.6, 2.9); tgt.location = (0.1, 0.2, 0.7)
+        cam.data.lens = 42
     scene.camera = cam
     scene.world = bpy.data.worlds.new('w'); scene.world.color = (0.005, 0.01, 0.02)
     scene.render.engine = 'BLENDER_EEVEE_NEXT' if 'BLENDER_EEVEE_NEXT' in [e.identifier for e in bpy.types.RenderSettings.bl_rna.properties['engine'].enum_items] else 'BLENDER_EEVEE'
-    scene.render.resolution_x, scene.render.resolution_y = 1200, 1030
     scene.render.filepath = RENDER
+    if CAMV == 'page':
+        # where named props land on the page (canvas box 498,31 975x837 at 1440x900)
+        from bpy_extras.object_utils import world_to_camera_view
+        bpy.context.view_layer.update()
+        for nm in ('dog', 'shelf', 'printer', 'bot', 'holo_bag', 'cube_cart', 'holo_chart', 'lamp_bulb', 'book_2'):
+            o = bpy.data.objects.get(nm)
+            if o:
+                c = world_to_camera_view(scene, cam, o.matrix_world.translation)
+                print('PROJ', nm, round(498 + c.x * 975), round(31 + (1 - c.y) * 837))
     bpy.ops.render.render(write_still=True)
     print('rendered', RENDER)

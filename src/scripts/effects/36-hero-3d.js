@@ -15,6 +15,10 @@
    desk mat, rack LEDs, typing code window, "new order" pops, data
    packets laptop -> cubes -> gear, click-the-gear spin + sparks,
    scroll pull-back/tilt/fade, depth parallax, theme-following mood.
+   Round 5: click the laptop to zoom in on a sale, hover labels on most
+   props, double-click the robot, desk sheen, lamp dust, a Manila-time
+   sky behind the desk, Dumpling asleep on the books, a reviews shelf and
+   a label printer that prints with every order.
 ═══════════════════════════════════════ */
 (function () {
   var stage = document.getElementById('heroStage');
@@ -24,8 +28,21 @@
   if (!ok.matches) return;
 
   var V = 'https://cdn.jsdelivr.net/npm/three@0.170.0';
-  var HREF = { cube_cart: '#work', cube_gear: '#automation-demo', cube_db: '#toolkit' };
-  var LABEL = { cube_cart: 'Store builds', cube_gear: 'Try an automation', cube_db: 'Data & monitoring' };
+  /* hover labels: node name -> { label, href (click scrolls), act } */
+  var LAPTOP = { label: 'Click to see a sale', act: 'laptop' }, TABLET = { label: 'Workflow automation' };
+  var OWN = {
+    cube_cart: { label: 'Store builds', href: '#work' },
+    cube_gear: { label: 'Try an automation', href: '#automation-demo' },
+    cube_db: { label: 'Data & monitoring', href: '#toolkit' },
+    logo_gear: { label: 'Give it a spin', act: 'gear' },
+    laptop_base: LAPTOP, laptop_lid: LAPTOP, laptop_keys: LAPTOP,
+    drone: { label: 'Fulfilment' }, rack: { label: 'Monitoring 24/7' },
+    holo_code: { label: 'Custom integrations' }, holo_chart: { label: 'Live analytics' },
+    tablet: TABLET, tablet_screen: TABLET, tablet_stand: TABLET,
+    holo_order: { label: 'Real-time orders' }, bot: { label: 'Warehouse automation', act: 'bot' },
+    dog: { label: 'Dumpling, chief morale officer' },
+    shelf: { label: 'Read the reviews', href: '#testimonials' }
+  };
 
   function boot() {
     Promise.all([
@@ -84,24 +101,28 @@
     var v1 = new THREE.Vector3(), v2 = new THREE.Vector3(), v3 = new THREE.Vector3();
     var camRight = new THREE.Vector3().subVectors(target, camBase).cross(new THREE.Vector3(0, 1, 0)).normalize();
 
-    var motes = null, screens = null, lastDraw = -1, lastT = 0;
+    var motes = null, screens = null, lastDraw = -1, lastT = 0, skyT = 0;
     var cubes = [], wires = [], holos = [], floats = [], leds = [], halves = [], picks = [];
     var logo = null, drone = null, props = [], bot = null, wheels = [], hover = null;
-    var flow = null, sparks = null, orders = null;
+    var flow = null, sparks = null, orders = null, dust = null, sky = null, dog = {}, printer = null;
+    var zc = new THREE.Vector3(), zcam = new THREE.Vector3(), look = new THREE.Vector3();
     var loader = new GLTFLoader(); loader.setMeshoptDecoder(MeshoptDecoder);
     loader.load('img/hero3d/scene.glb', function (g) {
       rig.add(g.scene);
       g.scene.traverse(function (o) {
-        if (HREF[o.name] && o.isMesh) {
+        if (OWN[o.name]) o.userData.own = OWN[o.name];
+        /* every mesh is a pick target, so props hidden behind others
+           stay unpickable; the owner is found by walking up parents */
+        if (o.isMesh) picks.push(o);
+        if (/^cube_/.test(o.name) && o.isMesh) {
           /* gltf-transform's quantizer bakes a scale into mesh nodes, so
              scale relative to the loaded one, never to 1 */
           o.userData.r0 = o.rotation.y; o.userData.s0 = o.scale.x;
           if (o.material) o.material = o.material.clone();
-          cubes.push(o); floats.push(o); picks.push(o);
+          cubes.push(o); floats.push(o);
         }
         if (o.name === 'logo_gear') { logo = o; floats.push(o); }
         if (/^logo_(left|right)$/.test(o.name)) halves.push(o);
-        if (/^logo_/.test(o.name) && o.isMesh) picks.push(o);
         if (/^holo_/.test(o.name)) { holos.push(o); floats.push(o); }
         if (/^wire_/.test(o.name) && o.material) { o.material = o.material.clone(); wires.push(o); }
         if (o.name === 'drone') drone = o;
@@ -109,10 +130,11 @@
         if (o.name === 'bot') { bot = o; o.userData.p0 = o.position.clone(); }
         if (/^bot_wheel_/.test(o.name)) wheels.push(o);
         if ((/^rack_led_/.test(o.name) || o.name === 'bot_led') && o.material) { o.material = o.material.clone(); leds.push(o); }
+        if (/^dog_(body|head|ear_l|ear_r|tail)$/.test(o.name)) { dog[o.name.slice(4)] = o; o.userData.p0 = o.position.clone(); o.userData.r0 = o.rotation.clone(); }
         /* Blender's emission strengths read hot under ACES; tame them */
         if (o.material && o.material.emissiveIntensity) {
           var n = o.material.name || '';
-          o.material.emissiveIntensity = /edge/.test(n) ? 0.9 : /wire/.test(n) ? 1.1 : /cube/.test(n) ? 0.35 : /logo/.test(n) ? 0.35 : /holo/.test(n) ? 0.5 : /bulb/.test(n) ? 3 : /desk_mat/.test(n) ? 0.6 : /accent/.test(n) ? 0.7 : 0.38;
+          o.material.emissiveIntensity = /edge/.test(n) ? 0.9 : /wire/.test(n) ? 1.1 : /cube/.test(n) ? 0.35 : /logo/.test(n) ? 0.35 : /holo/.test(n) ? 0.5 : /bulb/.test(n) ? 3 : /plaque|trophy/.test(n) ? 0.9 : /desk_mat/.test(n) ? 0.6 : /accent/.test(n) ? 0.7 : 0.38;
         }
       });
       /* parallax: a float's offset scales with how near the camera it is */
@@ -123,6 +145,13 @@
         o.userData.depth = Math.max(0.2, Math.min(1, (8.6 - d) / 3));
       });
       screens = liveScreens(THREE, g.scene);
+      /* zoom target: the laptop screen's centre, seen square on. The lid
+         leans back 14deg, so its normal is (0, sin14, cos14). */
+      g.scene.getObjectByName('laptop_screen').getWorldPosition(zc);
+      zcam.set(0, 0.242, 0.97).multiplyScalar(3.8).add(zc);
+      printer = labelPrinter(g.scene);
+      deskSheen(g.scene);
+      dust = lampDust(); sky = skyPanel();
       /* drifting data motes around the desk */
       var N = 160, pos = new Float32Array(N * 3);
       for (var i = 0; i < N; i++) { pos[i * 3] = (Math.random() - 0.5) * 4; pos[i * 3 + 1] = Math.random() * 2.4; pos[i * 3 + 2] = (Math.random() - 0.5) * 3; }
@@ -224,6 +253,7 @@
         var tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
         var s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, opacity: 0, depthWrite: false }));
         s.visible = false; s.renderOrder = 5; rig.add(s);
+        s.userData.own = { label: 'Real-time orders' }; picks.push(s);
         pool.push({ sp: s, g: c.getContext('2d'), tex: tex, t0: -9, x: 0 });
       }
       function draw(p) {
@@ -240,6 +270,7 @@
         if (t >= next) {
           var p = pool[0]; for (var i = 1; i < 3; i++) if (pool[i].t0 < p.t0) p = pool[i];
           draw(p); p.t0 = t; p.sp.visible = true; next = t + 3.4;
+          if (printer) printer.print(t);
         }
         for (var k = 0; k < 3; k++) {
           var q = pool[k], a = t - q.t0;
@@ -250,6 +281,157 @@
           q.sp.material.opacity = Math.min(1, a / 0.2) * Math.min(1, (3 - a) / 0.8) * 0.95;
         }
       };
+    }
+
+    /* ── label printer: each new order slides a label out of the slot,
+       it drops onto the desk and fades. Only the printer_label empty
+       moves (local +z is the printer's front). */
+    function labelPrinter(root) {
+      var lab = root.getObjectByName('printer_label'), led = root.getObjectByName('printer_led');
+      if (!lab) return null;
+      var p0 = lab.position.clone(), r0 = lab.rotation.x, t0 = -9, mats = [];
+      lab.traverse(function (o) { if (o.material) { o.material = o.material.clone(); o.material.transparent = true; mats.push(o.material); } });
+      if (led) led.material = led.material.clone();
+      lab.visible = false;
+      var api = function (t) {
+        var u = t - t0;
+        if (led) led.material.emissiveIntensity = u < 1.4 && ((t * 10) | 0) % 2 ? 2.4 : 0.3;
+        if (u > 2.6) { lab.visible = false; return; }
+        lab.visible = true;
+        var out = ease(u / 0.7), drop = ease((u - 1.4) / 0.3), a = 1 - ease((u - 1.8) / 0.8);
+        lab.position.set(p0.x, p0.y - 0.027 * drop, p0.z - 0.1 * (1 - out) + 0.03 * drop);
+        lab.rotation.x = r0 + 0.12 * drop * (1 - drop) * 4;
+        for (var i = 0; i < mats.length; i++) mats[i].opacity = a;
+      };
+      api.print = function (t) { t0 = t; };
+      return api;
+    }
+
+    /* ── desk sheen: a tiny environment of glowing strips, prefiltered
+       once (PMREM), gives the desk soft glossy reflections. Plus faint
+       additive glow decals under the bright things that stand on it. */
+    function deskSheen(root) {
+      var desk = root.getObjectByName('desk');
+      var env = new THREE.Scene(); env.background = new THREE.Color(0x03070e);
+      [[0x00d4ff, 6, 0.5, -0.3, 0.3, -5], [0xff8c28, 2, 0.4, 2.4, 0.5, -4.6], [0x9fd8ff, 2.5, 0.6, -2.6, 0.7, -4.8], [0x0e7aff, 8, 1.4, 0, 2.6, -4]]
+        .forEach(function (b) {
+          var m = new THREE.Mesh(new THREE.PlaneGeometry(b[1], b[2]), new THREE.MeshBasicMaterial({ color: b[0] }));
+          m.position.set(b[3], b[4], b[5]); m.lookAt(0, 0, 0); env.add(m);
+        });
+      var pm = new THREE.PMREMGenerator(renderer), rt = pm.fromScene(env, 0.04);
+      pm.dispose(); env.traverse(function (o) { if (o.isMesh) { o.geometry.dispose(); o.material.dispose(); } });
+      if (desk && desk.material) {
+        desk.material = desk.material.clone();
+        desk.material.envMap = rt.texture; desk.material.envMapIntensity = 0.55; desk.material.roughness = 0.3;
+      }
+      /* glow decals: soft streak fading away from the source */
+      var c = document.createElement('canvas'); c.width = 64; c.height = 128;
+      var g = c.getContext('2d'), gr = g.createLinearGradient(0, 0, 0, 128);
+      gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.35, 'rgba(255,255,255,.45)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+      g.fillStyle = gr; g.fillRect(0, 0, 64, 128);
+      g.globalCompositeOperation = 'destination-in';
+      var gx = g.createLinearGradient(0, 0, 64, 0);
+      gx.addColorStop(0, 'rgba(0,0,0,0)'); gx.addColorStop(0.3, '#000'); gx.addColorStop(0.7, '#000'); gx.addColorStop(1, 'rgba(0,0,0,0)');
+      g.fillStyle = gx; g.fillRect(0, 0, 64, 128);
+      var tex = new THREE.CanvasTexture(c), geo = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
+      /* [colour, opacity, x, z (three), width, length, turn] */
+      [[0x2aa8ff, 0.2, 1.17, -0.12, 0.6, 0.5, -0.49], [0x2ee6a0, 0.12, 1.6, -0.4, 0.24, 0.3, -0.21],
+       [0xffa040, 0.16, -1.36, -0.02, 0.5, 0.45, 0.2], [0x7fd8ff, 0.1, -0.15, 0.62, 1.3, 0.22, 0]]
+        .forEach(function (d) {
+          var m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ map: tex, color: d[0], transparent: true, opacity: d[1], depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }));
+          m.scale.set(d[4], 1, d[5]); m.rotation.y = d[6];
+          /* the bright end (texture top) sits at the source, toward -z */
+          m.position.set(d[2], 0.004, d[3] + d[5] / 2); m.renderOrder = 1; rig.add(m);
+        });
+    }
+
+    /* ── dust motes drifting in the lamp's light cone. Each mote keeps a
+       fixed spot in the cone and drifts slowly down it; additive warm
+       points that fade at both ends (darker colour = more transparent). */
+    function lampDust() {
+      var N = 36, apex = new THREE.Vector3(-1.4, 0.6, -0.05), axis = new THREE.Vector3(0.12, -1, 0.14).normalize();
+      var a = new THREE.Vector3(1, 0, 0).cross(axis).normalize(), b = new THREE.Vector3().crossVectors(axis, a);
+      var seed = new Float32Array(N * 4), pos = new Float32Array(N * 3), col = new Float32Array(N * 3);
+      for (var i = 0; i < N; i++) { seed[i * 4] = Math.random(); seed[i * 4 + 1] = Math.random() * Math.PI * 2; seed[i * 4 + 2] = Math.sqrt(Math.random()); seed[i * 4 + 3] = 0.02 + Math.random() * 0.03; }
+      var geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+      var pts = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.035, map: dot, vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+      pts.frustumCulled = false; rig.add(pts);
+      return function (t, k) {
+        for (var i = 0; i < N; i++) {
+          var j = i * 4, u = (seed[j] + t * seed[j + 3]) % 1, ang = seed[j + 1] + t * 0.15, r = seed[j + 2] * u * 0.32;
+          var ca = Math.cos(ang) * r, sa = Math.sin(ang) * r, d = 0.08 + u * 0.55, w = Math.sin(t * 0.7 + i) * 0.01;
+          pos[i * 3] = apex.x + axis.x * d + a.x * ca + b.x * sa + w;
+          pos[i * 3 + 1] = apex.y + axis.y * d + a.y * ca + b.y * sa;
+          pos[i * 3 + 2] = apex.z + axis.z * d + a.z * ca + b.z * sa;
+          var f = Math.sin(u * Math.PI) * k * (0.6 + 0.4 * Math.sin(t * 2 + i * 1.7));
+          col[i * 3] = f; col[i * 3 + 1] = f * 0.72; col[i * 3 + 2] = f * 0.4;
+        }
+        geo.attributes.position.needsUpdate = true; geo.attributes.color.needsUpdate = true;
+      };
+    }
+
+    /* ── sky behind the desk: a faint, feathered window onto a distant
+       skyline whose sky follows Manila time (night, dawn, day, sunset,
+       evening). Redrawn once a minute; drawn first, never bloomed. */
+    function skyPanel() {
+      var W = 512, H = 256, c = document.createElement('canvas'); c.width = W; c.height = H;
+      var g = c.getContext('2d'), tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+      /* [hour, top, bottom] keyframes, Manila local time */
+      var KEY = [[0, '#060d24', '#0d1a3a'], [4.8, '#08122e', '#1a2452'], [5.8, '#2c3a78', '#e0866a'], [7, '#3f86cc', '#f2c49a'],
+        [9, '#2f8fe0', '#a6d6f2'], [16, '#3a8ad8', '#b0d8ee'], [17.4, '#5a4c9c', '#ff8a52'], [18.2, '#3a2c70', '#e0607a'],
+        [19.2, '#141c4c', '#4a3466'], [20.5, '#060d24', '#0d1a3a'], [24, '#060d24', '#0d1a3a']];
+      var rnd = 11, R = function () { rnd = (rnd * 16807) % 2147483647; return rnd / 2147483647; };
+      var towers = [], stars = [], i;
+      for (var x = 0; x < W;) { var w = 16 + R() * 34; towers.push([x, w, 40 + R() * 90]); x += w + 2 + R() * 6; }
+      for (i = 0; i < 40; i++) stars.push([R() * W, R() * H * 0.55, R()]);
+      function mix(a, b, f) {
+        var A = parseInt(a.slice(1), 16), B = parseInt(b.slice(1), 16), o = '#';
+        for (var s = 16; s >= 0; s -= 8) o += ('0' + Math.round(((A >> s) & 255) * (1 - f) + ((B >> s) & 255) * f).toString(16)).slice(-2);
+        return o;
+      }
+      var mesh = new THREE.Mesh(new THREE.PlaneGeometry(5.2, 2.6), new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity: 0.3, depthWrite: false, toneMapped: false }));
+      mesh.position.set(-0.4, 1.35, -3.1); mesh.rotation.y = 0.26; mesh.renderOrder = -1; rig.add(mesh);
+      var api = function (hourOverride) {
+        var h = hourOverride != null ? hourOverride : (Date.now() / 3.6e6 + 8) % 24, k = 0;
+        while (KEY[k + 1][0] <= h) k++;
+        var f = (h - KEY[k][0]) / (KEY[k + 1][0] - KEY[k][0]);
+        var night = h < 5.5 || h > 19.5 ? 1 : h < 6.5 ? 6.5 - h : h > 18.5 ? h - 18.5 : 0;
+        var top = mix(KEY[k][1], KEY[k + 1][1], f), gr = g.createLinearGradient(0, 0, 0, H);
+        gr.addColorStop(0, top); gr.addColorStop(1, mix(KEY[k][2], KEY[k + 1][2], f));
+        g.globalCompositeOperation = 'source-over'; g.fillStyle = gr; g.fillRect(0, 0, W, H);
+        for (i = 0; i < stars.length; i++) { g.fillStyle = 'rgba(220,235,255,' + (night * (0.3 + stars[i][2] * 0.6)).toFixed(2) + ')'; g.fillRect(stars[i][0], stars[i][1], 2, 2); }
+        if (night < 1) {  /* sun arcs over the day, low and warm at the ends */
+          var sd = Math.max(0, Math.min(1, (h - 6) / 12)), sx = 60 + sd * 390, sy2 = 150 - Math.sin(sd * Math.PI) * 110;
+          g.fillStyle = 'rgba(255,236,190,' + (0.9 * (1 - night)).toFixed(2) + ')'; g.beginPath(); g.arc(sx, sy2, 16, 0, 7); g.fill();
+        }
+        if (night > 0) {  /* crescent moon: a disc with a sky-coloured bite */
+          g.fillStyle = 'rgba(230,240,255,' + (0.85 * night).toFixed(2) + ')'; g.beginPath(); g.arc(400, 56, 13, 0, 7); g.fill();
+          g.fillStyle = top; g.beginPath(); g.arc(407, 51, 12, 0, 7); g.fill();
+        }
+        for (i = 0; i < towers.length; i++) {
+          var T = towers[i]; g.fillStyle = '#0a1424'; g.fillRect(T[0], H - T[2], T[1], T[2]);
+          if (night > 0.2) {
+            g.fillStyle = 'rgba(255,196,110,' + (0.65 * night).toFixed(2) + ')';
+            for (var wy = H - T[2] + 8; wy < H - 6; wy += 11) for (var wx = T[0] + 4; wx < T[0] + T[1] - 5; wx += 8)
+              if (((wx * 7 + wy * 13) | 0) % 5 < 2) g.fillRect(wx, wy, 3, 4);
+          }
+        }
+        /* the towers share the hero's navy, so the skyline reads as a cut
+           out of the sky glow, never as dark slabs; then the window frame
+           and a feather on every edge into the dark hero */
+        g.fillStyle = 'rgba(10,20,36,.85)'; g.fillRect(W / 3 - 2, 0, 4, H); g.fillRect(W * 2 / 3 - 2, 0, 4, H);
+        g.globalCompositeOperation = 'destination-in';
+        g.save(); g.scale(1, H / W);
+        var fe = g.createRadialGradient(W / 2, W / 2, 0, W / 2, W / 2, W / 2);
+        fe.addColorStop(0, '#000'); fe.addColorStop(0.5, '#000'); fe.addColorStop(1, 'rgba(0,0,0,0)');
+        g.fillStyle = fe; g.fillRect(0, 0, W, W); g.restore();
+        g.globalCompositeOperation = 'source-over';
+        /* bright daytime sky reads louder, so it gets less opacity */
+        mesh.material.opacity = 0.26 + night * 0.1;
+        tex.needsUpdate = true;
+      };
+      api(); return api;
     }
 
     /* drone loop round the desk (three coords: x, up, toward the viewer) */
@@ -270,33 +452,76 @@
     var sy = scrollY, sp = 0, fade = 1;
     addEventListener('scroll', function () { sy = scrollY; }, { passive: true });
 
-    /* pointer: camera leans toward the cursor; cubes and gear are clickable */
-    var px = 0, py = 0, tx = 0, ty = 0;
+    /* pointer: camera leans toward the cursor; labelled props show a tip,
+       cubes and the plaque scroll to their section, the gear spins, the
+       laptop zooms in on a sale, the robot answers a double-click */
+    var px = 0, py = 0, tx = 0, ty = 0, lastPick = 0;
     var ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
     var tip = document.createElement('span'); tip.className = 'hero-3d-tip'; scene.appendChild(tip);
+    var beep = document.createElement('span'); beep.className = 'hero-3d-tip hero-3d-beep'; beep.textContent = 'beep!'; scene.appendChild(beep);
+    function owner(e) {
+      if (e) {
+        var cr = canvas.getBoundingClientRect();
+        ndc.set(((e.clientX - cr.left) / cr.width - 0.5) * 2, -((e.clientY - cr.top) / cr.height - 0.5) * 2);
+        ray.setFromCamera(ndc, cam);
+      }
+      var hits = ray.intersectObjects(picks, false);
+      for (var i = 0; i < hits.length; i++) {
+        var o = hits[i].object;
+        /* recycled order cards are invisible between pops */
+        if (o.isSprite && (!o.visible || o.material.opacity < 0.3)) continue;
+        while (o && !o.userData.own) o = o.parent;
+        return o || null;
+      }
+      return null;
+    }
     stage.addEventListener('pointermove', function (e) {
       /* the canvas overhangs the scene box (56-hero-motion.css), so
          pick against the canvas and place the tip against the scene */
       var cr = canvas.getBoundingClientRect(), r = scene.getBoundingClientRect();
       tx = ((e.clientX - cr.left) / cr.width - 0.5) * 2;
       ty = ((e.clientY - cr.top) / cr.height - 0.5) * 2;
-      ndc.set(tx, -ty);
-      ray.setFromCamera(ndc, cam);
-      var hit = ray.intersectObjects(picks, true)[0];
-      var c = null;
-      if (hit) { c = hit.object; while (c && !HREF[c.name] && c !== logo) c = c.parent; }
+      tip.style.left = (e.clientX - r.left) + 'px'; tip.style.top = (e.clientY - r.top) + 'px';
+      if (zoomT) { hover = null; tip.classList.remove('on'); stage.style.cursor = 'zoom-out'; return; }
+      /* every mesh is tested now, so pick at most ~30 times a second */
+      if (e.timeStamp - lastPick < 33) return;
+      lastPick = e.timeStamp;
+      var c = owner(e);
       hover = c;
-      stage.style.cursor = c ? 'pointer' : '';
-      if (c) { tip.textContent = c === logo ? 'Give it a spin' : LABEL[c.name] + ' →'; tip.style.left = (e.clientX - r.left) + 'px'; tip.style.top = (e.clientY - r.top) + 'px'; tip.classList.add('on'); }
+      stage.style.cursor = c && (c.userData.own.href || c.userData.own.act) ? 'pointer' : '';
+      if (c) { tip.textContent = c.userData.own.label + (c.userData.own.href ? ' →' : ''); tip.classList.add('on'); }
       else tip.classList.remove('on');
     }, { passive: true });
     stage.addEventListener('pointerleave', function () { tx = ty = 0; hover = null; tip.classList.remove('on'); });
-    stage.addEventListener('click', function () {
+    stage.addEventListener('click', function (e) {
+      if (zoomT) { zoomOut(); return; }
+      hover = owner(e);
       if (!hover) return;
-      if (hover === logo) { gearBoost = 14; if (sparks) sparks.fire(); return; }
-      var el = document.querySelector(HREF[hover.name]);
+      var own = hover.userData.own;
+      if (own.act === 'gear') { gearBoost = 14; if (sparks) sparks.fire(); return; }
+      if (own.act === 'laptop') { zoomIn(); return; }
+      var el = own.href && document.querySelector(own.href);
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
+    /* the robot is small and moving, so a double-click near it counts too */
+    stage.addEventListener('dblclick', function (e) {
+      if (!bot) return;
+      var o = owner(e), cr = canvas.getBoundingClientRect();
+      v2.set(0, 0.05, 0); bot.localToWorld(v2); v2.project(cam);
+      var d = Math.hypot(cr.left + (v2.x + 1) / 2 * cr.width - e.clientX, cr.top + (1 - v2.y) / 2 * cr.height - e.clientY);
+      if ((o && o.userData.own.act === 'bot') || d < 40) hopReq = true;
+    });
+
+    /* laptop zoom: eases the camera to face the screen while the store
+       page plays a sale. Any click, Esc, wheel or scroll zooms back out,
+       and page scrolling itself is never blocked. */
+    var zoomT = 0, zoom = 0, zoomSy = 0, saleReq = false, hopReq = false, hopT = -9, beepOn = false;
+    function zoomIn() { zoomT = 1; zoomSy = scrollY; saleReq = true; hover = null; tip.classList.remove('on'); stage.style.cursor = 'zoom-out'; }
+    function zoomOut() { if (!zoomT) return; zoomT = 0; stage.style.cursor = ''; }
+    addEventListener('keydown', function (e) { if (e.key === 'Escape') zoomOut(); });
+    stage.addEventListener('wheel', zoomOut, { passive: true });
+    document.addEventListener('click', function (e) { if (!stage.contains(e.target)) zoomOut(); });
+    addEventListener('scroll', function () { if (zoomT && Math.abs(scrollY - zoomSy) > 40) zoomOut(); }, { passive: true });
 
     /* only render while the hero is visible and the tab is in front */
     var visible = true, raf = 0, clock = new THREE.Clock();
@@ -313,18 +538,25 @@
       px += (tx - px) * 0.05; py += (ty - py) * 0.05;
       sp += (Math.min(1, sy / (innerHeight * 0.7)) - sp) * 0.08;
       mood += (moodT - mood) * 0.05;
+      /* laptop zoom (z: 0 out, 1 in) mutes the lean, parallax and tilt */
+      zoom += (zoomT - zoom) * Math.min(1, dt * 3.2);
+      var z = ease(zoom), lean = 1 - z;
+      if (saleReq) { saleReq = false; if (screens) screens.sale(t); }
+      if (!zoomT && zoom < 0.15 && screens) screens.sale(-1);
 
-      /* camera: pointer lean, then pulled back along its view line by scroll */
-      v1.set(camBase.x + px * 0.9, camBase.y - py * 0.5, camBase.z - px * 0.6).sub(target).multiplyScalar(1 + sp * 0.45);
-      cam.position.copy(target).add(v1);
-      cam.lookAt(target);
-      rig.rotation.x = sp * 0.15;
+      /* camera: pointer lean, then pulled back along its view line by scroll,
+         then eased toward the face-on view of the laptop screen */
+      v1.set(camBase.x + px * 0.9 * lean, camBase.y - py * 0.5 * lean, camBase.z - px * 0.6 * lean).sub(target).multiplyScalar(1 + sp * 0.45 * lean);
+      cam.position.copy(target).add(v1).lerp(zcam, z);
+      cam.lookAt(look.copy(target).lerp(zc, z));
+      rig.rotation.x = sp * 0.15 * lean;
       var f = 1 - sp;
       if (Math.abs(f - fade) > 0.004) { fade = f; canvas.style.opacity = f.toFixed(3); }
 
       /* parallax: near floats shift more than far ones */
       for (i = 0; i < floats.length; i++) {
         var o = floats[i], p0 = o.userData.p0, k = o.userData.depth;
+        k *= lean;
         o.position.set(p0.x + camRight.x * px * 0.07 * k, p0.y - py * 0.04 * k, p0.z + camRight.z * px * 0.07 * k);
       }
       for (i = 0; i < cubes.length; i++) {
@@ -346,7 +578,8 @@
       lamp.intensity = (3 + Math.sin(t * 7) * 0.15 + Math.sin(t * 13) * 0.1) * (1.2 - mood * 0.5);
       key.intensity = 1.2 + mood * 0.35; hemi.intensity = 0.35 + mood * 0.15;
       bloom.strength = 0.24 - mood * 0.07;
-      if (screens) screens.glow(1.08 - mood * 0.22);
+      /* face-on, the white store page would bloom; ease it down a little */
+      if (screens) screens.glow((1.08 - mood * 0.22) * (1 - z * 0.3));
 
       /* gear: idle turn, plus a decaying burst after a click */
       gearAng += (0.35 + gearBoost) * dt; gearBoost *= Math.exp(-dt * 1.8);
@@ -357,7 +590,8 @@
       if (drone) {
         var u = (t / 18) % 1;
         dronePath.getPointAt(u, drone.position);
-        drone.position.y += Math.sin(t * 2.1) * 0.025;
+        /* while zoomed it flies higher, clear of the laptop screen */
+        drone.position.y += Math.sin(t * 2.1) * 0.025 + z * 0.75;
         dronePath.getTangentAt(u, v2); dronePath.getTangentAt((u + 0.02) % 1, v3);
         drone.rotation.set(0, Math.atan2(-v2.z, v2.x), 0);
         drone.rotateX((v2.x * v3.z - v2.z * v3.x) * -4);
@@ -370,6 +604,18 @@
         bot.rotation.y = Math.PI * (leg + ease(lt - 5));
         var dist = (Math.floor(t / 6) + s) * 2 * A;
         for (i = 0; i < wheels.length; i++) wheels[i].rotation.z = -dist / 0.022;
+        /* double-click: a quick spin hop and a "beep!" bubble */
+        if (hopReq) { hopReq = false; hopT = t; }
+        var hu = (t - hopT) / 0.75;
+        bot.position.y = bot.userData.p0.y + (hu < 1 ? Math.sin(hu * Math.PI) * 0.13 : 0);
+        if (hu < 1) bot.rotation.y += Math.PI * 2 * ease(hu);
+        if (hu < 2) {
+          v2.set(0, 0.32, 0); bot.localToWorld(v2); v2.project(cam);
+          var cr = canvas.getBoundingClientRect(), sr = scene.getBoundingClientRect();
+          beep.style.left = (cr.left - sr.left + (v2.x + 1) / 2 * cr.width) + 'px';
+          beep.style.top = (cr.top - sr.top + (1 - v2.y) / 2 * cr.height) + 'px';
+          if (!beepOn) { beepOn = true; beep.classList.add('on'); }
+        } else if (beepOn) { beepOn = false; beep.classList.remove('on'); }
       }
       /* status LEDs: green steady with flicks, cyan busy, orange slow */
       for (i = 0; i < leds.length; i++) {
@@ -377,11 +623,27 @@
         if (kind === 0) on = ((t * 0.7 + i * 0.37) % 1) > 0.07;
         else if (kind === 1) on = Math.sin(t * 9 + i * 1.3) * Math.sin(t * 3.3 + i * 2.1) > 0;
         else on = ((t * 0.5 + i * 0.21) % 1) < 0.5;
+        /* the robot's antenna flashes fast for a second after the hop */
+        if (kind === 2 && t - hopT < 1.3) { L.material.emissiveIntensity = ((t * 14) | 0) % 2 ? 4 : 0.2; continue; }
         L.material.emissiveIntensity = on ? 2.2 : 0.15;
       }
       if (flow) flow(t);
       if (sparks) sparks(dt);
       if (orders) orders(t);
+      if (printer) printer(t);
+      if (dust) dust(t, 1.1 - mood * 0.5);
+      if (sky && t - skyT > 60) { sky(); skyT = t; }
+      /* Dumpling: slow breaths, an ear twitch now and then, a tail flick */
+      if (dog.body) {
+        var br = Math.sin(t * 2.1) * 0.5 + 0.5;
+        dog.body.scale.set(1 + br * 0.012, 1 + br * 0.05, 1 + br * 0.03);
+        if (dog.head) dog.head.position.y = dog.head.userData.p0.y + br * 0.0025;
+        var et = t % 7.3, ew = et < 0.5 ? Math.sin(et / 0.5 * Math.PI * 2) * Math.sin(et / 0.5 * Math.PI) : 0;
+        if (dog.ear_l) dog.ear_l.rotation.x = dog.ear_l.userData.r0.x + ew * 0.35;
+        if (dog.ear_r) dog.ear_r.rotation.x = dog.ear_r.userData.r0.x - (t % 11.1 < 0.4 ? Math.sin((t % 11.1) / 0.4 * Math.PI) * 0.3 : 0);
+        var tw = t % 5.2, wag = tw < 1.1 ? Math.sin(tw * 17) * Math.sin(tw / 1.1 * Math.PI) * 0.35 : 0;
+        if (dog.tail) dog.tail.rotation.y = dog.tail.userData.r0.y + wag + Math.sin(t * 0.8) * 0.04;
+      }
       if (screens && t - lastDraw > 1 / 30) { screens(t); lastDraw = t; }
       if (motes) { motes.rotation.y = t * 0.03; motes.position.y = Math.sin(t * 0.4) * 0.05; }
 
@@ -399,7 +661,11 @@
      tablet   the lightning > gear > database flow lights node by node
      chart    the sales line draws itself and the total counts up
      code     a small sync script types itself out, then starts over
-     draw.glow(k) scales every screen's emission (day/night mood)     */
+     draw.glow(k) scales every screen's emission (day/night mood)
+     draw.sale(t0) plays a sale on the laptop from t0 (-1 = normal): the
+     page scrolls, a product lights up, "Add to cart" is pressed, the
+     cart badge pops, then the payment confirms and stays until the
+     camera zooms back out.                                          */
   function liveScreens(THREE, root) {
     function slot(name, w, h) {
       var mesh = root.getObjectByName(name);
@@ -463,7 +729,8 @@
         rr(g, 180, 180, 150, 64, 8, '#1e2532');
         K.tex.needsUpdate = true;
       }
-      if (L) {
+      if (L && sale0 >= 0) { sale(L.g, t - sale0); L.tex.needsUpdate = true; }
+      else if (L) {
         var sc = ease((lt - 0.5) / 2.6) * 800 - ease((lt - 5) / 1.8) * 800;
         L.g.drawImage(page, 0, sc, 640, 400, 0, 0, 640, 400);
         /* scrollbar */
@@ -541,6 +808,71 @@
         D.tex.needsUpdate = true;
       }
     };
+    /* the sale, s seconds in. Card 2 of the first row is the product. */
+    var sale0 = -1;
+    function arrow(g, x, y, down) {
+      g.save(); g.translate(x, y); if (down) g.scale(0.88, 0.88);
+      g.fillStyle = '#fff'; g.strokeStyle = '#142032'; g.lineWidth = 2.5; g.lineJoin = 'round';
+      g.beginPath(); g.moveTo(0, 0); g.lineTo(0, 26); g.lineTo(7, 20); g.lineTo(12, 31); g.lineTo(17, 29); g.lineTo(12, 18); g.lineTo(21, 18); g.closePath();
+      g.fill(); g.stroke(); g.restore();
+    }
+    function sale(g, s) {
+      s = Math.min(s, 9);
+      var sc = ease((s - 0.4) / 1.2) * 170, cx = 172, cy = 214 - sc;
+      g.drawImage(page, 0, sc, 640, 400, 0, 0, 640, 400);
+      /* sticky header with the cart and its badge */
+      g.drawImage(page, 0, 0, 640, 34, 0, 0, 640, 34);
+      g.strokeStyle = '#142032'; g.lineWidth = 2.5; g.lineJoin = 'round';
+      g.beginPath(); g.moveTo(584, 10); g.lineTo(589, 10); g.lineTo(593, 23); g.lineTo(607, 23); g.lineTo(610, 13); g.lineTo(591, 13); g.stroke();
+      g.fillStyle = '#142032'; g.beginPath(); g.arc(595, 27, 2, 0, 7); g.arc(605, 27, 2, 0, 7); g.fill();
+      if (s > 3.3) {
+        var bp = Math.min(1, (s - 3.3) / 0.25), bs = 8 * (bp < 1 ? 0.6 + bp * 0.7 : 1);
+        g.fillStyle = '#ff8c28'; g.beginPath(); g.arc(612, 9, bs, 0, 7); g.fill();
+        g.fillStyle = '#fff'; g.font = '700 11px system-ui,sans-serif'; g.textAlign = 'center'; g.fillText('1', 612, 13); g.textAlign = 'left';
+      }
+      /* the product lights up once the cursor reaches it */
+      if (s > 1.9) {
+        var hl = Math.min(1, (s - 1.9) / 0.3);
+        g.strokeStyle = 'rgba(0,212,255,' + hl + ')'; g.lineWidth = 4;
+        g.beginPath(); g.roundRect(cx - 2, cy - 2, 144, 190, 10); g.stroke();
+      }
+      /* "Add to cart": appears, gets pressed at 2.9s, turns into "Added" */
+      if (s > 2.0) {
+        var pr = s > 2.9 && s < 3.15, done = s >= 3.15, bx = cx + 8, by = cy + 146;
+        g.fillStyle = '#fff'; g.fillRect(cx + 6, cy + 136, 128, 46);
+        g.fillStyle = done ? '#14aa78' : pr ? '#0077b8' : '#0096dc';
+        g.beginPath(); g.roundRect(bx + (pr ? 3 : 0), by + (pr ? 2 : 0), 124 - (pr ? 6 : 0), 30 - (pr ? 4 : 0), 8); g.fill();
+        g.fillStyle = '#fff'; g.font = '700 15px system-ui,sans-serif'; g.textAlign = 'center';
+        g.fillText(done ? 'Added ✓' : 'Add to cart', bx + 62, by + 20); g.textAlign = 'left';
+      }
+      /* cursor: in from the right, to the product, down to the button */
+      if (s > 1.0 && s < 4.2) {
+        var m1 = ease((s - 1.0) / 0.9), m2 = ease((s - 2.3) / 0.55);
+        var ax = 520 + (cx + 90 - 520) * m1 + (cx + 70 - (cx + 90)) * m2, ay = 330 + (cy + 80 - 330) * m1 + (cy + 160 - (cy + 80)) * m2;
+        arrow(g, ax, ay, s > 2.9 && s < 3.15);
+      }
+      /* checkout: dim the page, a card rises, a spinner, then "Paid" */
+      if (s > 4.2) {
+        var ov = ease((s - 4.2) / 0.4), up = (1 - ov) * 30;
+        g.fillStyle = 'rgba(8,16,30,' + (0.62 * ov) + ')'; g.fillRect(0, 0, 640, 400);
+        g.globalAlpha = ov; rr(g, 170, 95 + up, 300, 210, 18, '#fff');
+        var paid = s > 5.4;
+        if (!paid) {
+          g.strokeStyle = '#0096dc'; g.lineWidth = 7; g.lineCap = 'round';
+          g.beginPath(); g.arc(320, 170 + up, 30, s * 7, s * 7 + 4.2); g.stroke();
+          g.fillStyle = '#5a6a80'; g.font = '600 20px system-ui,sans-serif'; g.textAlign = 'center'; g.fillText('Processing payment', 320, 248 + up);
+        } else {
+          var ck = Math.min(1, (s - 5.4) / 0.3);
+          g.fillStyle = '#14aa78'; g.beginPath(); g.arc(320, 165 + up, 34 * (0.7 + 0.3 * ck), 0, 7); g.fill();
+          g.strokeStyle = '#fff'; g.lineWidth = 8; g.lineCap = 'round'; g.lineJoin = 'round';
+          g.beginPath(); g.moveTo(304, 166); g.lineTo(315, 178); g.lineTo(337, 152); g.stroke();
+          g.fillStyle = '#142032'; g.font = '800 32px system-ui,sans-serif'; g.textAlign = 'center'; g.fillText('Paid ✓', 320, 240);
+          g.fillStyle = '#5a6a80'; g.font = '600 17px system-ui,sans-serif'; g.fillText('Order #1043 · $129.00', 320, 272);
+        }
+        g.textAlign = 'left'; g.lineCap = 'butt'; g.globalAlpha = 1;
+      }
+    }
+    draw.sale = function (t0) { sale0 = t0; };
     draw.glow = function (k) { for (var i = 0; i < mats.length; i++) mats[i].emissiveIntensity = mats[i].userData.e0 * k; };
     return draw;
   }
