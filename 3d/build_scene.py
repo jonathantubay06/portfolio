@@ -425,28 +425,39 @@ def fur_mat(name, color, rough=0.92, curl=0.9):
 # one apricot-cream all over (ref #EBD3AE-#F2E0C4), muzzle a shade paler,
 # ears a touch more golden (#D9B88A). Values are linear and pushed warm,
 # because the cool key light bleaches cream toward white on the page.
-M_FUR = fur_mat('dog_fur', (0.66, 0.45, 0.24))
+M_FUR = fur_mat('dog_fur', (0.68, 0.47, 0.25), curl=1.1)
 M_MUZ = fur_mat('dog_muzzle', (0.74, 0.56, 0.36), curl=0.6)
-M_EAR = fur_mat('dog_ear', (0.55, 0.35, 0.16), rough=0.9, curl=1.0)
-M_NOSE = mat('dog_nose', (0.03, 0.012, 0.006), rough=0.3)
+M_EAR = fur_mat('dog_ear', (0.6, 0.38, 0.15), rough=0.9, curl=1.2)
+M_NOSE = mat('dog_nose', (0.03, 0.012, 0.006), rough=0.12)
 from mathutils import noise as _noise, Vector as _V
 
 
-def curl_uv(o, k=1 / UV_SPAN):
+def curl_uv(o, k=1 / UV_SPAN, per_vertex=False, off=(0, 0, 0)):
     """Box-projected UVs at a fixed world scale so curls stay the same size
-    on every part (the remesh leaves no UVs)."""
+    on every part (the remesh leaves no UVs). per_vertex: project by each
+    vertex normal so a small nub never splits vertices (stays cheap)."""
     me = o.data
-    uv = me.uv_layers.new(name='UVMap')
+    uv = me.uv_layers.get('UVMap') or me.uv_layers.new(name='UVMap')
+    pick = lambda nrm: [(1, 2), (0, 2), (0, 1)][max(range(3), key=lambda i: abs(nrm[i]))]
+    if per_vertex:
+        vuv = []
+        for v in me.vertices:
+            u, w = pick(v.normal); c = v.co + _V(off)
+            vuv.append((c[u] * k + 0.5, c[w] * k + 0.5))
+        for lp in me.loops: uv.data[lp.index].uv = vuv[lp.vertex_index]
+        return
     for p in me.polygons:
-        ax = max(range(3), key=lambda i: abs(p.normal[i]))
-        u, w = [(1, 2), (0, 2), (0, 1)][ax]
+        u, w = pick(p.normal)
         for li in p.loop_indices:
             c = me.vertices[me.loops[li].vertex_index].co
             uv.data[li].uv = (c[u] * k + 0.5, c[w] * k + 0.5)
 
 
-def blob(name, specs, m, voxel=0.0045, fur=0.0018, freq=65, ratio=0.2, wave=None):
-    """Fuse (center, radii) ellipsoids into one smooth furry mesh."""
+def blob(name, specs, m, voxel=0.0045, fur=0.0018, freq=65, ratio=0.2, wave=None,
+         nubs=0, nub_r=(0.004, 0.006), keep=None, seed=1, extra=(), nub_mode='ball', hide=None):
+    """Fuse (center, radii) ellipsoids into one smooth furry mesh, then stud
+    it with `nubs` low-poly curl bumps (where keep(co, normal) is true) so the
+    outline reads curly. `extra` = more meshes merged in (toes etc.)."""
     o = join(name, [ball(f'{name}_{k}', 1, c, m, r, 3) for k, (c, r) in enumerate(specs)])
     for typ, kw in (('REMESH', dict(mode='VOXEL', voxel_size=voxel)),
                     ('SMOOTH', dict(factor=0.9, iterations=8))):
@@ -461,70 +472,180 @@ def blob(name, specs, m, voxel=0.0045, fur=0.0018, freq=65, ratio=0.2, wave=None
         d = _noise.noise(q) + 0.5 * _noise.noise(q * 2.1) + 0.6 * t * t
         if wave: d += wave[0] * math.sin(v.co.z * wave[1] + v.co.x * 40)
         v.co += v.normal * fur * d
+    # curl nubs: packed round bumps pushed out of the dense remeshed surface
+    # (before decimation, so they cost no extra vertices) - the outline
+    # turns scalloped like a teddy-bear poodle coat
+    import random
+    from mathutils.kdtree import KDTree
+    rnd = random.Random(seed)
+    o.data.update()
+    pts = [(v.co.copy(), v.normal.copy()) for v in o.data.vertices]
+    pts_n = {c.to_tuple(6): n for c, n in pts}
+    rnd.shuffle(pts)
+    sites = []
+    grid = {}
+    cell = nub_r[1] * 2.4
+    for co, n in pts:
+        if len(sites) >= nubs: break
+        if keep and not keep(co, n): continue
+        r = rnd.uniform(*nub_r)
+        key = tuple(int(math.floor(c / cell)) for c in co)
+        near = [s for dx in (-1, 0, 1) for dy in (-1, 0, 1) for dz in (-1, 0, 1)
+                for s in grid.get((key[0] + dx, key[1] + dy, key[2] + dz), ())]
+        if all((co - c).length > (r + rr) * 0.85 for c, rr in near):
+            sites.append((co, r)); grid.setdefault(key, []).append((co, r))
+    if sites and nub_mode == 'disp':
+        kd = KDTree(len(sites))
+        for i, (c, _) in enumerate(sites): kd.insert(c, i)
+        kd.balance()
+        for v in o.data.vertices:
+            h = 0.0
+            for c, i, dist in kd.find_range(v.co, nub_r[1] * 1.1):
+                x = dist / sites[i][1]
+                if x < 1: h = max(h, sites[i][1] * 0.62 * (1 - x * x) ** 0.6)
+            v.co += v.normal * h
     md = o.modifiers.new('dec', 'DECIMATE'); md.ratio = ratio
     bpy.ops.object.modifier_apply(modifier=md.name)
+    if hide is not None:                             # faces nobody sees (on the book)
+        bm = bmesh.new(); bm.from_mesh(o.data)
+        bmesh.ops.delete(bm, geom=[f for f in bm.faces if hide(f.calc_center_median(), f.normal)], context='FACES')
+        bm.to_mesh(o.data); bm.free()
     if not o.data.materials: o.data.materials.append(m)
     curl_uv(o)
+    for e in extra: curl_uv(e, per_vertex=True, off=e.location)
+    parts = [o] + list(extra)
+    if nub_mode == 'ball':
+        for k, (co, r) in enumerate(sites):
+            n = pts_n[co.to_tuple(6)]
+            parts.append(nub(f'{name}_n{k}', co, n, r, m, rnd.random() * 6.3))
+    if len(parts) > 1:
+        bpy.ops.object.select_all(action='DESELECT')
+        for p in parts: p.select_set(True)
+        bpy.context.view_layer.objects.active = o
+        bpy.ops.object.join(); o = bpy.context.object; o.name = name
     bpy.ops.object.shade_smooth()
-    print('DOGTRIS', name, sum(len(p.vertices) - 2 for p in o.data.polygons))
+    print('DOGTRIS', name, len(sites), sum(len(p.vertices) - 2 for p in o.data.polygons))
     return o
 
 
+def nub(name, co, n, r, m, spin=0.0):
+    """One curl nub: an 11-vertex dome (pole + 2 rings of 5) standing on the
+    surface at co along normal n, its rim sunk below the coat."""
+    n = n.normalized()
+    t = n.orthogonal().normalized(); b = n.cross(t)
+    vs = [co + n * r * 0.75]
+    for el, rad in ((0.42, 0.78), (-0.25, 1.0)):     # (height, ring radius) x r
+        for i in range(5):
+            a = spin + i * math.pi * 0.4 + (0.6 if el < 0 else 0)
+            vs.append(co + n * r * el + (t * math.cos(a) + b * math.sin(a)) * r * rad)
+    fs = [(0, 1 + i, 1 + (i + 1) % 5) for i in range(5)]
+    for i in range(5):
+        a0, a1 = 1 + i, 1 + (i + 1) % 5
+        b0, b1 = 6 + i, 6 + (i + 1) % 5
+        fs += [(a0, b0, a1), (a1, b0, b1)]
+    me = bpy.data.meshes.new(name); me.from_pydata([tuple(v) for v in vs], [], fs)
+    o = bpy.data.objects.new(name, me); scene.collection.objects.link(o)
+    me.materials.append(m)
+    me.update(); curl_uv(o, per_vertex=True)
+    return o
+
+
+def arc(name, pts, r, m):
+    """Thin tube through pts (a closed-eye line or a lash)."""
+    cu = bpy.data.curves.new(name, 'CURVE'); cu.dimensions = '3D'
+    cu.bevel_depth = r; cu.bevel_resolution = 1; cu.use_fill_caps = True
+    sp = cu.splines.new('POLY'); sp.points.add(len(pts) - 1)
+    for p, c in zip(sp.points, pts): p.co = (*c, 1)
+    o = bpy.data.objects.new(name, cu); scene.collection.objects.link(o)
+    bpy.ops.object.select_all(action='DESELECT'); o.select_set(True)
+    bpy.context.view_layer.objects.active = o
+    bpy.ops.object.convert(target='MESH')
+    o = bpy.context.object; o.data.materials.append(m); bpy.ops.object.shade_smooth()
+    return o
+
+
+M_BLUSH = mat('dog_blush', (0.95, 0.32, 0.3), rough=0.8)
+M_BLUSH.node_tree.nodes['Principled BSDF'].inputs['Alpha'].default_value = 0.35
+try: M_BLUSH.surface_render_method = 'BLENDED'
+except Exception: M_BLUSH.blend_method = 'BLEND'
+M_TONGUE = mat('dog_tongue', (0.85, 0.22, 0.25), rough=0.45)
+
+
+VIEW = _V((0.72, -0.58, 0.39))
+rim = lambda n, w=0.5: abs(n.dot(VIEW)) < w     # silhouette band seen from the page camera
+
 dog = empty('dog')
 body_e = empty('dog_body', (0, 0, 0), dog)
+# chubby, compact puppy body; short stubby legs; round front paws tucked
+# under the chin with tiny toe bumps
+toes = [ball(f'dog_toe_{s}{k}', 1, (0.121, s * 0.024 + k * 0.0085, 0.009), M_FUR, (0.0065, 0.006, 0.0055), 1)
+        for s in (-1, 1) for k in (-1, 0, 1)]
 under(body_e, blob('dog_body_mesh', [
-    ((0.045, 0.0, 0.046), (0.055, 0.052, 0.043)),     # chest
-    ((-0.012, 0.01, 0.05), (0.06, 0.058, 0.046)),    # back / ribs
-    ((-0.062, -0.012, 0.047), (0.052, 0.06, 0.044)),  # hips
-    ((-0.05, -0.058, 0.03), (0.04, 0.022, 0.03)),    # thigh on the camera side
-    ((0.0, -0.068, 0.012), (0.036, 0.016, 0.012)),   # hind foot tucked forward
-    ((0.1, 0.022, 0.014), (0.05, 0.017, 0.014)),     # front leg (far)
-    ((0.102, -0.024, 0.014), (0.05, 0.017, 0.014)),  # front leg (near)
-    ((0.148, 0.022, 0.012), (0.017, 0.019, 0.012)),  # fluffy paw (far)
-    ((0.15, -0.024, 0.012), (0.017, 0.019, 0.012)),  # fluffy paw (near)
-], M_FUR, fur=0.0028, freq=90, ratio=0.11))
-# head rests on the front paws, turned a little toward the viewer
-head_e = empty('dog_head', (0.12, -0.004, 0.06), dog)
+    ((0.03, 0.0, 0.046), (0.056, 0.058, 0.047)),     # chest
+    ((-0.022, 0.006, 0.052), (0.062, 0.064, 0.052)),  # round back
+    ((-0.066, -0.01, 0.046), (0.05, 0.062, 0.046)),   # hips
+    ((-0.046, -0.06, 0.028), (0.036, 0.022, 0.028)),  # thigh on the camera side
+    ((-0.004, -0.068, 0.011), (0.03, 0.017, 0.011)),  # hind foot tucked forward
+    ((0.08, 0.024, 0.014), (0.032, 0.018, 0.014)),    # stubby front leg (far)
+    ((0.08, -0.024, 0.014), (0.032, 0.018, 0.014)),   # stubby front leg (near)
+    ((0.108, 0.024, 0.013), (0.017, 0.02, 0.013)),    # round paw (far)
+    ((0.108, -0.024, 0.013), (0.017, 0.02, 0.013)),   # round paw (near)
+], M_FUR, fur=0.0022, freq=90, ratio=0.07, nubs=85, nub_r=(0.0062, 0.0085),
+   keep=lambda co, n: n.z > 0.05 and co.x < 0.07 and rim(n), seed=3, extra=toes,
+   hide=lambda c, n: n.z < -0.55 and c.z < 0.012))
+# big round puppy head (modelled at the old size, scaled 1.3x by its empty),
+# resting on the paws, turned a little toward the viewer
+head_e = empty('dog_head', (0.118, -0.004, 0.064), dog)
 head_e.rotation_euler = (math.radians(-6), math.radians(8), math.radians(-10))
+head_e.scale = (1.3, 1.3, 1.3)
 hm = blob('dog_head_mesh', [
-    ((0, 0, 0), (0.056, 0.06, 0.052)),               # round skull
-    ((0.048, 0, -0.016), (0.03, 0.03, 0.022)),       # short round muzzle
-    ((-0.006, 0, 0.032), (0.04, 0.048, 0.036)),      # fluffy topknot
-    ((-0.018, 0, 0.05), (0.026, 0.032, 0.02)),       # topknot crown tuft
-], M_FUR, voxel=0.0035, fur=0.0024, freq=100, ratio=0.12)
+    ((0, 0, 0), (0.056, 0.06, 0.05)),                # round skull
+    ((0.044, 0, -0.018), (0.024, 0.027, 0.019)),     # short round muzzle
+    ((0.03, 0.03, -0.014), (0.024, 0.024, 0.022)),   # puffy cheek
+    ((0.03, -0.03, -0.014), (0.024, 0.024, 0.022)),  # puffy cheek
+    ((-0.012, 0, 0.058), (0.032, 0.034, 0.028)),     # topknot pompom
+], M_FUR, voxel=0.0035, fur=0.0012, freq=100, ratio=0.075, nubs=115, nub_r=(0.0042, 0.0058),
+   hide=lambda c, n: n.z < -0.7 and c.z < -0.035,
+   keep=lambda co, n: n.z > -0.2 and rim(n, 0.55) and not (co.x > 0.03 and abs(co.y) < 0.045 and co.z < 0.03), seed=5)
 hm.data.materials.append(M_MUZ)
 for p in hm.data.polygons:                           # paler muzzle
     c = p.center
-    if c.x > 0.034 and c.z < 0.004: p.material_index = 1
-nose = ball('dog_nose', 0.0098, (0.078, 0, -0.008), M_NOSE, (0.9, 1.25, 0.85))
-eyes = []
+    if c.x > 0.034 and c.z < 0.0 and abs(c.y) < 0.03: p.material_index = 1
+nose = ball('dog_nose', 0.0112, (0.069, 0, -0.012), M_NOSE, (0.9, 1.25, 0.85))
+face = [nose, ball('dog_tongue', 1, (0.058, 0.004, -0.035), M_TONGUE, (0.0065, 0.006, 0.0028))]
 for s in (-1, 1):
-    e = ball(f'dog_eye_{s}', 1, (0.047, s * 0.026, 0.006), M_NOSE, (0.003, 0.012, 0.0026))
-    e.rotation_euler = (math.radians(s * 14), 0, math.radians(s * 22))
-    eyes.append(e)
-under(head_e, hm, nose, *eyes)
-# long feathered ears hanging beside the face, wavy and widening at the tip
+    # happy closed eye: a soft ^ arc with a little lash flick at the outer end
+    pts = []
+    for i in range(7):
+        u = i / 6 * 2 - 1
+        y = s * (0.026 + u * 0.0095); z = 0.004 + 0.0045 * (1 - u * u)
+        x = 0.0565 * math.sqrt(max(0.0, 1 - (y / 0.06) ** 2 - (z / 0.054) ** 2)) + 0.002
+        pts.append((x, y, z))
+    face.append(arc(f'dog_eye_{s}', pts, 0.0013, M_NOSE))
+    lx, ly, lz = pts[-1]
+    face.append(arc(f'dog_lash_{s}', [(lx, ly, lz), (lx - 0.002, ly + s * 0.004, lz - 0.0025)], 0.0009, M_NOSE))
+    bl = ball(f'dog_blush_{s}', 1, (0.044, s * 0.04, -0.008), M_BLUSH, (0.006, 0.011, 0.007))
+    bl.rotation_euler = (0, 0, math.radians(s * 50)); face.append(bl)
+under(head_e, hm, *face)
+# curly wavy ears: ringlets hanging beside the face, a touch more golden
 for s, nm in ((1, 'dog_ear_l'), (-1, 'dog_ear_r')):
-    ee = empty(nm, (0.004, s * 0.05, 0.026), head_e)
-    ee.rotation_euler = (math.radians(s * 7), 0, 0)
+    ee = empty(nm, (0.004, s * 0.052, 0.022), head_e)
+    ee.rotation_euler = (math.radians(s * 9), 0, 0)
     under(ee, blob(nm + '_mesh', [
-        ((0.004, s * 0.004, -0.008), (0.022, 0.012, 0.022)),
-        ((0.008, s * 0.008, -0.036), (0.03, 0.014, 0.028)),
-        ((0.012, s * 0.011, -0.064), (0.034, 0.015, 0.028)),
-        ((0.016, s * 0.012, -0.088), (0.03, 0.013, 0.018)),
-        ((0.03, s * 0.012, -0.096), (0.014, 0.011, 0.012)),   # feathered tip
-        ((-0.006, s * 0.012, -0.094), (0.014, 0.011, 0.012)),
-    ], M_EAR, voxel=0.003, fur=0.0026, freq=110, ratio=0.11, wave=(0.6, 180)))
-# fluffy curly plume from the rump, wrapping round the near side
-tail_e = empty('dog_tail', (-0.1, -0.025, 0.062), dog)
+        ((0.004, s * 0.004, -0.008), (0.02, 0.012, 0.02)),
+        ((0.008, s * 0.008, -0.03), (0.026, 0.014, 0.024)),
+        ((0.012, s * 0.011, -0.054), (0.03, 0.015, 0.024)),
+        ((0.016, s * 0.012, -0.074), (0.026, 0.013, 0.016)),
+    ], M_EAR, voxel=0.003, fur=0.0022, freq=110, ratio=0.09, wave=(0.5, 260),
+       nubs=38, nub_r=(0.0042, 0.0056), keep=lambda co, n, s=s: n.y * s > -0.2 and rim(n, 0.6), seed=7 + s))
+# puffy curly pompom plume on the rump
+tail_e = empty('dog_tail', (-0.1, -0.025, 0.066), dog)
 under(tail_e, blob('dog_tail_mesh', [
-    ((0, 0, 0.004), (0.024, 0.024, 0.024)),
-    ((0.0, -0.03, 0.014), (0.034, 0.032, 0.032)),
-    ((0.03, -0.058, 0.01), (0.038, 0.034, 0.032)),
-    ((0.068, -0.07, -0.002), (0.034, 0.03, 0.028)),
-    ((0.1, -0.072, -0.014), (0.026, 0.024, 0.022)),
-    ((0.122, -0.066, -0.02), (0.016, 0.016, 0.014)),
-], M_FUR, voxel=0.0045, fur=0.0045, freq=80, ratio=0.12))
+    ((0, 0, 0.004), (0.02, 0.02, 0.02)),
+    ((0.004, -0.022, 0.018), (0.024, 0.024, 0.026)),
+    ((0.024, -0.05, 0.026), (0.042, 0.04, 0.038)),   # the pompom
+], M_FUR, voxel=0.0045, fur=0.0015, freq=80, ratio=0.075, nubs=60, nub_r=(0.006, 0.008),
+   keep=lambda co, n: rim(n, 0.6) and n.z > -0.3, seed=9))
 BOOK_TOP = 0.028 + 2 * 0.052 + 0.025
 dog.location = (0.6, 0.83, BOOK_TOP)
 dog.rotation_euler = (0, 0, math.radians(-40))

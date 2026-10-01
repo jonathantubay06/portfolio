@@ -186,24 +186,25 @@ def plaque():
     im.save(os.path.join(OUT, 'plaque.png'))
 
 
-def dog_curls(n=256, curls=220, seed=7):
-    """Tileable normal map of small tight poodle curls (Dumpling's coat)."""
+def dog_curls(n=256, curls=520, seed=7):
+    """Tileable normal map of dense round poodle ringlets (Dumpling's teddy coat)."""
     import numpy as np
     rng = np.random.default_rng(seed)
     y, x = np.mgrid[0:n, 0:n] / n
     h = np.zeros((n, n))
     for _ in range(curls):
-        cx, cy, r = rng.random(), rng.random(), rng.uniform(0.05, 0.08)
+        cx, cy, r = rng.random(), rng.random(), rng.uniform(0.032, 0.05)
         dx = (x - cx + 0.5) % 1 - 0.5
         dy = (y - cy + 0.5) % 1 - 0.5
         d = np.hypot(dx, dy) / r
         a = np.arctan2(dy, dx)
-        # a dome with a spiral groove: reads as a curl, not a smooth lump
-        ring = 0.5 + 0.5 * np.cos(d * 9 - a * rng.choice([-1, 1]) * 1.0)
-        h = np.maximum(h, np.clip(1 - d * d, 0, 1) * (0.55 + 0.45 * ring))
+        # round dome + a deep spiral groove: a tight ringlet, not a lump
+        ring = 0.5 + 0.5 * np.cos(d * 7.5 - a * rng.choice([-1, 1]))
+        dome = np.sqrt(np.clip(1 - d * d, 0, 1))
+        h = np.maximum(h, dome * (0.45 + 0.55 * ring) + rng.uniform(0, 0.15) * (d < 1))
     gx = (np.roll(h, -1, 1) - np.roll(h, 1, 1)) * n / 2
     gy = (np.roll(h, -1, 0) - np.roll(h, 1, 0)) * n / 2
-    k = 0.035
+    k = 0.05
     nx, ny, nz = -gx * k, gy * k, np.ones_like(h)
     L = np.sqrt(nx * nx + ny * ny + nz * nz)
     rgb = np.stack([nx / L, ny / L, nz / L], -1) * 0.5 + 0.5
