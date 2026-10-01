@@ -27,7 +27,8 @@
     "55-section-backdrops.css",
     "56-hero-motion.css",
     "57-audit-fixes.css",
-    "58-live-wallpaper.css"
+    "58-live-wallpaper.css",
+    "59-dark-lift.css"
   ],
   "main": [
     "00-preamble.js",

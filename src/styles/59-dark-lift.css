@@ -1,0 +1,16 @@
+/* ═══════════════════════════════════════
+   DARK MODE LIFT (2026-10-01)
+   The dark theme sat on near-black #060e1a; the user found it too dark
+   and picked the lighter midnight-blue option (V2). Light theme untouched.
+═══════════════════════════════════════ */
+html:not([data-theme="light"]){
+  --bg:#0f1d33;--navy:#14263f;--surface:rgba(20,36,62,.92);
+  background:#0f1d33;
+}
+html:not([data-theme="light"]):not(.has-wallpaper) body{background-color:#0f1d33}
+/* only without the wallpaper: with it, the hero is see-through and the page root carries the hero navy */
+html:not([data-theme="light"]):not(.has-wallpaper) .hero{background:linear-gradient(160deg,#112240 0%,#142946 45%,#112240 100%)!important}
+html:not([data-theme="light"]).has-wallpaper{background:linear-gradient(180deg,#112240 0,#142946 calc(var(--wp-hero-b,100vh) - 1px),#0f1d33 var(--wp-hero-b,100vh)) #0f1d33!important}
+html:not([data-theme="light"]) .proj-card,html:not([data-theme="light"]) .tl-card,
+html:not([data-theme="light"]) .svc-row,html:not([data-theme="light"]) .testi-card,
+html:not([data-theme="light"]) .tq-card{background-color:#15243d}
