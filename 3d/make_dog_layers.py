@@ -1,9 +1,16 @@
-"""Split tex/dumpling-cutout.png into a body layer and a tail-plume layer.
+"""Split tex/dumpling-cutout.png into body, tail-plume and two front-paw layers.
 
-The plume sits mostly over the background, so the body just loses it (no
-hole); a feathered overlap band at the tail base stays on both layers so
-the seam hides in fur when the tail wags. Pivot (tail base) in source
-pixels: PIVOT. The tail layer is cropped to TAIL_BOX.
+tex/dumpling-cutout.png (466x586) is a rembg cut of the play-bow panel of
+the Dumpling reference sheet, cropped wide enough that both front paws are
+whole (largest alpha component kept, so no stray quilt specks).
+
+Tail: the plume sits mostly over the background, so the body just loses it
+(no hole); a feathered overlap band at the tail base stays on both layers
+so the seam hides in fur when the tail wags.
+Paws: each forearm + paw is its own layer from just below the chest down;
+the body keeps a feathered overlap band under each layer's top edge, so a
+small pat/tilt round the pivot (near the elbow) never opens a gap.
+Pivots / crop boxes are in source pixels and mirrored in build_scene.py.
 Run: uv run --with pillow --with numpy python 3d/make_dog_layers.py
 """
 import os
@@ -12,8 +19,12 @@ from PIL import Image
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 TEX = os.path.join(HERE, 'tex')
-PIVOT = (318, 160)
-TAIL_BOX = (232, 8, 436, 188)   # l, t, r, b
+PIVOT = (336, 172)               # tail base
+TAIL_BOX = (250, 0, 466, 204)    # l, t, r, b
+PAW_L_PIVOT, PAW_L_BOX = (100, 478), (0, 456, 176, 586)
+PAW_R_PIVOT, PAW_R_BOX = (262, 482), (150, 460, 380, 586)
+PAW_SPLIT = 160                  # x between the two forearms
+PAW_TOP = 478                    # paw layers start fading in here
 
 
 def smooth(e0, e1, x):
@@ -25,15 +36,30 @@ src = np.array(Image.open(os.path.join(TEX, 'dumpling-cutout.png')).convert('RGB
 h, w = src.shape[:2]
 yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
 a = src[:, :, 3]
-in_x = smooth(228, 240, xx)                       # tail lives right of x~235
-# right-hand plume tips droop to y~172; centre meets the rump at y~158
-edge = 156 + 26 * smooth(372, 392, xx)
+
+in_x = smooth(246, 258, xx)                       # tail lives right of x~252
+edge = 166 + 26 * smooth(390, 410, xx)            # plume underside, droops at the right
 tail_w = in_x * (1 - smooth(edge - 6, edge + 8, yy))
 body_w = 1 - in_x * (1 - smooth(edge - 14, edge - 2, yy))
 
-body = src.copy(); body[:, :, 3] = a * body_w
-tail = src.copy(); tail[:, :, 3] = a * tail_w
-Image.fromarray(body.round().astype(np.uint8)).save(os.path.join(TEX, 'dumpling-body.png'), optimize=True)
-l, t, r, b = TAIL_BOX
-Image.fromarray(tail[t:b, l:r].round().astype(np.uint8)).save(os.path.join(TEX, 'dumpling-tail.png'), optimize=True)
-print('body', w, h, 'tail', r - l, b - t)
+# front legs: left of the back leg (x<372), below the chest
+fore = 1 - smooth(366, 378, xx)
+side_l = 1 - smooth(PAW_SPLIT + 4, PAW_SPLIT + 16, xx)   # layers overlap ~20 px at the split
+side_r = smooth(PAW_SPLIT - 16, PAW_SPLIT - 4, xx) * fore
+paw_in = smooth(PAW_TOP, PAW_TOP + 14, yy)        # paw layers: opaque from ~492 down
+paw_l_w, paw_r_w = paw_in * side_l, paw_in * side_r
+body_w = body_w * (1 - fore * smooth(PAW_TOP + 18, PAW_TOP + 34, yy))   # body overlap ~492-512
+
+
+def save(name, wgt, box=None):
+    o = src.copy(); o[:, :, 3] = a * wgt
+    if box:
+        l, t, r, b = box; o = o[t:b, l:r]
+    Image.fromarray(o.round().astype(np.uint8)).save(os.path.join(TEX, name), optimize=True)
+    return o.shape[1], o.shape[0]
+
+
+print('body', save('dumpling-body.png', body_w),
+      'tail', save('dumpling-tail.png', tail_w, TAIL_BOX),
+      'paw_l', save('dumpling-paw-l.png', paw_l_w, PAW_L_BOX),
+      'paw_r', save('dumpling-paw-r.png', paw_r_w, PAW_R_BOX))

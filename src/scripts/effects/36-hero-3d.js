@@ -125,7 +125,7 @@
        stretch -> land squash. h = height 0..1, sx/sy = scale factors. */
     var hopAt = 3 + Math.random() * 3, dogWag = 0;
     function dogHop(t) {
-      var u = (t - hopAt) / 0.95, r = { h: 0, sx: 1, sy: 1, on: u >= 0 && u < 1 };
+      var u = (t - hopAt) / 0.95, r = { h: 0, sx: 1, sy: 1, u: u, on: u >= 0 && u < 1 };
       if (u >= 1) { hopAt = t + 4 + Math.random() * 3; return r; }
       if (u < 0) return r;
       var q;
@@ -133,6 +133,20 @@
       else if (u < 0.72) { q = (u - 0.22) / 0.5; r.h = Math.sin(q * Math.PI); var st = Math.sin(Math.min(1, q * 1.6) * Math.PI) * 0.09; r.sy = 1 + st; r.sx = 1 - st * 0.5; }
       else { q = Math.sin((u - 0.72) / 0.28 * Math.PI); r.sy = 1 - 0.08 * q; r.sx = 1 + 0.05 * q; }
       return r;
+    }
+    /* front paws (dog_paws -> dog_paw_l/_r, elbow pivots): slow
+       alternating kneading pats, a quick tap just before a hop and the
+       paws spreading as she lands */
+    function pawPose(P, t, hp, toHop) {
+      var kn = Math.max(0, Math.sin(t * 0.9)) , ph = t * 6.2,
+        pl = Math.max(0, Math.sin(ph)) * kn, pr = Math.max(0, Math.sin(ph + Math.PI)) * kn,
+        tap = toHop > 0 && toHop < 0.4 ? Math.sin((0.4 - toHop) / 0.4 * Math.PI * 2) : 0,
+        land = hp.u > 0.72 && hp.u < 1 ? Math.sin((hp.u - 0.72) / 0.28 * Math.PI) : 0,
+        up = hp.h > 0 ? hp.h : 0;
+      if (tap > 0) pr = Math.max(pr, tap); else if (tap < 0) pl = Math.max(pl, -tap);
+      if (P.paws) { var s0 = P.paws.userData.s0; P.paws.scale.x = s0.x * (1 + land * 0.07); }
+      if (P.paw_l) { P.paw_l.rotation.z = P.paw_l.userData.r0.z - pl * 0.09 - land * 0.06 + up * 0.08; P.paw_l.position.y = P.paw_l.userData.p0.y + pl * 0.007; }
+      if (P.paw_r) { P.paw_r.rotation.z = P.paw_r.userData.r0.z + pr * 0.09 + land * 0.06 - up * 0.06; P.paw_r.position.y = P.paw_r.userData.p0.y + pr * 0.007; }
     }
     var pups = [], cal = null, weigh = null, steam = null;
     var zc = new THREE.Vector3(), zcam = new THREE.Vector3(), look = new THREE.Vector3();
@@ -161,11 +175,11 @@
         if (/^bot_wheel_/.test(o.name)) wheels.push(o);
         if ((/^rack_led_/.test(o.name) || o.name === 'bot_led') && o.material) { o.material = o.material.clone(); leds.push(o); }
         if (PUPS[o.name]) pups.push({ cfg: PUPS[o.name], root: o });
-        if (/^dog_(body|head|ear_l|ear_r|tail|shadow)$/.test(o.name)) { dog[o.name.slice(4)] = o; o.userData.p0 = o.position.clone(); o.userData.r0 = o.rotation.clone(); o.userData.s0 = o.scale.clone(); }
+        if (/^dog_(body|head|ear_l|ear_r|tail|paws|paw_l|paw_r|shadow)$/.test(o.name)) { dog[o.name.slice(4)] = o; o.userData.p0 = o.position.clone(); o.userData.r0 = o.rotation.clone(); o.userData.s0 = o.scale.clone(); }
         if (o.name === 'dog') { dog.root = o; o.userData.r0 = o.rotation.clone(); o.userData.p0 = o.position.clone(); }
         /* Dumpling is a photo cut-out: crisp alpha edge, both faces, and a
            soft self-glow so the cream coat is not greyed by the cool key */
-        if (o.isMesh && o.material && /^dog_(tail_)?cutout$/.test(o.material.name)) {
+        if (o.isMesh && o.material && /^dog_(tail_|paw_[lr]_)?cutout$/.test(o.material.name)) {
           var dm = o.material = o.material.clone();
           dm.transparent = false; dm.alphaTest = 0.4; dm.depthWrite = true; dm.side = THREE.DoubleSide;
           dm.metalness = 0; dm.roughness = 1; dm.emissive = new THREE.Color(1, 1, 1); dm.emissiveMap = dm.map; dm.emissiveIntensity = 0.45;
@@ -790,6 +804,7 @@
           dog.shadow.scale.set(ss.x * sk, ss.y, ss.z * sk);
           dog.shadow.material.opacity = 0.55 * (1 - hp.h * 0.6);
         }
+        pawPose(dog, t, hp, hopAt - t);
         if (dog.tail) {
           dogWag += dt * (hp.on ? 17 : 7.5);
           dog.tail.rotation.z = dog.tail.userData.r0.z + Math.sin(dogWag) * (hp.on ? 0.2 : 0.15);

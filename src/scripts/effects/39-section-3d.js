@@ -281,7 +281,7 @@
     dog.position.set(0, 0, 0); dog.rotation.set(0, 0.12, 0);
     dog.traverse(function (o) {
       if (o.name === 'dog_shadow') o.visible = false;   /* this view draws its own */
-      if (o.isMesh && o.material && /^dog_(tail_)?cutout$/.test(o.material.name)) {
+      if (o.isMesh && o.material && /^dog_(tail_|paw_[lr]_)?cutout$/.test(o.material.name)) {
         var dm = o.material = o.material.clone();
         dm.transparent = false; dm.alphaTest = 0.4; dm.depthWrite = true; dm.side = T.DoubleSide;
         dm.metalness = 0; dm.roughness = 1; dm.emissive = new T.Color(1, 1, 1); dm.emissiveMap = dm.map; dm.emissiveIntensity = 0.45;
@@ -301,12 +301,12 @@
 
     var parts = {};
     dog.traverse(function (o) {
-      var k = /^dog_(head|tail|ear_l|ear_r|body)$/.exec(o.name);
+      var k = /^dog_(head|tail|ear_l|ear_r|body|paws|paw_l|paw_r)$/.exec(o.name);
       if (k) { parts[k[1]] = o; o.userData.r0 = o.rotation.clone(); o.userData.p0 = o.position.clone(); o.userData.s0 = o.scale.clone(); }
     });
 
     var cam = new T.PerspectiveCamera(26, 1.6, 0.01, 50);
-    cam.position.set(0, S * 0.62, S * 2.7); cam.lookAt(0, S * 0.5, 0);
+    cam.position.set(0, S * 0.62, S * 2.95); cam.lookAt(0, S * 0.52, 0);   /* room for the tail tip mid-hop */
     var W = 300, H = 190;
     var v = { scene: scene, cam: cam, canvas: slot(layout, 'sm-dog'), ready: true };
     function place() {
@@ -328,7 +328,7 @@
     var t0 = -1, look = 0, walkX = S * 2.4, lastT = 0, wag = 0, hopAt = 0;
     /* a hop every 4-7 s once she has arrived: squash, up, stretch, land */
     function hop(t) {
-      var u = (t - hopAt) / 0.95, r = { h: 0, sx: 1, sy: 1, on: u >= 0 && u < 1 };
+      var u = (t - hopAt) / 0.95, r = { h: 0, sx: 1, sy: 1, u: u, on: u >= 0 && u < 1 };
       if (u >= 1) { hopAt = t + 4 + Math.random() * 3; return r; }
       if (u < 0) return r;
       var q;
@@ -336,6 +336,20 @@
       else if (u < 0.72) { q = (u - 0.22) / 0.5; r.h = Math.sin(q * Math.PI); var st = Math.sin(Math.min(1, q * 1.6) * Math.PI) * 0.09; r.sy = 1 + st; r.sx = 1 - st * 0.5; }
       else { q = Math.sin((u - 0.72) / 0.28 * Math.PI); r.sy = 1 - 0.08 * q; r.sx = 1 + 0.05 * q; }
       return r;
+    }
+    /* front paws (dog_paws -> dog_paw_l/_r, elbow pivots): slow
+       alternating kneading pats, a quick tap just before a hop and the
+       paws spreading as she lands */
+    function pawPose(P, t, hp, toHop) {
+      var kn = Math.max(0, Math.sin(t * 0.9)) , ph = t * 6.2,
+        pl = Math.max(0, Math.sin(ph)) * kn, pr = Math.max(0, Math.sin(ph + Math.PI)) * kn,
+        tap = toHop > 0 && toHop < 0.4 ? Math.sin((0.4 - toHop) / 0.4 * Math.PI * 2) : 0,
+        land = hp.u > 0.72 && hp.u < 1 ? Math.sin((hp.u - 0.72) / 0.28 * Math.PI) : 0,
+        up = hp.h > 0 ? hp.h : 0;
+      if (tap > 0) pr = Math.max(pr, tap); else if (tap < 0) pl = Math.max(pl, -tap);
+      if (P.paws) { var s0 = P.paws.userData.s0; P.paws.scale.x = s0.x * (1 + land * 0.07); }
+      if (P.paw_l) { P.paw_l.rotation.z = P.paw_l.userData.r0.z - pl * 0.09 - land * 0.06 + up * 0.08; P.paw_l.position.y = P.paw_l.userData.p0.y + pl * 0.007; }
+      if (P.paw_r) { P.paw_r.rotation.z = P.paw_r.userData.r0.z + pr * 0.09 + land * 0.06 - up * 0.06; P.paw_r.position.y = P.paw_r.userData.p0.y + pr * 0.007; }
     }
     v.update = function (t) {
       if (t0 < 0) { t0 = t; hopAt = t + 3 + Math.random() * 3; }
@@ -352,7 +366,8 @@
         parts.head.rotation.z = parts.head.userData.r0.z + upE * 0.38;
         parts.head.rotation.y = parts.head.userData.r0.y + look * 0.3 + Math.sin(t * 0.7) * 0.05 * upE;
       }
-      var hp = up >= 1 ? hop(t) : { h: 0, sx: 1, sy: 1, on: false };
+      var hp = up >= 1 ? hop(t) : { h: 0, sx: 1, sy: 1, u: -1, on: false };
+      if (up >= 1) pawPose(parts, t, hp, hopAt - t);
       if (parts.tail) {
         wag += dt * (hp.on || busy ? 17 : 7.5) * upE;
         parts.tail.rotation.z = parts.tail.userData.r0.z + Math.sin(wag) * (hp.on ? 0.2 : 0.15) * upE;

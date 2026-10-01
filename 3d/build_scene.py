@@ -573,8 +573,9 @@ rim = lambda n, w=0.5: abs(n.dot(VIEW)) < w     # silhouette band seen from the 
 # breathes dog_body (scale) and yaw-follows `dog` a little. dog_shadow is
 # a soft blob under her feet. `dog` stays the root (the Contact section
 # clones it).
-CUT_H = 0.34
-CUT_W = CUT_H * 436 / 512
+CUT_PX = (466, 586)                      # tex/dumpling-cutout.png size
+CUT_H = 0.34 * 586 / 512                 # same px scale as the first cut (paws now whole)
+CUT_W = CUT_H * CUT_PX[0] / CUT_PX[1]
 def cut_mat(name, png):
     m = mat(name, image=os.path.join(TEX, png), emit_image=True, strength=0.35, rough=1.0)
     b = m.node_tree.nodes['Principled BSDF']
@@ -590,6 +591,8 @@ def cut_mat(name, png):
 # plane normal at the tail base.
 M_CUT = cut_mat('dog_cutout', 'dumpling-body.png')
 M_TAIL = cut_mat('dog_tail_cutout', 'dumpling-tail.png')
+M_PAW_L = cut_mat('dog_paw_l_cutout', 'dumpling-paw-l.png')
+M_PAW_R = cut_mat('dog_paw_r_cutout', 'dumpling-paw-r.png')
 M_SHAD = mat('dog_shadow', (0, 0, 0), rough=1.0, image=os.path.join(TEX, 'dog-shadow.png'))
 _b = M_SHAD.node_tree.nodes['Principled BSDF']
 _t = [n for n in M_SHAD.node_tree.nodes if n.type == 'TEX_IMAGE'][0]
@@ -601,12 +604,29 @@ except Exception: M_SHAD.blend_method = 'BLEND'
 dog = empty('dog')
 body_e = empty('dog_body', (0, 0, 0), dog)
 under(body_e, plane('dog_body_mesh', CUT_W, CUT_H, (0, 0, CUT_H / 2), (math.radians(90), 0, 0), M_CUT))
-_px = lambda x, y: ((x / 436 - 0.5) * CUT_W, (1 - y / 512) * CUT_H)   # source pixel -> plane x, z
-_pv = _px(318, 160)                       # tail base (make_dog_layers.PIVOT)
-_tc = _px(232 + 102, 8 + 90)              # tail crop centre (TAIL_BOX)
-tail_e = empty('dog_tail', (_pv[0], -0.003, _pv[1]), body_e)   # a hair in front: no z-fight
-under(tail_e, plane('dog_tail_mesh', CUT_W * 204 / 436, CUT_H * 180 / 512,
-                    (_tc[0] - _pv[0], 0, _tc[1] - _pv[1]), (math.radians(90), 0, 0), M_TAIL))
+_px = lambda x, y: ((x / CUT_PX[0] - 0.5) * CUT_W, (1 - y / CUT_PX[1]) * CUT_H)   # source pixel -> plane x, z
+
+
+def layer(name, parent, pivot, box, m, dy):
+    """A cut-out layer on its own empty (pivot in source px, crop box l,t,r,b)."""
+    pv, l, t, r, b = _px(*pivot), *box
+    c = _px((l + r) / 2, (t + b) / 2)
+    e = empty(name, (pv[0], dy, pv[1]), parent)       # dy: a hair in front, no z-fight
+    under(e, plane(name + '_mesh', CUT_W * (r - l) / CUT_PX[0], CUT_H * (b - t) / CUT_PX[1],
+                   (c[0] - pv[0], 0, c[1] - pv[1]), (math.radians(90), 0, 0), m))
+    return e
+
+
+# make_dog_layers.py: PIVOT/TAIL_BOX, PAW_*_PIVOT/PAW_*_BOX
+tail_e = layer('dog_tail', body_e, (336, 172), (250, 0, 466, 204), M_TAIL, -0.003)
+# front paws: dog_paws (shared pivot at the chest, spreads/tilts both) ->
+# dog_paw_l / dog_paw_r (elbow pivots; the page pats them in turn)
+paws_e = empty('dog_paws', (_px(180, 480)[0], -0.002, _px(180, 480)[1]), body_e)
+for nm, pv, bx in (('dog_paw_l', (100, 478), (0, 456, 176, 586)), ('dog_paw_r', (262, 482), (150, 460, 380, 586))):
+    e = layer(nm, body_e, pv, bx, M_PAW_L if nm.endswith('l') else M_PAW_R, -0.002 - (0.0006 if nm.endswith('l') else 0))
+    # re-parent under dog_paws keeping the world spot
+    e.location = (e.location[0] - paws_e.location[0], e.location[1] - paws_e.location[1], e.location[2] - paws_e.location[2])
+    e.parent = paws_e
 under(dog, plane('dog_shadow', CUT_W * 1.15, 0.2, (0.0, 0.03, 0.002), (0, 0, 0), M_SHAD))
 BOOK_TOP = 0.028 + 2 * 0.052 + 0.025
 dog.location = (0.6, 0.8, BOOK_TOP)
