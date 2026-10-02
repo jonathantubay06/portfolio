@@ -52,8 +52,10 @@
 /* the robot's "beep!" speech bubble (double-click it), pinned above it */
 .hero-3d-beep{transform:translate(-50%,-100%);background:#f2fbff;border-color:#f2fbff;color:#0a1628;font-weight:800}
 .hero-3d-beep::after{content:"";position:absolute;left:50%;bottom:-6px;margin-left:-5px;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid #f2fbff}
-/* feather the canvas so its rectangle melts into the hero background */
-.hero-3d{-webkit-mask-image:radial-gradient(closest-side at 50% 50%,#000 58%,transparent 98%);mask-image:radial-gradient(closest-side at 50% 50%,#000 58%,transparent 98%)}
+/* feather the canvas so its rectangle melts into the hero background;
+   solid out to 74% so the dogs on the front-right desk corner stay
+   opaque (at 58% they faded to a see-through ghost) */
+.hero-3d{-webkit-mask-image:radial-gradient(closest-side at 50% 50%,#000 74%,transparent 100%);mask-image:radial-gradient(closest-side at 50% 50%,#000 74%,transparent 100%)}
 /* the ambient haze behind the plate framed the canvas as a grey box */
 .has-3d .hero-ambient,.has-3d .hero-light{visibility:hidden;animation:none}
 /* Bloom output is opaque, so the canvas clears to black and is screen-

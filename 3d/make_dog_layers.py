@@ -10,12 +10,16 @@ so the seam hides in fur when the tail wags.
 Paws: each forearm + paw is its own layer from just below the chest down;
 the body keeps a feathered overlap band under each layer's top edge, so a
 small pat/tilt round the pivot (near the elbow) never opens a gap.
+Before splitting, cutout_fx grades the coat to the scene light and trims
+the card to the lowest paw; it also writes dumpling-shadow.png (contact
+shadow pads under the paws, the hind paw's set further back).
 Pivots / crop boxes are in source pixels and mirrored in build_scene.py.
-Run: uv run --with pillow --with numpy python 3d/make_dog_layers.py
+Run: uv run --with pillow --with numpy --with scipy python 3d/make_dog_layers.py
 """
 import os
 import numpy as np
 from PIL import Image
+from cutout_fx import trim, grade, shadow
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 TEX = os.path.join(HERE, 'tex')
@@ -27,12 +31,11 @@ PAW_SPLIT = 160                  # x between the two forearms
 PAW_TOP = 478                    # paw layers start fading in here
 
 
-def smooth(e0, e1, x):
-    t = np.clip((x - e0) / (e1 - e0), 0, 1)
-    return t * t * (3 - 2 * t)
+from cutout_fx import smooth
 
 
-src = np.array(Image.open(os.path.join(TEX, 'dumpling-cutout.png')).convert('RGBA')).astype(np.float32)
+src = grade(trim(np.array(Image.open(os.path.join(TEX, 'dumpling-cutout.png')).convert('RGBA')).astype(np.float32)))
+FEET = [(24, 150), (170, 262), (384, 456)]   # paw columns on the book
 h, w = src.shape[:2]
 yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
 a = src[:, :, 3]
@@ -40,7 +43,7 @@ a = src[:, :, 3]
 in_x = smooth(246, 258, xx)                       # tail lives right of x~252
 edge = 166 + 26 * smooth(390, 410, xx)            # plume underside, droops at the right
 tail_w = in_x * (1 - smooth(edge - 6, edge + 8, yy))
-body_w = 1 - in_x * (1 - smooth(edge - 14, edge - 2, yy))
+body_w = 1 - in_x * (1 - smooth(edge - 22, edge - 10, yy))   # body fades only under solid tail (no see-through seam)
 
 # front legs: left of the back leg (x<372), below the chest
 fore = 1 - smooth(366, 378, xx)
@@ -48,7 +51,7 @@ side_l = 1 - smooth(PAW_SPLIT + 4, PAW_SPLIT + 16, xx)   # layers overlap ~20 px
 side_r = smooth(PAW_SPLIT - 16, PAW_SPLIT - 4, xx) * fore
 paw_in = smooth(PAW_TOP, PAW_TOP + 14, yy)        # paw layers: opaque from ~492 down
 paw_l_w, paw_r_w = paw_in * side_l, paw_in * side_r
-body_w = body_w * (1 - fore * smooth(PAW_TOP + 18, PAW_TOP + 34, yy))   # body overlap ~492-512
+body_w = body_w * (1 - fore * smooth(PAW_TOP + 30, PAW_TOP + 50, yy))   # body overlap ~492-528
 
 
 def save(name, wgt, box=None):
@@ -59,7 +62,8 @@ def save(name, wgt, box=None):
     return o.shape[1], o.shape[0]
 
 
-print('body', save('dumpling-body.png', body_w),
+shadow(src, FEET).save(os.path.join(TEX, 'dumpling-shadow.png'), optimize=True)
+print('size', (w, h), 'body', save('dumpling-body.png', body_w),
       'tail', save('dumpling-tail.png', tail_w, TAIL_BOX),
       'paw_l', save('dumpling-paw-l.png', paw_l_w, PAW_L_BOX),
       'paw_r', save('dumpling-paw-r.png', paw_r_w, PAW_R_BOX))

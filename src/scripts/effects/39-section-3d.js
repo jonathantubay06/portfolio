@@ -284,7 +284,7 @@
       if (o.isMesh && o.material && /^dog_(tail_|paw_[lr]_)?cutout$/.test(o.material.name)) {
         var dm = o.material = o.material.clone();
         dm.transparent = false; dm.alphaTest = 0.4; dm.depthWrite = true; dm.side = T.DoubleSide;
-        dm.metalness = 0; dm.roughness = 1; dm.emissive = new T.Color(1, 1, 1); dm.emissiveMap = dm.map; dm.emissiveIntensity = 0.45;
+        dm.metalness = 0; dm.roughness = 1; dm.emissive = new T.Color(1, 1, 1); dm.emissiveMap = dm.map; dm.emissiveIntensity = 0.32;
           /* clamp: repeat-wrap pulled the paws row onto the card's top edge (stray dashes) */
           if (dm.map) { dm.map.wrapS = dm.map.wrapT = T.ClampToEdgeWrapping; dm.map.needsUpdate = true; }
         dm.needsUpdate = true;

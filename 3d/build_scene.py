@@ -573,9 +573,39 @@ rim = lambda n, w=0.5: abs(n.dot(VIEW)) < w     # silhouette band seen from the 
 # breathes dog_body (scale) and yaw-follows `dog` a little. dog_shadow is
 # a soft blob under her feet. `dog` stays the root (the Contact section
 # clones it).
-CUT_PX = (466, 586)                      # tex/dumpling-cutout.png size
-CUT_H = 0.34 * 586 / 512                 # same px scale as the first cut (paws now whole)
-CUT_W = CUT_H * CUT_PX[0] / CUT_PX[1]
+def png_size(png):
+    im = bpy.data.images.load(os.path.join(TEX, png), check_existing=True)
+    return tuple(im.size)
+
+
+# body sizes follow real weight (body length ~ cube root of mass, judged
+# on head width / eye spacing in each photo): Dumpling 7 kg = 1, Pochi
+# 8 kg ~1.05, Tofu 11-12 kg ~1.18, Mochi 15 kg ~1.29. The family was
+# scaled down as a group (Dumpling 0.72 of her first card) so the pups
+# still fit their corner.
+CUT_PX = png_size('dumpling-body.png')   # make_dog_layers.py trims to the lowest paw
+CUT_K = 0.34 / 512 * 0.72                # world units per cut-out px
+CUT_H = CUT_K * CUT_PX[1]
+CUT_W = CUT_K * CUT_PX[0]
+SH_X, SH_F, SH_B = 0.7, 0.3, 0.9         # = cutout_fx.py: shadow texture extent in card widths
+
+
+def shadow_mat(name, png):
+    m = mat(name, (0, 0, 0), rough=1.0, image=os.path.join(TEX, png))
+    b = m.node_tree.nodes['Principled BSDF']
+    t = [n for n in m.node_tree.nodes if n.type == 'TEX_IMAGE'][0]
+    m.node_tree.links.remove(b.inputs['Base Color'].links[0]); b.inputs['Base Color'].default_value = (0, 0, 0, 1)
+    m.node_tree.links.new(t.outputs['Alpha'], b.inputs['Alpha'])
+    try: m.surface_render_method = 'BLENDED'
+    except Exception: m.blend_method = 'BLEND'
+    return m
+
+
+def shadow_plane(name, w, m, z=0.002):
+    """contact shadow under a card of width w (pads + ambient pool, cutout_fx.shadow)"""
+    return plane(name, w * 2 * SH_X, w * (SH_F + SH_B), (0, w * (SH_B - SH_F) / 2, z), (0, 0, 0), m)
+
+
 def cut_mat(name, png):
     m = mat(name, image=os.path.join(TEX, png), emit_image=True, strength=0.35, rough=1.0)
     b = m.node_tree.nodes['Principled BSDF']
@@ -593,14 +623,6 @@ M_CUT = cut_mat('dog_cutout', 'dumpling-body.png')
 M_TAIL = cut_mat('dog_tail_cutout', 'dumpling-tail.png')
 M_PAW_L = cut_mat('dog_paw_l_cutout', 'dumpling-paw-l.png')
 M_PAW_R = cut_mat('dog_paw_r_cutout', 'dumpling-paw-r.png')
-M_SHAD = mat('dog_shadow', (0, 0, 0), rough=1.0, image=os.path.join(TEX, 'dog-shadow.png'))
-_b = M_SHAD.node_tree.nodes['Principled BSDF']
-_t = [n for n in M_SHAD.node_tree.nodes if n.type == 'TEX_IMAGE'][0]
-M_SHAD.node_tree.links.remove(_b.inputs['Base Color'].links[0]); _b.inputs['Base Color'].default_value = (0, 0, 0, 1)
-M_SHAD.node_tree.links.new(_t.outputs['Alpha'], _b.inputs['Alpha'])
-try: M_SHAD.surface_render_method = 'BLENDED'
-except Exception: M_SHAD.blend_method = 'BLEND'
-
 dog = empty('dog')
 body_e = empty('dog_body', (0, 0, 0), dog)
 under(body_e, plane('dog_body_mesh', CUT_W, CUT_H, (0, 0, CUT_H / 2), (math.radians(90), 0, 0), M_CUT))
@@ -610,6 +632,7 @@ _px = lambda x, y: ((x / CUT_PX[0] - 0.5) * CUT_W, (1 - y / CUT_PX[1]) * CUT_H) 
 def layer(name, parent, pivot, box, m, dy):
     """A cut-out layer on its own empty (pivot in source px, crop box l,t,r,b)."""
     pv, l, t, r, b = _px(*pivot), *box
+    b = min(b, CUT_PX[1])                             # the card is trimmed to the lowest paw
     c = _px((l + r) / 2, (t + b) / 2)
     e = empty(name, (pv[0], dy, pv[1]), parent)       # dy: a hair in front, no z-fight
     under(e, plane(name + '_mesh', CUT_W * (r - l) / CUT_PX[0], CUT_H * (b - t) / CUT_PX[1],
@@ -627,7 +650,7 @@ for nm, pv, bx in (('dog_paw_l', (100, 478), (0, 456, 176, 586)), ('dog_paw_r', 
     # re-parent under dog_paws keeping the world spot
     e.location = (e.location[0] - paws_e.location[0], e.location[1] - paws_e.location[1], e.location[2] - paws_e.location[2])
     e.parent = paws_e
-under(dog, plane('dog_shadow', CUT_W * 1.15, 0.2, (0.0, 0.03, 0.002), (0, 0, 0), M_SHAD))
+under(dog, shadow_plane('dog_shadow', CUT_W, shadow_mat('dog_shadow', 'dumpling-shadow.png')))
 BOOK_TOP = 0.028 + 2 * 0.052 + 0.025
 dog.location = (0.6, 0.8, BOOK_TOP)
 # face the page camera (it sits ~11deg right of straight-on from here)
@@ -683,20 +706,21 @@ prn.rotation_euler = (0, 0, math.radians(-25))
 # <name>_paw_l/_r (pats); <name>_shadow is a soft blob. The page only
 # moves those empties (meshopt bakes mesh-node transforms).
 MOCHI, TOFU, POCHI = 'mochi', 'tofu', 'pochi'
-# px size, card height, paw (box, pivot) x2, tail: (crop box | None, pivot in tail px, pivot in cut px, dy)
+# world units per px (sizes by weight, see CUT_K), paw (box, pivot) x2,
+# tail: (crop box, pivot in tail px, pivot in cut px, dy) or None (Mochi and
+# Tofu sit facing the camera: no tail in the photo, and a drawn one read fake)
 PUP_CUTS = {
-    MOCHI: ((280, 710), 0.30, (((50, 600, 136, 710), (92, 604)), ((164, 600, 254, 710), (208, 604))),
-            (None, (14, 104), (232, 610), 0.004), (110, 120)),
-    TOFU: ((290, 590), 0.27, (((26, 470, 112, 590), (68, 474)), ((114, 470, 204, 590), (160, 474))),
-           (None, (106, 94), (40, 540), 0.004), (120, 110)),
-    POCHI: ((325, 475), 0.23, (((84, 300, 168, 452), (140, 304)), ((170, 312, 240, 390), (215, 316))),
-            ((208, 30, 316, 152), (74, 110), (282, 140), -0.003), (108, 122)),
+    MOCHI: (0.465 / 710, (((50, 600, 136, 710), (92, 604)), ((164, 600, 254, 710), (208, 604))), None),
+    TOFU: (0.351 / 590, (((26, 470, 112, 590), (68, 474)), ((114, 470, 204, 590), (160, 474))), None),
+    POCHI: (0.354 / 475, (((84, 300, 168, 452), (140, 304)), ((170, 312, 240, 390), (215, 316))),
+            ((208, 30, 316, 152), (74, 110), (282, 140), -0.003)),
 }
 
 
 def pup(name):
-    (pw, ph), H, paws, (tbox, tpv, tat, tdy), tsz = PUP_CUTS[name]
-    W = H * pw / ph
+    k, paws, tl = PUP_CUTS[name]
+    pw, ph = png_size(name + '-body.png')     # make_pup_layers.py trims to the lowest paw
+    W, H = k * pw, k * ph
     px = lambda x, y: ((x / pw - 0.5) * W, (1 - y / ph) * H)
     root = empty(name)
     be = empty(name + '_body', (0, 0, 0), root)
@@ -710,16 +734,18 @@ def pup(name):
         under(e, plane(nm + '_mesh', sw, sh, (cx, 0, cz), (math.radians(90), 0, 0), m))
         return e
 
-    card(name + '_tail', be, tat, tsz, tpv, cut_mat(name + '_tail_cutout', name + '-tail.png'), tdy)
+    if tl:
+        (l, t, r, b), tpv, tat, tdy = tl
+        card(name + '_tail', be, tat, (r - l, b - t), tpv, cut_mat(name + '_tail_cutout', name + '-tail.png'), tdy)
     mid = ((paws[0][1][0] + paws[1][1][0]) / 2, paws[0][1][1])
     m = px(*mid); pe = empty(name + '_paws', (m[0], -0.002, m[1]), be)
     for side, (bx, pv) in zip('lr', paws):
-        l, t, r, b = bx
+        l, t, r, b = bx; b = min(b, ph)
         e = card(f'{name}_paw_{side}', be, pv, (r - l, b - t), (pv[0] - l, pv[1] - t),
                  cut_mat(f'{name}_paw_{side}_cutout', f'{name}-paw-{side}.png'), -0.002 - (0.0006 if side == 'l' else 0))
         e.location = (e.location[0] - pe.location[0], e.location[1] - pe.location[1], e.location[2] - pe.location[2])
         e.parent = pe
-    sh = plane(name + '_shadow', W * 1.2, 0.11, (0, 0.02, 0.002), (0, 0, 0), M_SHAD)
+    sh = shadow_plane(name + '_shadow', W, shadow_mat(name + '_shadow', name + '-shadow.png'))
     sh.parent = root
     return root
 
@@ -727,7 +753,9 @@ def pup(name):
 mochi, tofu, pochi = pup(MOCHI), pup(TOFU), pup(POCHI)
 # same corner as before; the cards face the page camera (it sits a few
 # degrees right of straight-on from here)
-for o, loc, rz in ((mochi, (1.1, -0.6), 8), (tofu, (1.36, -0.72), 7), (pochi, (1.62, -0.58), 6)):
+# a step forward of the parcels so Mochi (now the biggest) does not hide
+# them, and pulled in toward the canvas centre (its edge feather)
+for o, loc, rz in ((mochi, (1.02, -0.7), 10), (tofu, (1.27, -0.8), 8), (pochi, (1.5, -0.64), 5)):
     o.location = (*loc, 0.0); o.rotation_euler = (0, 0, math.radians(rz))
 
 

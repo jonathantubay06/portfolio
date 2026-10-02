@@ -56,9 +56,9 @@
      (eldest) is calm, Pochi (youngest) bounces. */
   var MOCHI = 'Mochi', TOFU = 'Tofu', POCHI = 'Pochi';
   var PUPS = {
-    mochi: { label: MOCHI + ', head of security', wag: 4.6, amp: 0.09, hop: [11, 6], jump: 0.025, pat: 0.55, br: 1.5 },
-    tofu: { label: TOFU + ', snack inspector', wag: 6.8, amp: 0.13, hop: [7, 5], jump: 0.035, pat: 0.8, br: 1.9 },
-    pochi: { label: POCHI + ', QA tester', wag: 12.5, amp: 0.2, hop: [2.6, 2.4], jump: 0.06, pat: 1.25, br: 2.5 }
+    mochi: { label: MOCHI + ', head of security', wag: 4.6, amp: 0.09, hop: [11, 6], jump: 0.03, pat: 0.55, br: 1.5 },
+    tofu: { label: TOFU + ', snack inspector', wag: 6.8, amp: 0.13, hop: [7, 5], jump: 0.04, pat: 0.8, br: 1.9 },
+    pochi: { label: POCHI + ', QA tester', wag: 12.5, amp: 0.2, hop: [2.6, 2.4], jump: 0.065, pat: 1.25, br: 2.5 }
   };
   Object.keys(PUPS).forEach(function (k) { OWN[k] = { label: PUPS[k].label }; });
   OWN.cal = { label: 'Done list' }; OWN.parcels = { label: 'Packed & weighed' };
@@ -190,17 +190,20 @@
         if (PUPS[o.name]) pups.push({ cfg: PUPS[o.name], root: o });
         if (/^dog_(body|head|ear_l|ear_r|tail|paws|paw_l|paw_r|shadow)$/.test(o.name)) { dog[o.name.slice(4)] = o; o.userData.p0 = o.position.clone(); o.userData.r0 = o.rotation.clone(); o.userData.s0 = o.scale.clone(); }
         if (o.name === 'dog') { dog.root = o; o.userData.r0 = o.rotation.clone(); o.userData.p0 = o.position.clone(); }
-        /* Dumpling is a photo cut-out: crisp alpha edge, both faces, and a
-           soft self-glow so the cream coat is not greyed by the cool key */
+        /* the dogs are photo cut-outs: alpha-to-coverage (the composer's
+           4x MSAA target) for a smooth, halo-free fur edge, both faces,
+           and a soft self-glow so the coats are not greyed by the cool
+           key (the light match itself is baked by 3d/cutout_fx.py) */
         if (o.isMesh && o.material && /^(dog|mochi|tofu|pochi)_(tail_|paw_[lr]_)?cutout$/.test(o.material.name)) {
           var dm = o.material = o.material.clone();
-          dm.transparent = false; dm.alphaTest = 0.4; dm.depthWrite = true; dm.side = THREE.DoubleSide;
-          dm.metalness = 0; dm.roughness = 1; dm.emissive = new THREE.Color(1, 1, 1); dm.emissiveMap = dm.map; dm.emissiveIntensity = 0.45;
+          dm.transparent = false; dm.alphaTest = 0.4; dm.alphaToCoverage = true; dm.depthWrite = true; dm.side = THREE.DoubleSide;
+          dm.metalness = 0; dm.roughness = 1; dm.emissive = new THREE.Color(1, 1, 1); dm.emissiveMap = dm.map; dm.emissiveIntensity = 0.32;
           /* clamp: repeat-wrap pulled the paws row onto the card's top edge (stray dashes) */
           if (dm.map) { dm.map.wrapS = dm.map.wrapT = THREE.ClampToEdgeWrapping; dm.map.needsUpdate = true; }
           dm.userData.keepEmissive = true; dm.needsUpdate = true;
         }
-        if (o.isMesh && o.material && o.material.name === 'dog_shadow') { o.material = o.material.clone(); o.material.transparent = true; o.material.depthWrite = false; o.material.opacity = 0.55; }
+        /* contact shadows: paw pads + ambient pool, strength baked in the texture */
+        if (o.isMesh && o.material && /^(dog|mochi|tofu|pochi)_shadow$/.test(o.material.name)) { o.material = o.material.clone(); o.material.transparent = true; o.material.depthWrite = false; o.material.opacity = 0.9; o.material.polygonOffset = true; o.material.polygonOffsetFactor = -1; }
         /* Blender's emission strengths read hot under ACES; tame them */
         if (o.material && o.material.emissiveIntensity && !o.material.userData.keepEmissive) {
           var n = o.material.name || '';
@@ -814,11 +817,11 @@
       if (dog.body) {
         var hp = dogHop(t), br = Math.sin(t * 2.1) * 0.5 + 0.5, bs = dog.body.userData.s0;
         dog.body.scale.set(bs.x * (1 + br * 0.014) * hp.sx, bs.y * (1 + br * 0.035) * hp.sy, bs.z);
-        dog.body.position.y = dog.body.userData.p0.y + Math.sin(t * 1.05) * 0.004 + hp.h * 0.055;
+        dog.body.position.y = dog.body.userData.p0.y + Math.sin(t * 1.05) * 0.003 + hp.h * 0.04;
         if (dog.shadow) {
           var ss = dog.shadow.userData.s0, sk = 1 - hp.h * 0.4;
           dog.shadow.scale.set(ss.x * sk, ss.y, ss.z * sk);
-          dog.shadow.material.opacity = 0.55 * (1 - hp.h * 0.6);
+          dog.shadow.material.opacity = 0.9 * (1 - hp.h * 0.6);
         }
         pawPose(dog, t, hp, hopAt - t);
         if (dog.tail) {
@@ -831,9 +834,10 @@
         cam.getWorldPosition(dogW); dog.root.parent.worldToLocal(dogW);
         var cx = dogW.x - dog.root.position.x, cz = dogW.z - dog.root.position.z;
         var yaw = Math.atan2(cx, cz), base = dog.root.userData.r0.y;
-        /* the card faces +Z in its own frame; follow 35% of the offset */
+        /* the card faces +Z in its own frame; follow half the offset, at
+           most ~10deg, so it stays square-on and never turns visibly */
         var off = Math.atan2(Math.sin(yaw - base), Math.cos(yaw - base));
-        dog.root.rotation.y = base + Math.max(-0.35, Math.min(0.35, off * 0.35));
+        dog.root.rotation.y = base + Math.max(-0.18, Math.min(0.18, off * 0.5));
       }
       /* the pups (photo cut-outs): breathing, the odd hop, paw pats and
          a tail wag, each on its own clock and temperament; the card
@@ -847,6 +851,7 @@
           if (P.shadow) {
             var pss = P.shadow.userData.s0, psk = 1 - php.h * 0.4;
             P.shadow.scale.set(pss.x * psk, pss.y, pss.z * psk);
+            P.shadow.material.opacity = 0.9 * (1 - php.h * 0.6);
           }
           pawPose(P, pt, php, P.hopAt - t, C.pat);
           if (P.tail) {
@@ -858,7 +863,7 @@
           cam.getWorldPosition(dogW); P.root.parent.worldToLocal(dogW);
           var pyaw = Math.atan2(dogW.x - P.root.position.x, dogW.z - P.root.position.z), pb0 = P.root.userData.r0.y;
           var poff = Math.atan2(Math.sin(pyaw - pb0), Math.cos(pyaw - pb0));
-          P.root.rotation.y = pb0 + Math.max(-0.3, Math.min(0.3, poff * 0.3));
+          P.root.rotation.y = pb0 + Math.max(-0.18, Math.min(0.18, poff * 0.5));
         }
       }
       if (cal) cal(t);
