@@ -167,15 +167,15 @@
    like a slow carousel. The drift uses translate/rotate (individual
    properties) so it composes with the hover lift. Z only goes back
    (negative) so a card never grows past the rail's clip. */
-.sm-on .testi-rail{perspective:1500px;perspective-origin:50% 40%}
 .sm-on .tq{isolation:isolate}
 .sm-vis .tq{animation:smDrift 9s ease-in-out infinite alternate}
 .sm-vis .tq:nth-child(3n+1){animation-delay:-3s}
 .sm-vis .tq:nth-child(3n+2){animation-delay:-6s;animation-duration:10.5s}
 @keyframes smDrift{
-  0%  {translate:0 0 -6px;rotate:y 2.2deg}
-  50% {translate:0 -3px -16px;rotate:y -1.4deg}
-  100%{translate:0 0 -4px;rotate:y -2.4deg}
+  0%  {translate:0 0}
+  50% {translate:0 -4px}
+  100%{translate:0 0}
+}
 }
 .sm-stars{position:absolute;z-index:-1;inset:0;overflow:hidden;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .6s ease}
 .tq.sm-active .sm-stars{opacity:1}
