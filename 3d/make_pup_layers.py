@@ -4,18 +4,17 @@ front-paw layers, the same way make_dog_layers.py does Dumpling.
 The cut-outs are rembg cuts of the dogs only (people and other dogs
 masked off, a hand painted out of Mochi's shoulder). Before splitting,
 cutout_fx carves the edges the photo frame / a neighbour cut flat
-(Mochi's ear tip and left haunch, both sides of Tofu, Pochi's rump and
-back paw) into fur contours, grades the coat to the scene light and
+(Mochi's ear tip, left haunch and right side, both sides of Tofu; Tofu's
+missing right haunch is his left one mirrored) into fur contours, grades the coat to the scene light and
 trims the card to the lowest paw; it also writes <pup>-shadow.png, the
 contact shadow under the card.
 
 Paws: each lower foreleg + paw is its own layer; the body keeps a
 feathered overlap band under the layer's top edge, so a small lift or
 tilt round the pivot (top of the layer) never opens a gap.
-Tail: Pochi's real tail (standing side-on, tail up) is lifted off the
-body above its base, with an overlap band. Mochi and Tofu sit facing the
-camera, so their tails are not in the photo (a drawn one read as fake):
-no tail layer.
+Tails: none of the three photos shows a usable tail (Mochi and Tofu sit
+facing the camera, Pochi lies on his), and a drawn one read as fake, so
+there is no tail layer (the code still splits one off if 'tail' is set).
 Pivots / crop boxes are in cut-out pixels and mirrored in build_scene.py
 (PUP_CUTS). Run: uv run --with pillow --with numpy --with scipy python 3d/make_pup_layers.py
 """
@@ -40,13 +39,9 @@ PUPS = {
                         ('R', [(150, 238), (170, 229), (190, 220), (210, 211), (230, 199), (250, 192), (270, 188), (290, 187), (310, 190), (330, 195), (350, 201), (375, 204), (400, 206), (430, 206), (460, 205), (485, 204), (500, 202), (508, 197)])],
                  leg=((0, 400, 50, 520), 178, 0, 0.9, True),   # right haunch: the left one mirrored
                  feet=[(40, 110), (130, 196), (8, 32), (200, 222)]),
-    'pochi': dict(paws=(((84, 300, 168, 452), (140, 304)), ((170, 312, 240, 390), (215, 316))),
-                  tail=dict(box=(208, 30, 316, 152), pivot=(282, 140)), fur=0.45,
-                  carve=[('R', [(150, 299), (175, 307), (200, 314), (220, 316), (238, 313), (252, 305), (264, 293), (274, 284), (285, 286), (300, 292), (320, 296), (340, 299)]),
-                         ('R', [(398, 316), (415, 319), (430, 320), (442, 320), (452, 318), (460, 314), (466, 308), (472, 300)]),
-                         ('R', [(404, 133), (416, 133), (428, 130), (438, 126), (446, 120), (452, 113), (458, 106)], (100, 200))],
-                  leg=((236, 300, 322, 470), -30, -6),   # near hind leg, shifted forward/up = the far one
-                  feet=[(90, 130), (288, 318), (258, 290)]),
+    # Pochi lying down (front paws out, all four legs in the photo; tail hidden behind him)
+    'pochi': dict(paws=(((40, 212, 92, 262), (66, 216)), ((88, 212, 140, 262), (114, 216))), tail=None, fur=0.45,
+                  carve=[], feet=[(45, 90), (92, 135), (268, 300), (300, 330)]),
 }
 
 

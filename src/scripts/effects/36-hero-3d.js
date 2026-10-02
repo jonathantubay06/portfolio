@@ -58,7 +58,7 @@
   var PUPS = {
     mochi: { label: MOCHI + ', head of security', wag: 4.6, amp: 0.09, hop: [11, 6], jump: 0.03, pat: 0.55, br: 1.5 },
     tofu: { label: TOFU + ', snack inspector', wag: 6.8, amp: 0.13, hop: [7, 5], jump: 0.04, pat: 0.8, br: 1.9 },
-    pochi: { label: POCHI + ', QA tester', wag: 12.5, amp: 0.2, hop: [2.6, 2.4], jump: 0.065, pat: 1.25, br: 2.5 }
+    pochi: { label: POCHI + ', QA tester', wag: 12.5, amp: 0.2, hop: [5, 4], jump: 0.018, pat: 1.25, br: 2.5 }
   };
   Object.keys(PUPS).forEach(function (k) { OWN[k] = { label: PUPS[k].label }; });
   OWN.cal = { label: 'Done list' }; OWN.parcels = { label: 'Packed & weighed' };
