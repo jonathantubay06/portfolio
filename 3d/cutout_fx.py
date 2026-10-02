@@ -141,3 +141,41 @@ def shadow(img, feet, out_w=256):
     from PIL import Image
     im = Image.fromarray(out.astype(np.uint8), 'RGBA')
     return im.resize((out_w, max(8, round(out_w * th / tw))), Image.LANCZOS)
+
+
+def extend(img, pts, seed=3, fur=1.4, lo=0):
+    """grow the right-hand silhouette out to a drawn edge (pts: (row, col)),
+    filling with the coat mirrored from just inside the old edge, so a
+    side the photo cut off becomes a rounded haunch of real fur."""
+    out = img.copy(); h, w = img.shape[:2]
+    e, p0, p1 = _curve(pts, h)
+    rng = np.random.default_rng(seed)
+    jit = ndimage.gaussian_filter1d(rng.normal(0, 1, h), 1.1) * fur * 1.5
+    for y in range(int(p0), int(p1) + 1):
+        row = np.where(img[y, lo:, 3] > 128)[0]
+        if not len(row):
+            continue
+        c = lo + row.max(); E = e[y] + jit[y]
+        for x in range(c - 2, min(w, int(E) + 3)):
+            k = x - c; src = int(np.clip(c - 4 - abs(k), 0, w - 1))
+            a = smooth(-1.6, 1.2, E - x) * 255
+            if a > out[y, x, 3]:
+                sh = 1 - 0.22 * (1 - smooth(0, 9, E - x))
+                out[y, x, :3] = img[y, src, :3] * sh; out[y, x, 3] = a
+    return out
+
+
+def ghost_leg(img, box, dx, dy=0, dark=0.82, flip=False):
+    """a far leg: copy of the near leg in box (l, t, r, b) shifted by dx, dy,
+    a little darker, drawn behind the existing silhouette"""
+    l, t, r, b = box
+    leg = img[t:b, l:r].copy(); leg[..., :3] *= dark
+    if flip:                                               # mirror (e.g. one haunch from the other)
+        leg = leg[:, ::-1]
+    out = img.copy()
+    dst = out[t + dy:b + dy, l + dx:r + dx]
+    a1 = leg[..., 3:] / 255; a0 = dst[..., 3:] / 255
+    rgb = dst[..., :3] * a0 + leg[..., :3] * a1 * (1 - a0)
+    al = a0 + a1 * (1 - a0)
+    dst[..., :3] = rgb / np.maximum(al, 1e-4); dst[..., 3:] = al * 255
+    return out

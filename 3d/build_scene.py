@@ -711,8 +711,8 @@ MOCHI, TOFU, POCHI = 'mochi', 'tofu', 'pochi'
 # Tofu sit facing the camera: no tail in the photo, and a drawn one read fake)
 PUP_CUTS = {
     MOCHI: (0.465 / 710, (((50, 600, 136, 710), (92, 604)), ((164, 600, 254, 710), (208, 604))), None),
-    TOFU: (0.351 / 590, (((26, 470, 112, 590), (68, 474)), ((114, 470, 204, 590), (160, 474))), None),
-    POCHI: (0.354 / 475, (((84, 300, 168, 452), (140, 304)), ((170, 312, 240, 390), (215, 316))),
+    TOFU: (0.43 / 590, (((26, 470, 112, 590), (68, 474)), ((114, 470, 204, 590), (160, 474))), None),
+    POCHI: (0.30 / 475, (((84, 300, 168, 452), (140, 304)), ((170, 312, 240, 390), (215, 316))),
             ((208, 30, 316, 152), (74, 110), (282, 140), -0.003)),
 }
 
@@ -755,7 +755,7 @@ mochi, tofu, pochi = pup(MOCHI), pup(TOFU), pup(POCHI)
 # degrees right of straight-on from here)
 # a step forward of the parcels so Mochi (now the biggest) does not hide
 # them, and pulled in toward the canvas centre (its edge feather)
-for o, loc, rz in ((mochi, (1.02, -0.7), 10), (tofu, (1.27, -0.8), 8), (pochi, (1.5, -0.64), 5)):
+for o, loc, rz in ((mochi, (1.02, -0.7), 10), (tofu, (1.28, -0.84), 8), (pochi, (1.5, -0.66), 5)):
     o.location = (*loc, 0.0); o.rotation_euler = (0, 0, math.radians(rz))
 
 
