@@ -40,8 +40,8 @@ PUPS = {
                  leg=((0, 400, 50, 520), 178, 0, 0.9, True),   # right haunch: the left one mirrored
                  feet=[(40, 110), (130, 196), (8, 32), (200, 222)]),
     # Pochi lying down (front paws out, all four legs in the photo; tail hidden behind him)
-    'pochi': dict(paws=(((40, 212, 92, 262), (66, 216)), ((88, 212, 140, 262), (114, 216))), tail=None, fur=0.45,
-                  carve=[], feet=[(45, 90), (92, 135), (268, 300), (300, 330)]),
+    'pochi': dict(paws=(((40, 212, 92, 262), (66, 216)), ((88, 212, 140, 262), (114, 216))), fur=0.45,
+                  tail=dict(file='pochi-tail-cutout.png'), carve=[('B', [(176, 213), (200, 212), (230, 212), (262, 211)], (195, 240)), ('B', [(38, 249), (64, 251), (90, 250), (116, 251), (140, 249)], (232, 262))], feet=[(45, 90), (92, 135), (268, 300), (300, 330)]),
 }
 
 
@@ -72,7 +72,11 @@ for n, cfg in PUPS.items():
         out[side] = save(f'{n}-paw-{side}.png', src, pw, (l, t, r, min(b, h)))
         body_w *= 1 - smooth(l + 10, l + 18, xx) * (1 - smooth(r - 18, r - 10, xx)) * smooth(t + 26, t + 40, yy)
     tl = cfg['tail']
-    if tl:
+    if tl and tl.get('file'):        # tail lifted from another photo of him (it hides in this one)
+        tsrc = grade(np.array(Image.open(os.path.join(TEX, tl['file'])).convert('RGBA')).astype(np.float32))
+        Image.fromarray(tsrc.round().clip(0, 255).astype(np.uint8)).save(os.path.join(TEX, f'{n}-tail.png'), optimize=True)
+        out['tail'] = tsrc.shape[1::-1]
+    elif tl:
         l, t, r, b = tl['box']
         tw = smooth(l, l + 8, xx) * (1 - smooth(b - 14, b - 2, yy))
         out['tail'] = save(f'{n}-tail.png', src, tw, tl['box'])
