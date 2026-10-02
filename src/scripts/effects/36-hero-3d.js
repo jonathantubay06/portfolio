@@ -20,7 +20,8 @@
    sky behind the desk, Dumpling asleep on the books, a reviews shelf and
    a label printer that prints with every order.
    Round 6: Dumpling's siblings Mochi, Tofu and Pochi sit on the front
-   right (wag, head tilt, breathing, a blink), a flip calendar that
+   right (photo cut-outs like Dumpling: breathing, tail wag, paw pats,
+   the odd hop, each to its own beat), a flip calendar that
    ticks off a task every 8s, parcels on a scale that weighs each order,
    and steam off the coffee mug.
 ═══════════════════════════════════════ */
@@ -49,13 +50,15 @@
   };
 
   /* the pups: node name in scene.glb -> hover label (names swap here and
-     in 3d/build_scene.py). wag = tail rhythm (rad/s), amp = wag size,
-     tilt = head-tilt period (s), blink = seconds between blinks. */
+     in 3d/build_scene.py). Small personalities: wag = tail rhythm
+     (rad/s), amp = wag size (rad), hop = [min, extra] s between hops,
+     jump = hop height, pat = paw-pat tempo, br = breath rate. Mochi
+     (eldest) is calm, Pochi (youngest) bounces. */
   var MOCHI = 'Mochi', TOFU = 'Tofu', POCHI = 'Pochi';
   var PUPS = {
-    mochi: { label: MOCHI + ', head of security', wag: 9, amp: 0.45, tilt: 9.5, blink: 4.3 },
-    tofu: { label: TOFU + ', snack inspector', wag: 5.5, amp: 0.3, tilt: 7.1, blink: 5.9 },
-    pochi: { label: POCHI + ', QA tester', wag: 13, amp: 0.38, tilt: 11.3, blink: 3.7 }
+    mochi: { label: MOCHI + ', head of security', wag: 4.6, amp: 0.09, hop: [11, 6], jump: 0.025, pat: 0.55, br: 1.5 },
+    tofu: { label: TOFU + ', snack inspector', wag: 6.8, amp: 0.13, hop: [7, 5], jump: 0.035, pat: 0.8, br: 1.9 },
+    pochi: { label: POCHI + ', QA tester', wag: 12.5, amp: 0.2, hop: [2.6, 2.4], jump: 0.06, pat: 1.25, br: 2.5 }
   };
   Object.keys(PUPS).forEach(function (k) { OWN[k] = { label: PUPS[k].label }; });
   OWN.cal = { label: 'Done list' }; OWN.parcels = { label: 'Packed & weighed' };
@@ -127,6 +130,15 @@
     function dogHop(t) {
       var u = (t - hopAt) / 0.95, r = { h: 0, sx: 1, sy: 1, u: u, on: u >= 0 && u < 1 };
       if (u >= 1) { hopAt = t + 4 + Math.random() * 3; return r; }
+      return hopShape(u, r);
+    }
+    /* the same squash/stretch hop for a pup; P.hopAt / P.cfg.hop */
+    function pupHop(P, t) {
+      var u = (t - P.hopAt) / 0.85, r = { h: 0, sx: 1, sy: 1, u: u, on: u >= 0 && u < 1 };
+      if (u >= 1) { P.hopAt = t + P.cfg.hop[0] + Math.random() * P.cfg.hop[1]; return r; }
+      return hopShape(u, r);
+    }
+    function hopShape(u, r) {
       if (u < 0) return r;
       var q;
       if (u < 0.22) { q = Math.sin(u / 0.22 * Math.PI / 2); r.sy = 1 - 0.1 * q; r.sx = 1 + 0.06 * q; }
@@ -137,8 +149,9 @@
     /* front paws (dog_paws -> dog_paw_l/_r, elbow pivots): slow
        alternating kneading pats, a quick tap just before a hop and the
        paws spreading as she lands */
-    function pawPose(P, t, hp, toHop) {
-      var kn = Math.max(0, Math.sin(t * 0.9)) , ph = t * 6.2,
+    function pawPose(P, t, hp, toHop, tempo) {
+      tempo = tempo || 1;
+      var kn = Math.max(0, Math.sin(t * 0.9 * tempo)) , ph = t * 6.2 * tempo,
         pl = Math.max(0, Math.sin(ph)) * kn, pr = Math.max(0, Math.sin(ph + Math.PI)) * kn,
         tap = toHop > 0 && toHop < 0.4 ? Math.sin((0.4 - toHop) / 0.4 * Math.PI * 2) : 0,
         land = hp.u > 0.72 && hp.u < 1 ? Math.sin((hp.u - 0.72) / 0.28 * Math.PI) : 0,
@@ -179,7 +192,7 @@
         if (o.name === 'dog') { dog.root = o; o.userData.r0 = o.rotation.clone(); o.userData.p0 = o.position.clone(); }
         /* Dumpling is a photo cut-out: crisp alpha edge, both faces, and a
            soft self-glow so the cream coat is not greyed by the cool key */
-        if (o.isMesh && o.material && /^dog_(tail_|paw_[lr]_)?cutout$/.test(o.material.name)) {
+        if (o.isMesh && o.material && /^(dog|mochi|tofu|pochi)_(tail_|paw_[lr]_)?cutout$/.test(o.material.name)) {
           var dm = o.material = o.material.clone();
           dm.transparent = false; dm.alphaTest = 0.4; dm.depthWrite = true; dm.side = THREE.DoubleSide;
           dm.metalness = 0; dm.roughness = 1; dm.emissive = new THREE.Color(1, 1, 1); dm.emissiveMap = dm.map; dm.emissiveIntensity = 0.45;
@@ -208,12 +221,15 @@
       zcam.set(0, 0.242, 0.97).multiplyScalar(3.8).add(zc);
       printer = labelPrinter(g.scene);
       pups.forEach(function (p) {
-        ['body', 'head', 'eyes', 'tail'].forEach(function (k) {
+        p.root.userData.r0 = p.root.rotation.clone();
+        ['body', 'tail', 'paws', 'paw_l', 'paw_r', 'shadow'].forEach(function (k) {
           var o = g.scene.getObjectByName(p.root.name + '_' + k);
           if (o) { o.userData.p0 = o.position.clone(); o.userData.r0 = o.rotation.clone(); o.userData.s0 = o.scale.clone(); }
           p[k] = o;
         });
-        p.ph = Math.random() * 6;
+        p.ph = Math.random() * 6; p.wag = 0;
+        /* staggered first hops: Pochi soon, Mochi much later */
+        p.hopAt = 2 + p.cfg.hop[0] * 0.5 + Math.random() * p.cfg.hop[1];
       });
       cal = deskCalendar(g.scene); weigh = parcelScale(g.scene); steam = mugSteam(g.scene);
       deskSheen(g.scene);
@@ -819,20 +835,30 @@
         var off = Math.atan2(Math.sin(yaw - base), Math.cos(yaw - base));
         dog.root.rotation.y = base + Math.max(-0.35, Math.min(0.35, off * 0.35));
       }
-      /* the pups: breathing, a wag each to its own beat, a head tilt now
-         and then (about the snout axis) and a quick blink */
+      /* the pups (photo cut-outs): breathing, the odd hop, paw pats and
+         a tail wag, each on its own clock and temperament; the card
+         yaw-follows the camera a little, like Dumpling */
       for (i = 0; i < pups.length; i++) {
-        var P = pups[i], C = P.cfg, pt = t + P.ph, pb = Math.sin(pt * 2.4) * 0.5 + 0.5;
-        if (P.body) P.body.scale.set(P.body.userData.s0.x * (1 + pb * 0.03), P.body.userData.s0.y * (1 + pb * 0.012), P.body.userData.s0.z * (1 + pb * 0.03));
-        if (P.tail) P.tail.rotation.y = P.tail.userData.r0.y + Math.sin(pt * C.wag) * C.amp * (0.6 + 0.4 * Math.sin(pt * 0.37));
-        if (P.head) {
-          var hu = (pt % C.tilt) / 1.6, tl = hu < 1 ? Math.sin(hu * Math.PI) : 0;
-          P.head.rotation.x = P.head.userData.r0.x + tl * 0.32 * (i % 2 ? -1 : 1);
-          P.head.position.y = P.head.userData.p0.y + pb * 0.002;
+        var P = pups[i], C = P.cfg, pt = t + P.ph;
+        if (P.body) {
+          var php = pupHop(P, t), pbr = Math.sin(pt * C.br) * 0.5 + 0.5, pbs = P.body.userData.s0;
+          P.body.scale.set(pbs.x * (1 + pbr * 0.012) * php.sx, pbs.y * (1 + pbr * 0.03) * php.sy, pbs.z);
+          P.body.position.y = P.body.userData.p0.y + php.h * C.jump;
+          if (P.shadow) {
+            var pss = P.shadow.userData.s0, psk = 1 - php.h * 0.4;
+            P.shadow.scale.set(pss.x * psk, pss.y, pss.z * psk);
+          }
+          pawPose(P, pt, php, P.hopAt - t, C.pat);
+          if (P.tail) {
+            P.wag += dt * (php.on ? C.wag * 1.8 : C.wag) * (0.75 + 0.25 * Math.sin(pt * 0.31));
+            P.tail.rotation.z = P.tail.userData.r0.z + Math.sin(P.wag) * C.amp * (php.on ? 1.4 : 1);
+          }
         }
-        if (P.eyes && C.blink) {
-          var bu = (pt % C.blink) / 0.18;
-          P.eyes.scale.y = P.eyes.userData.s0.y * (bu < 1 ? 1 - Math.sin(bu * Math.PI) * 0.9 : 1);
+        if (P.root.parent) {
+          cam.getWorldPosition(dogW); P.root.parent.worldToLocal(dogW);
+          var pyaw = Math.atan2(dogW.x - P.root.position.x, dogW.z - P.root.position.z), pb0 = P.root.userData.r0.y;
+          var poff = Math.atan2(Math.sin(pyaw - pb0), Math.cos(pyaw - pb0));
+          P.root.rotation.y = pb0 + Math.max(-0.3, Math.min(0.3, poff * 0.3));
         }
       }
       if (cal) cal(t);

@@ -675,124 +675,61 @@ prn.rotation_euler = (0, 0, math.radians(-25))
 
 
 # ── round 6: Dumpling's siblings, desk calendar, parcels on a scale ──
-# Three sitting pups on the free desk corner, front right. Names live in
-# consts (swap here and in 36-hero-3d.js PUPS). Each pup is an empty
-# <name> with <name>_body, <name>_head, <name>_eyes (blink = scale),
-# <name>_ear_l/_r and <name>_tail under it; the page only moves those
-# empties. No collars or harnesses.
+# Three photo cut-out billboards on the free desk corner, front right,
+# built like Dumpling (3d/make_pup_layers.py splits tex/<pup>-cutout.png).
+# Names live in consts (swap here and in 36-hero-3d.js PUPS). Per pup:
+# <name> (root, yaw-follow) -> <name>_body (breath/hop, pivot at the feet)
+# -> body card, <name>_tail (wag about the card normal), <name>_paws ->
+# <name>_paw_l/_r (pats); <name>_shadow is a soft blob. The page only
+# moves those empties (meshopt bakes mesh-node transforms).
 MOCHI, TOFU, POCHI = 'mochi', 'tofu', 'pochi'
-M_P_WHITE = fur_mat('pup_white', (0.8, 0.78, 0.74), rough=0.85, curl=0.25)
-M_P_TAN = fur_mat('pup_tan', (0.6, 0.32, 0.12), rough=0.85, curl=0.25)
-M_P_BLACK = fur_mat('pup_black', (0.03, 0.025, 0.025), rough=0.6, curl=0.2)
-M_P_CREAM = fur_mat('pup_cream', (0.92, 0.66, 0.32), rough=0.95, curl=0.7)
-M_P_GOLD = fur_mat('pup_gold', (0.85, 0.52, 0.2), rough=0.95, curl=0.7)
-M_GLINT = mat('pup_glint', (1, 1, 1), emit=(1, 1, 1), strength=1.0)
-M_EYE = mat('pup_eye', (0.02, 0.012, 0.008), rough=0.08)
+# px size, card height, paw (box, pivot) x2, tail: (crop box | None, pivot in tail px, pivot in cut px, dy)
+PUP_CUTS = {
+    MOCHI: ((280, 710), 0.30, (((50, 600, 136, 710), (92, 604)), ((164, 600, 254, 710), (208, 604))),
+            (None, (14, 104), (232, 610), 0.004), (110, 120)),
+    TOFU: ((290, 590), 0.27, (((26, 470, 112, 590), (68, 474)), ((114, 470, 204, 590), (160, 474))),
+           (None, (106, 94), (40, 540), 0.004), (120, 110)),
+    POCHI: ((325, 475), 0.23, (((84, 300, 168, 452), (140, 304)), ((170, 312, 240, 390), (215, 316))),
+            ((208, 30, 316, 152), (74, 110), (282, 140), -0.003), (108, 122)),
+}
 
 
-def paint(o, rules):
-    """Per-face markings: rules = [(material, test(center, normal))], first
-    match wins; centres are in the part's own (spec) space."""
-    off = o.location
-    for m, _ in rules:
-        if m.name not in [x.name for x in o.data.materials if x]: o.data.materials.append(m)
-    idx = {x.name: i for i, x in enumerate(o.data.materials)}
-    for p in o.data.polygons:
-        c = p.center + off
-        for m, test in rules:
-            if test(c, p.normal): p.material_index = idx[m.name]; break
-
-
-def pup(name, coat, ear_m, tail_m, shaggy=False, muzzle=0.03, ears='semi', tail='curl',
-        body_rules=(), head_rules=(), seed=20):
+def pup(name):
+    (pw, ph), H, paws, (tbox, tpv, tat, tdy), tsz = PUP_CUTS[name]
+    W = H * pw / ph
+    px = lambda x, y: ((x / pw - 0.5) * W, (1 - y / ph) * H)
     root = empty(name)
-    fur = dict(fur=0.0042, freq=45, nubs=0, wave=(0.35, 300)) if shaggy else dict(fur=0.0008, freq=40, nubs=0)
     be = empty(name + '_body', (0, 0, 0), root)
-    b = blob(name + '_body_mesh', [
-        ((-0.01, 0, 0.06), (0.042, 0.042, 0.05)),          # back / belly
-        ((0.024, 0, 0.088), (0.034, 0.038, 0.055)),        # upright chest
-        ((-0.034, 0, 0.034), (0.042, 0.05, 0.034)),        # rump
-        ((-0.012, 0.04, 0.028), (0.04, 0.018, 0.028)),     # thighs
-        ((-0.012, -0.04, 0.028), (0.04, 0.018, 0.028)),
-        ((0.026, 0.043, 0.007), (0.03, 0.014, 0.008)),     # hind feet
-        ((0.026, -0.043, 0.007), (0.03, 0.014, 0.008)),
-        ((0.042, 0.017, 0.036), (0.012, 0.012, 0.036)),    # front legs
-        ((0.042, -0.017, 0.036), (0.012, 0.012, 0.036)),
-        ((0.052, 0.017, 0.007), (0.018, 0.013, 0.008)),    # front paws
-        ((0.052, -0.017, 0.007), (0.018, 0.013, 0.008)),
-        ((0.03, 0, 0.125), (0.028, 0.032, 0.03)),          # neck
-    ], coat, voxel=0.0045, ratio=0.06, seed=seed, keep=lambda co, n: rim(n, 0.6) and n.z > -0.3,
-       hide=lambda c, n: n.z < -0.6 and c.z < 0.006, **fur)
-    if body_rules: paint(b, body_rules)
-    under(be, b)
-    he = empty(name + '_head', (0.042, 0, 0.152), root)
-    hf = dict(fur=0.0032, freq=50, nubs=0) if shaggy else dict(fur=0.0006, freq=40, nubs=0)
-    h = blob(name + '_head_mesh', [
-        ((0, 0, 0), (0.045, 0.044, 0.04)),                 # skull
-        ((0.01 + muzzle, 0, -0.014), (muzzle, 0.022, 0.018)),  # muzzle
-        ((0.022, 0.022, -0.012), (0.02, 0.018, 0.018)),    # cheeks
-        ((0.022, -0.022, -0.012), (0.02, 0.018, 0.018)),
-    ], coat, voxel=0.0035, ratio=0.07, seed=seed + 1,
-       keep=lambda co, n: rim(n, 0.6) and n.z > -0.3 and co.x < 0.025, **hf)
-    if head_rules: paint(h, head_rules)
-    nx = 0.012 + 2 * muzzle
-    face = [ball(name + '_nose', 0.0085, (nx, 0, -0.006), M_NOSE, (0.85, 1.25, 0.85)),
-            ball(name + '_tongue', 1, (nx - 0.012, 0, -0.03), M_TONGUE, (0.008, 0.008, 0.0045))]
-    for s in (-1, 1):
-        face.append(arc(f'{name}_mouth_{s}', [(nx - 0.002, 0, -0.013), (nx - 0.006, s * 0.008, -0.024), (nx - 0.016, s * 0.015, -0.02)], 0.0011, M_NOSE))
-    under(he, h, *face)
-    ey = empty(name + '_eyes', (0.036, 0, 0.008), he)
-    for s in (-1, 1):
-        under(ey, ball(f'{name}_eye_{s}', 1, (0, s * 0.02, 0), M_EYE, (0.0055, 0.0075, 0.0085)),
-              ball(f'{name}_glint_{s}', 1, (0.004, s * 0.018, 0.003), M_GLINT, (0.0016, 0.0022, 0.0022), sub=1))
-    for s, nm in ((1, '_ear_l'), (-1, '_ear_r')):
-        ee = empty(name + nm, (-0.006, s * 0.03, 0.028), he)
-        if ears == 'soft':     # Tofu: bigger soft ears, tips folded over
-            ee.rotation_euler = (math.radians(s * -48), 0, 0)
-            sp = [((0, 0, 0.012), (0.011, 0.02, 0.018)), ((0.006, 0, 0.03), (0.009, 0.016, 0.014)),
-                  ((0.018, 0, 0.036), (0.014, 0.013, 0.007))]
-        elif ears == 'semi':   # upright with the tip folding forward
-            ee.rotation_euler = (math.radians(s * -38), 0, 0)
-            sp = [((0, 0, 0.012), (0.009, 0.016, 0.017)), ((0.004, 0, 0.03), (0.007, 0.012, 0.014)),
-                  ((0.014, 0, 0.038), (0.012, 0.01, 0.006))]
-        else:                  # soft floppy ears hanging beside the face
-            ee.rotation_euler = (math.radians(s * -62), 0, 0)
-            sp = [((0, 0, 0.01), (0.01, 0.018, 0.016)), ((0.01, 0, 0.026), (0.012, 0.016, 0.014)),
-                  ((0.022, 0, 0.03), (0.012, 0.013, 0.008))]
-        m = ear_m(s) if callable(ear_m) else ear_m
-        under(ee, blob(name + nm + '_mesh', sp, m, voxel=0.0028, ratio=0.12, seed=seed + 3 + s,
-                       **(dict(fur=0.002, freq=80) if shaggy else dict(fur=0.0004, freq=40))))
-    te = empty(name + '_tail', (-0.07, 0, 0.03), root)
-    if tail == 'curl':         # aspin tail curled up behind the back
-        tsp = [((-0.008, 0, 0.012), (0.011, 0.011, 0.014)), ((-0.016, 0, 0.034), (0.009, 0.009, 0.014)),
-               ((-0.008, 0, 0.056), (0.009, 0.009, 0.01)), ((0.004, 0, 0.062), (0.008, 0.008, 0.008))]
-    else:                      # fluffy plume swept round the feet
-        tsp = [((-0.004, -0.02, 0.008), (0.016, 0.016, 0.01)), ((0.02, -0.05, 0.009), (0.03, 0.016, 0.011)),
-               ((0.06, -0.064, 0.009), (0.022, 0.014, 0.009))]
-    under(te, blob(name + '_tail_mesh', tsp, tail_m, voxel=0.0035, ratio=0.1, seed=seed + 7,
-                   **(dict(fur=0.0035, freq=50) if shaggy else dict(fur=0.0004, freq=40))))
+    under(be, plane(name + '_body_mesh', W, H, (0, 0, H / 2), (math.radians(90), 0, 0), cut_mat(name + '_cutout', name + '-body.png')))
+
+    def card(nm, parent, at, size, pv, m, dy):
+        """empty at cut px `at`; card of `size` px with its pivot px `pv`"""
+        a = px(*at); sw, sh = size[0] * W / pw, size[1] * H / ph
+        e = empty(nm, (a[0], dy, a[1]), parent)
+        cx, cz = (size[0] / 2 - pv[0]) * W / pw, (pv[1] - size[1] / 2) * H / ph
+        under(e, plane(nm + '_mesh', sw, sh, (cx, 0, cz), (math.radians(90), 0, 0), m))
+        return e
+
+    card(name + '_tail', be, tat, tsz, tpv, cut_mat(name + '_tail_cutout', name + '-tail.png'), tdy)
+    mid = ((paws[0][1][0] + paws[1][1][0]) / 2, paws[0][1][1])
+    m = px(*mid); pe = empty(name + '_paws', (m[0], -0.002, m[1]), be)
+    for side, (bx, pv) in zip('lr', paws):
+        l, t, r, b = bx
+        e = card(f'{name}_paw_{side}', be, pv, (r - l, b - t), (pv[0] - l, pv[1] - t),
+                 cut_mat(f'{name}_paw_{side}_cutout', f'{name}-paw-{side}.png'), -0.002 - (0.0006 if side == 'l' else 0))
+        e.location = (e.location[0] - pe.location[0], e.location[1] - pe.location[1], e.location[2] - pe.location[2])
+        e.parent = pe
+    sh = plane(name + '_shadow', W * 1.2, 0.11, (0, 0.02, 0.002), (0, 0, 0), M_SHAD)
+    sh.parent = root
     return root
 
 
-# Mochi: white aspin with tan over the head, ears and back; white muzzle,
-# blaze and chest. Tofu: shaggy cream retriever mix with soft ears and a
-# plume. Pochi: white aspin, black over one eye and ear, a tan cheek.
-WHITE_FACE = lambda c, n: c.z < -0.006 or (abs(c.y) < 0.006 and c.x > 0.02 and c.z < 0.03)
-mochi = pup(MOCHI, M_P_WHITE, M_P_TAN, M_P_TAN, muzzle=0.03, seed=21,
-            body_rules=[(M_P_TAN, lambda c, n: c.x < 0.0 and c.z > 0.05 and n.x < 0.3),
-                        (M_P_TAN, lambda c, n: abs(c.y) > 0.026 and c.z > 0.06 and c.x < 0.03),
-                        (M_P_TAN, lambda c, n: c.x < -0.03 and c.z > 0.03 and abs(c.y) < 0.03)],
-            head_rules=[(M_P_WHITE, WHITE_FACE), (M_P_TAN, lambda c, n: True)])
-tofu = pup(TOFU, M_P_CREAM, M_P_GOLD, M_P_CREAM, shaggy=True, muzzle=0.022, ears='soft', tail='plume', seed=31)
-pochi = pup(POCHI, M_P_WHITE, lambda s: M_P_BLACK if s < 0 else M_P_WHITE, M_P_WHITE, muzzle=0.028, seed=41,
-            head_rules=[(M_P_BLACK, lambda c, n: c.y < -0.004 and c.z > -0.006 and c.x < 0.04),
-                        (M_P_TAN, lambda c, n: c.y < -0.012 and c.z > -0.02 and c.x < 0.04)])
-# facing the page camera (it looks from about -83deg); Pochi turns a bit
-# toward Dumpling on the books
-for o, loc, rz, sc, head_z in ((mochi, (1.08, -0.62), -70, 1.46, 0), (tofu, (1.34, -0.73), -86, 1.36, 12),
-                               (pochi, (1.6, -0.6), -100, 1.38, 30)):
-    o.location = (*loc, 0.0); o.rotation_euler = (0, 0, math.radians(rz)); o.scale = (sc,) * 3
-    bpy.data.objects[o.name + '_head'].rotation_euler = (0, 0, math.radians(head_z))
+mochi, tofu, pochi = pup(MOCHI), pup(TOFU), pup(POCHI)
+# same corner as before; the cards face the page camera (it sits a few
+# degrees right of straight-on from here)
+for o, loc, rz in ((mochi, (1.1, -0.6), 8), (tofu, (1.36, -0.72), 7), (pochi, (1.62, -0.58), 6)):
+    o.location = (*loc, 0.0); o.rotation_euler = (0, 0, math.radians(rz))
+
 
 # stand-up flip calendar, front right; the page draws the notes on
 # cal_page and swings cal_flip (hinged at the top ring) over the back
