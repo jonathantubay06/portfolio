@@ -104,6 +104,7 @@ const SITE = 'https://jonathantubay.com';
 const PAGES = [
   { loc: '/',                     sources: ['src/sections', 'src/_head.html'] },
   { loc: '/case-studies/moev',    sources: ['case-studies/moev.html'] },
+  { loc: '/case-studies/inventory-sync', sources: ['case-studies/inventory-sync.html'] },
 ];
 
 function buildSitemap(){

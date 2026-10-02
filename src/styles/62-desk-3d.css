@@ -1,0 +1,60 @@
+/* 62 · desk extras (40-desk-extras.js), 2026-10-02 */
+
+/* keyboard shortcuts for the clickable desk objects: off screen until focused */
+.desk-keys{position:absolute;left:-9999px;top:0;z-index:6;display:flex;gap:.4rem;align-items:center;flex-wrap:wrap;
+  padding:.45rem .6rem;border-radius:12px;background:rgba(6,14,28,.92);border:1px solid rgba(0,212,255,.35);font-size:.8rem}
+.desk-keys:focus-within{left:auto;right:1rem;top:5.5rem}
+.desk-keys span{color:#8fb8d8;font-weight:600}
+.desk-keys a,.desk-keys button{font:inherit;color:#e8f6ff;background:rgba(0,212,255,.12);border:1px solid rgba(0,212,255,.4);
+  border-radius:99px;padding:.3rem .7rem;cursor:pointer;text-decoration:none}
+
+/* before / after toggle over the art's lower-left corner */
+.desk-ba{position:absolute;z-index:5;display:flex;align-items:center;gap:2px;padding:3px;border-radius:99px;
+  background:rgba(6,14,28,.78);border:1px solid rgba(0,212,255,.3);backdrop-filter:blur(6px);font-size:.72rem}
+.desk-ba-k{color:#8fb8d8;font-weight:600;padding:0 .5rem 0 .55rem;letter-spacing:.04em;text-transform:uppercase}
+.desk-ba button{font:inherit;font-weight:700;color:#bcd6ea;background:none;border:0;border-radius:99px;padding:.32rem .75rem;cursor:pointer;
+  transition:background-color .2s ease,color .2s ease}
+.hero .desk-ba button[aria-pressed="true"]{background:#00d4ff;color:#03121f}
+.desk-ba button:focus-visible{outline:2px solid #00d4ff;outline-offset:2px}
+
+/* SVG clutter over the plate (no-3D fallback) */
+.desk-mess{position:absolute;inset:0;z-index:3;pointer-events:none}
+.desk-mess svg{width:100%;height:100%;display:block}
+.desk-mess .dm-i{opacity:0;transform:translateY(-14px) scale(.9);transform-box:fill-box;transform-origin:center;
+  transition:opacity .35s ease var(--d),transform .45s cubic-bezier(.3,1.5,.5,1) var(--d)}
+.hero-scene.is-messy .desk-mess .dm-i{opacity:1;transform:none}
+.hero-scene.has-3d .desk-mess{display:none}
+
+/* automation pipeline strip above the 3-click demo (desktop only) */
+.pipe3d{position:relative;height:170px;max-width:860px;margin:0 auto 1rem;border-radius:14px;
+  background:radial-gradient(ellipse at 50% 70%,rgba(0,212,255,.08),transparent 70%)}
+.pipe3d .sm-slot{left:0;top:0}
+.pipe3d-tip{position:absolute;z-index:3;pointer-events:none;transform:translate(-50%,-100%);min-width:200px;max-width:260px;
+  padding:.5rem .7rem;border-radius:10px;background:rgba(6,14,28,.95);border:1px solid rgba(0,212,255,.4);color:#cfe6f7;
+  font-size:.75rem;line-height:1.35;opacity:0;transition:opacity .15s ease}
+.pipe3d-tip.on{opacity:1}
+.pipe3d-tip b{display:block;color:#fff;margin-bottom:.15rem}
+.pipe3d-tip i{display:block;font-style:normal;color:#2ee6a0;font-weight:700;margin-top:.2rem}
+
+/* project cards: result flip */
+.proj-thumb .pc-flip-tab{position:absolute;left:.6rem;bottom:.6rem;z-index:9;font-family:inherit;font-weight:700;font-size:.66rem;line-height:1;letter-spacing:.08em;text-transform:uppercase;
+  color:#03121f;background:#00d4ff;border:0;border-radius:99px;padding:.38rem .6rem;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+.proj-thumb .pc-flip-tab:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.pc-back{position:absolute;inset:0;z-index:8;display:flex;flex-direction:column;justify-content:center;gap:.2rem;padding:.8rem 1.1rem 2.2rem;
+  background:linear-gradient(135deg,rgba(var(--glow,0,212,255),.35),rgba(6,14,28,0) 65%),#081324;color:#e8f6ff;
+  opacity:0;pointer-events:none;transition:opacity .25s ease}
+.pc-back .pc-k{font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#8fd8ff}
+.pc-back b{font-size:1.6rem;line-height:1.1;color:#fff}
+.pc-back .pc-s{font-size:.82rem;color:#bcd6ea}
+.pc-back p{margin:.25rem 0 0;font-size:.76rem;line-height:1.35;color:#cfe0ee;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.proj-thumb.is-flipped .pc-back{opacity:1;pointer-events:auto}
+.proj-thumb.is-flipped .t-overlay{opacity:0!important;pointer-events:none}
+/* fine pointers: the result face swings over the thumbnail like a card turning */
+@media (pointer:fine) and (prefers-reduced-motion:no-preference){
+  .pc-3d .pc-back{opacity:1;backface-visibility:hidden;transform-origin:50% 50%;transform:perspective(900px) rotateY(-180deg);
+    transition:transform .6s cubic-bezier(.3,.7,.3,1)}
+  .pc-3d .proj-thumb.is-flipped .pc-back{transform:perspective(900px) rotateY(0)}
+}
+@media (prefers-reduced-motion:reduce){
+  .desk-mess .dm-i,.pc-back,.desk-ba button{transition:none}
+}

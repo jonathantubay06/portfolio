@@ -24,6 +24,11 @@
    the odd hop, each to its own beat), a flip calendar that
    ticks off a task every 8s, parcels on a scale that weighs each order,
    and steam off the coffee mug.
+   Round 7 (2026-10-02): the laptop, tablet and desk monitor are links
+   (case studies / project modal) with a hover tint; window.__hero3d
+   exposes the scene to 40-desk-extras.js (monitor dashboard, before/
+   after clutter, camera dolly) and Dumpling + the pups hop toward a
+   hovered CTA (the 'dog-cta' event).
 ═══════════════════════════════════════ */
 (function () {
   var stage = document.getElementById('heroStage');
@@ -34,7 +39,9 @@
 
   var V = 'https://cdn.jsdelivr.net/npm/three@0.170.0';
   /* hover labels: node name -> { label, href (click scrolls), act } */
-  var LAPTOP = { label: 'Click to see a sale', act: 'laptop' }, TABLET = { label: 'Workflow automation' };
+  /* hl: tint on hover. Page hrefs navigate, #hrefs scroll, modal opens a project modal */
+  var LAPTOP = { label: 'Inventory sync case study', href: 'case-studies/inventory-sync', hl: true },
+    TABLET = { label: 'MOEV case study', href: 'case-studies/moev', hl: true };
   var OWN = {
     cube_cart: { label: 'Store builds', href: '#work' },
     cube_gear: { label: 'Try an automation', href: '#automation-demo' },
@@ -42,7 +49,8 @@
     logo_gear: { label: 'Give it a spin', act: 'gear' },
     laptop_base: LAPTOP, laptop_lid: LAPTOP, laptop_keys: LAPTOP,
     drone: { label: 'Fulfilment' }, rack: { label: 'Monitoring 24/7' },
-    holo_code: { label: 'Custom integrations' }, holo_chart: { label: 'Live analytics' },
+    holo_code: { label: 'Custom integrations' },
+    holo_chart: { label: 'KDL video checker', modal: 'modal-kdl-checker', hl: true },
     tablet: TABLET, tablet_screen: TABLET, tablet_stand: TABLET,
     holo_order: { label: 'Real-time orders' }, bot: { label: 'Warehouse automation', act: 'bot' },
     dog: { label: 'Dumpling, chief morale officer' },
@@ -162,6 +170,9 @@
       if (P.paw_r) { P.paw_r.rotation.z = P.paw_r.userData.r0.z + pr * 0.09 + land * 0.06 - up * 0.06; P.paw_r.position.y = P.paw_r.userData.p0.y + pr * 0.007; }
     }
     var pups = [], cal = null, weigh = null, steam = null;
+    /* shared with 40-desk-extras.js: ticks run each frame before render,
+       dolly 0..1 pulls the camera in toward the desk */
+    var H = { THREE: THREE, world: world, rig: rig, cam: cam, picks: picks, ticks: [], dolly: 0, chartDraw: null };
     var zc = new THREE.Vector3(), zcam = new THREE.Vector3(), look = new THREE.Vector3();
     var loader = new GLTFLoader(); loader.setMeshoptDecoder(MeshoptDecoder);
     loader.load('img/hero3d/scene.glb', function (g) {
@@ -244,6 +255,9 @@
       motes = new THREE.Points(pg, new THREE.PointsMaterial({ color: 0x5fdcff, size: 0.018, transparent: true, opacity: 0.7, depthWrite: false }));
       rig.add(motes);
       flow = dataFlow(); sparks = sparkBurst(); orders = orderPops();
+      H.root = g.scene; H.dog = dog; H.pups = pups; H.screens = screens;
+      window.__hero3d = H;
+      dispatchEvent(new Event('hero3d:ready'));
       scene.classList.add('has-3d');
       /* after the fade-in, the scroll fade drives opacity directly */
       setTimeout(function () { canvas.style.transition = 'none'; }, 1000);
@@ -665,12 +679,36 @@
       if (e.timeStamp - lastPick < 33) return;
       lastPick = e.timeStamp;
       var c = owner(e);
+      if (c !== hover) { tint(hover, 0); tint(c, 1); }
       hover = c;
-      stage.style.cursor = c && (c.userData.own.href || c.userData.own.act) ? 'pointer' : '';
-      if (c) { tip.textContent = c.userData.own.label + (c.userData.own.href ? ' →' : ''); tip.classList.add('on'); }
+      var go = c && (c.userData.own.href || c.userData.own.act || c.userData.own.modal);
+      stage.style.cursor = go ? 'pointer' : '';
+      if (c) { tip.textContent = c.userData.own.label + (c.userData.own.href || c.userData.own.modal ? ' →' : ''); tip.classList.add('on'); }
       else tip.classList.remove('on');
     }, { passive: true });
-    stage.addEventListener('pointerleave', function () { tx = ty = 0; hover = null; tip.classList.remove('on'); });
+    stage.addEventListener('pointerleave', function () { tx = ty = 0; tint(hover, 0); hover = null; tip.classList.remove('on'); stage.style.cursor = ''; });
+    /* hover tint for clickable props (own.hl): a cool emissive wash on
+       their own (cloned) materials. Live-screen materials are skipped,
+       their glow is rewritten every frame. */
+    var TINT = new THREE.Color(0x1d6f99);
+    function tint(o, on) {
+      if (!o || !o.userData.own.hl) return;
+      o.traverse(function (m) {
+        if (!m.isMesh || !m.material || m.material.userData.e0 !== undefined || m.material.userData.keepEmissive) return;
+        if (!m.userData.tint) {
+          m.material = m.material.clone();
+          m.userData.tint = { c: m.material.emissive.clone(), i: m.material.emissiveIntensity };
+        }
+        var b = m.userData.tint;
+        if (on) { m.material.emissive.copy(b.c).lerp(TINT, 0.65); m.material.emissiveIntensity = Math.max(b.i, 0.9); }
+        else { m.material.emissive.copy(b.c); m.material.emissiveIntensity = b.i; }
+      });
+    }
+    H.tint = tint;
+    /* a CTA hovered (40-desk-extras.js): Dumpling hops and turns toward
+       it, the pups follow one after another */
+    var ctaReq = null, ctaT = -9, ctaDir = 0;
+    addEventListener('dog-cta', function (e) { ctaReq = e.detail || {}; });
     stage.addEventListener('click', function (e) {
       if (zoomT) { zoomOut(); return; }
       hover = owner(e);
@@ -678,6 +716,8 @@
       var own = hover.userData.own;
       if (own.act === 'gear') { gearBoost = 14; if (sparks) sparks.fire(); return; }
       if (own.act === 'laptop') { zoomIn(); return; }
+      if (own.modal) { var mb = document.querySelector('.btn-modal-open[data-modal="' + own.modal + '"]'); if (mb) mb.click(); return; }
+      if (own.href && own.href.charAt(0) !== '#') { location.href = own.href; return; }
       var el = own.href && document.querySelector(own.href);
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
@@ -724,7 +764,7 @@
 
       /* camera: pointer lean, then pulled back along its view line by scroll,
          then eased toward the face-on view of the laptop screen */
-      v1.set(camBase.x + px * 0.9 * lean, camBase.y - py * 0.5 * lean, camBase.z - px * 0.6 * lean).sub(target).multiplyScalar(1 + sp * 0.45 * lean);
+      v1.set(camBase.x + px * 0.9 * lean, camBase.y - py * 0.5 * lean, camBase.z - px * 0.6 * lean).sub(target).multiplyScalar((1 + sp * 0.45 * lean) * (1 - H.dolly * 0.16));
       cam.position.copy(target).add(v1).lerp(zcam, z);
       cam.lookAt(look.copy(target).lerp(zc, z));
       rig.rotation.x = sp * 0.15 * lean;
@@ -814,6 +854,19 @@
       /* Dumpling (photo billboard): breaths, a bob, a hop every 4-7 s
          (squash, up, stretch, land squash) and the tail plume wagging on
          its own empty (dog_tail, pivot at the tail base) */
+      if (ctaReq && dog.root) {
+        var cr0 = canvas.getBoundingClientRect();
+        dog.root.getWorldPosition(v2); v2.project(cam);
+        ctaDir = (ctaReq.x || 0) < cr0.left + (v2.x + 1) / 2 * cr0.width ? -1 : 1;
+        ctaReq = null;
+        /* only if she is not already mid-hop; the pups queue up behind */
+        if (t - ctaT > 1.2) {
+          if (hopAt - t > 0.1) hopAt = t + 0.05;
+          for (i = 0; i < pups.length; i++) if (pups[i].hopAt - t > 0.1) pups[i].hopAt = t + 0.25 + i * 0.18;
+          ctaT = t;
+        }
+      }
+      var ck = t - ctaT, cta = ck < 0 ? 0 : ck < 0.3 ? ease(ck / 0.3) : ck < 2 ? 1 : ease(1 - (ck - 2) / 0.6);
       if (dog.body) {
         var hp = dogHop(t), br = Math.sin(t * 2.1) * 0.5 + 0.5, bs = dog.body.userData.s0;
         dog.body.scale.set(bs.x * (1 + br * 0.014) * hp.sx, bs.y * (1 + br * 0.035) * hp.sy, bs.z);
@@ -825,7 +878,7 @@
         }
         pawPose(dog, t, hp, hopAt - t);
         if (dog.tail) {
-          dogWag += dt * (hp.on ? 17 : 7.5);
+          dogWag += dt * (hp.on || cta > 0.5 ? 17 : 7.5);
           dog.tail.rotation.z = dog.tail.userData.r0.z + Math.sin(dogWag) * (hp.on ? 0.2 : 0.15);
         }
       }
@@ -837,7 +890,8 @@
         /* the card faces +Z in its own frame; follow half the offset, at
            most ~10deg, so it stays square-on and never turns visibly */
         var off = Math.atan2(Math.sin(yaw - base), Math.cos(yaw - base));
-        dog.root.rotation.y = base + Math.max(-0.18, Math.min(0.18, off * 0.5));
+        dog.root.rotation.y = base + Math.max(-0.18, Math.min(0.18, off * 0.5)) + ctaDir * 0.22 * cta;
+        if (dog.head) { dog.head.rotation.y = dog.head.userData.r0.y + ctaDir * 0.3 * cta; dog.head.rotation.z = dog.head.userData.r0.z + 0.1 * cta; }
       }
       /* the pups (photo cut-outs): breathing, the odd hop, paw pats and
          a tail wag, each on its own clock and temperament; the card
@@ -863,7 +917,8 @@
           cam.getWorldPosition(dogW); P.root.parent.worldToLocal(dogW);
           var pyaw = Math.atan2(dogW.x - P.root.position.x, dogW.z - P.root.position.z), pb0 = P.root.userData.r0.y;
           var poff = Math.atan2(Math.sin(pyaw - pb0), Math.cos(pyaw - pb0));
-          P.root.rotation.y = pb0 + Math.max(-0.18, Math.min(0.18, poff * 0.5));
+          var pc = t - ctaT - 0.25 - i * 0.18, pk = pc < 0 ? 0 : pc < 0.3 ? ease(pc / 0.3) : pc < 1.8 ? 1 : ease(1 - (pc - 1.8) / 0.6);
+          P.root.rotation.y = pb0 + Math.max(-0.18, Math.min(0.18, poff * 0.5)) + ctaDir * 0.2 * pk;
         }
       }
       if (cal) cal(t);
@@ -872,6 +927,7 @@
       if (screens && t - lastDraw > 1 / 30) { screens(t); lastDraw = t; }
       if (motes) { motes.rotation.y = t * 0.03; motes.position.y = Math.sin(t * 0.4) * 0.05; }
 
+      for (i = 0; i < H.ticks.length; i++) H.ticks[i](t, dt);
       composer.render();
       loop();
     }
@@ -905,7 +961,7 @@
     }
     var mats = [];
     var L = slot('laptop_screen', 640, 400), T = slot('tablet_screen', 300, 410),
-        C = slot('holo_chart', 320, 200), K = slot('laptop_keys', 512, 256), G = slot('holo_gauge', 256, 256),
+        C = slot('holo_chart', 480, 300), K = slot('laptop_keys', 512, 256), G = slot('holo_gauge', 256, 256),
         D = slot('holo_code', 360, 240);
     function rr(g, x, y, w, h, r, fill) { g.fillStyle = fill; g.beginPath(); g.roundRect(x, y, w, h, r); g.fill(); }
 
@@ -979,8 +1035,11 @@
         T.tex.needsUpdate = true;
       }
       /* chart: line draws over 3s, holds, then a new week */
-      if (C) {
+      /* draw.chart (40-desk-extras.js) turns the chart into the monitor's dashboard */
+      if (C && draw.chart) { draw.chart(C.g, t, C.w, C.h); C.tex.needsUpdate = true; }
+      else if (C) {
         var g3 = C.g, ct = t % 5, pr = ease(ct / 3);
+        g3.setTransform(1.5, 0, 0, 1.5, 0, 0);
         if (ct < 0.04) vals = vals.map(function (v, i) { return Math.max(18, Math.min(90, 20 + i * 8 + (Math.random() * 24 - 12))); });
         g3.fillStyle = '#081426'; g3.fillRect(0, 0, 320, 200);
         g3.strokeStyle = '#00d4ff'; g3.lineWidth = 3; g3.beginPath(); g3.roundRect(3, 3, 314, 194, 12); g3.stroke();

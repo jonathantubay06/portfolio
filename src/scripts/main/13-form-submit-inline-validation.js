@@ -80,7 +80,13 @@ function handleSubmit(e) {
     termLine(form, '✓ delivered — opening confirmation', 'ok');
     announceForm('Message sent. Taking you to the confirmation page.');
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    setTimeout(() => window.location.assign('/thanks/'), reduce ? 0 : 650);
+    // 39-section-3d.js may ask for a little longer (window.__formHoldUntil)
+    // while Dumpling carries the envelope off on desktop.
+    const leave = () => {
+      const wait = (window.__formHoldUntil || 0) - performance.now();
+      if (wait > 0 && wait < 3000) setTimeout(leave, wait); else window.location.assign('/thanks/');
+    };
+    setTimeout(leave, reduce ? 0 : 650);
   })
   .catch(() => {
     // Something went wrong — re-enable so user can try again

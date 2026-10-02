@@ -1,0 +1,43 @@
+/* ═══════════════════════════════════════
+   CONTENT PASS (2026-10-02): nav, typing line, FAQ, How I work, stats
+═══════════════════════════════════════ */
+
+/* Nav: dark translucent at the top of the page in both themes. The hero is
+   dark in light mode too, so the old light bar read as a grey strip over it. */
+nav:not(.scrolled):not(.nav-drawer){background:rgba(6,14,26,.55);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+[data-theme="light"] nav:not(.scrolled):not(.nav-drawer){background:rgba(6,14,26,.55);box-shadow:none}
+[data-theme="light"] nav:not(.scrolled) .nav-links a{color:rgba(232,244,255,.78)}
+[data-theme="light"] nav:not(.scrolled) .nav-links a:hover{color:var(--cyan)}
+[data-theme="light"] nav:not(.scrolled) .nav-logo{color:#e8f4ff}
+[data-theme="light"] nav:not(.scrolled) .nav-toggle span{background:#e8f4ff}
+
+/* Typing line: static text on phones may wrap instead of clipping */
+.hero-sub.is-static{white-space:normal;overflow-wrap:anywhere}
+.hero-sub.is-static .typing-cursor{display:none}
+
+/* How I work note under the process steps */
+.how-i-work{max-width:720px;margin:1.2rem auto 0;font-size:.95rem;line-height:1.7;color:var(--muted2);text-align:center}
+.how-i-work strong{color:var(--text)}
+
+/* FAQ */
+.faq-list{max-width:780px;margin:0 auto;display:grid;gap:.6rem}
+.faq-item{border:1px solid var(--border);border-radius:var(--radius,8px);background:var(--surface)}
+.faq-item summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:1rem;padding:1rem 1.2rem;min-height:44px;font-weight:600;color:var(--text)}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-item summary::after{content:'+';font-family:var(--font-head);color:var(--cyan);font-size:1.2rem;line-height:1;transition:transform .2s ease;flex-shrink:0}
+.faq-item[open] summary::after{transform:rotate(45deg)}
+.faq-item summary:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.faq-item p{padding:0 1.2rem 1.1rem;margin:0;line-height:1.75;color:var(--muted2)}
+@media (prefers-reduced-motion:reduce){.faq-item summary::after{transition:none}}
+
+/* Stats: one compact row of four on phones instead of a 2x2 block */
+@media (max-width:600px){
+  .stat-strip{display:grid;grid-template-columns:repeat(4,1fr)}
+  .stat-item,.stat-item:nth-child(2),.stat-item:nth-child(3){border-bottom:none;border-right:1px solid var(--border);padding:.6rem .2rem}
+  .stat-item:last-child{border-right:none}
+  .stat-num{font-size:1rem}
+  .stat-lbl{font-size:.55rem;letter-spacing:.04em;line-height:1.25}
+}
+
+.svc-case-link{display:inline-block;margin-top:.6rem;font-size:.85rem;font-weight:600;color:var(--accent,#1aa3ff);text-decoration:none}
+.svc-case-link:hover{text-decoration:underline}

@@ -20,6 +20,12 @@
    The loop runs at ~30fps only while a slot is on screen and the tab is
    visible; it stops entirely otherwise. Placement measures the text in
    each card and skips a slot that would cover any of it.
+
+   2026-10-02: window.__sm3dApi lends this renderer to 40-desk-extras.js
+   (the automation pipeline view). On a successful contact submit
+   Dumpling picks up the envelope and trots off with it, and the paper
+   plane (38-section-motion.js) launches from her mouth; she also hops
+   when a CTA is hovered ('dog-cta').
 ═══════════════════════════════════════ */
 (function () {
   var mq = matchMedia('(min-width:1024px) and (pointer:fine) and (prefers-reduced-motion:no-preference)');
@@ -29,7 +35,7 @@
   if (!work && !contact) return;
 
   var V = 'https://cdn.jsdelivr.net/npm/three@0.170.0';
-  var BW = 600, BH = 400;                 /* shared drawing buffer, device px */
+  var BW = 1280, BH = 400;                /* shared drawing buffer, device px (wide for the pipeline strip) */
   var T = null, renderer = null, gl = null, modP = null;
   var views = [], running = false, last = 0, clock0 = performance.now();
   var px = innerWidth / 2, py = innerHeight / 2;
@@ -110,6 +116,11 @@
   }
   document.addEventListener('visibilitychange', kick);
   addEventListener('pointermove', function (e) { px = e.clientX; py = e.clientY; }, { passive: true });
+
+  window.__sm3dApi = {
+    engine: engine, slot: slot, addView: addView, fit: fit, lights: lights, blobTex: blobTex, kick: kick,
+    three: function () { return T; }
+  };
 
   /* ── free-space test: never cover text ───────────────────────────
      Collects the line boxes of every text node in `box` plus the boxes
@@ -326,6 +337,34 @@
        small trot bob (she is modelled lying down, so she glides in low),
        then the head comes up and the tail starts. */
     var t0 = -1, look = 0, walkX = S * 2.4, lastT = 0, wag = 0, hopAt = 0;
+    /* the envelope she carries off after a successful send */
+    var ec = document.createElement('canvas'); ec.width = 128; ec.height = 88;
+    (function (g) {
+      g.fillStyle = '#eaf6ff'; g.beginPath(); g.roundRect(2, 2, 124, 84, 8); g.fill();
+      g.strokeStyle = '#00a8d8'; g.lineWidth = 5; g.stroke();
+      g.beginPath(); g.moveTo(6, 8); g.lineTo(64, 50); g.lineTo(122, 8); g.stroke();
+    })(ec.getContext('2d'));
+    var etex = new T.CanvasTexture(ec); etex.colorSpace = T.SRGBColorSpace;
+    var env = new T.Mesh(new T.PlaneGeometry(S * 0.34, S * 0.23), new T.MeshBasicMaterial({ map: etex, transparent: true, side: T.DoubleSide, depthTest: false }));
+    var mouth = new T.Vector3(0, S * 0.5, S * 0.05);
+    if (parts.head) { parts.head.getWorldPosition(mouth); walker.worldToLocal(mouth); mouth.y -= S * 0.08; mouth.z += S * 0.3; }
+    env.renderOrder = 3;
+    env.position.copy(mouth); env.rotation.z = -0.2; env.visible = false; walker.add(env);
+    var carryT = -1, ctaHop = false;
+    addEventListener('dog-cta', function () { ctaHop = true; });
+    var pv = new T.Vector3();
+    window.__smDogCarry = function () {
+      if (!v.vis || v.canvas.style.display === 'none' || t0 < 0) return null;
+      carryT = lastT;
+      /* 13-form-submit-inline-validation.js waits for this before it leaves */
+      window.__formHoldUntil = performance.now() + 1500;
+      return function () {
+        env.getWorldPosition(pv); pv.project(cam);
+        var r = v.canvas.getBoundingClientRect();
+        var x = r.left + (pv.x + 1) / 2 * r.width, y = r.top + (1 - pv.y) / 2 * r.height;
+        return { left: x - 20, top: y - 14, right: x + 20, bottom: y + 14, width: 40, height: 28 };
+      };
+    };
     /* a hop every 4-7 s once she has arrived: squash, up, stretch, land */
     function hop(t) {
       var u = (t - hopAt) / 0.95, r = { h: 0, sx: 1, sy: 1, u: u, on: u >= 0 && u < 1 };
@@ -357,6 +396,16 @@
       var a = t - t0, k = Math.min(1, a / 1.6), e = 1 - Math.pow(1 - k, 3);
       walker.position.x = walkX * (1 - e);
       walker.position.y = k < 1 ? Math.abs(Math.sin(a * 11)) * S * 0.035 * (1 - k) : 0;
+      if (ctaHop) { ctaHop = false; if (a > 2.5 && hopAt - t > 0.3) hopAt = t + 0.05; }
+      if (carryT >= 0) {
+        /* grab (0-0.3 s), then trot off to the right */
+        var c = t - carryT, gk = Math.min(1, c / 0.3);
+        env.visible = true; env.scale.setScalar(0.4 + 0.6 * gk);
+        var go = Math.max(0, c - 0.35), gx = go * go * S * 2.2 + go * S * 1.2;
+        walker.position.x = gx;
+        walker.position.y = go > 0 ? Math.abs(Math.sin(go * 13)) * S * 0.05 : 0;
+        env.rotation.z = -0.2 + Math.sin(c * 13) * 0.08;
+      }
       sh.material.opacity = 0.4 * Math.min(1, a * 2);
       var up = Math.max(0, Math.min(1, (a - 1.5) / 0.8)), upE = up * up * (3 - 2 * up);
       /* glance at the form while someone types */

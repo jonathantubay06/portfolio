@@ -6,6 +6,7 @@ services
 portfolio
 testimonials
 experience
+faq
 special-thanks
 project-modals
 keyboard-shortcut-hint

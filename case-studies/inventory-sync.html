@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en" data-theme>
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Cin7 ↔ Shopify Inventory Sync — Case Study | Jonathan Tubay</title>
+<meta name="description" content="How I synced Cin7 Core and Shopify for a US tools and hardware retailer: staged, validated batches of about 200 SKUs, MAP pricing checks and 10+ hours a week saved."/>
+<link rel="canonical" href="https://jonathantubay.com/case-studies/inventory-sync"/>
+<meta property="og:title" content="Cin7 ↔ Shopify Inventory Sync — Case Study | Jonathan Tubay"/>
+<meta property="og:description" content="Cin7 Core and Shopify kept in step for a US tools and hardware retailer: validated batches, MAP checks, 10+ hours a week saved."/>
+<meta property="og:url" content="https://jonathantubay.com/case-studies/inventory-sync"/>
+<meta property="og:type" content="article"/>
+<meta property="og:image" content="https://jonathantubay.com/og-preview.jpg"/>
+<link rel="icon" type="image/png" href="../favicon.png" sizes="32x32"/>
+<link rel="preload" href="../fonts/orbitron-latin-var.woff2" as="font" type="font/woff2" crossorigin/>
+<link rel="preload" href="../fonts/plus-jakarta-sans-latin-var.woff2" as="font" type="font/woff2" crossorigin/>
+<link rel="stylesheet" href="../style.css"/>
+<style>
+  .cs-hero{min-height:40vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:6rem 1.5rem 3rem}
+  .cs-hero h1{font-family:var(--font-head);font-size:clamp(2rem,5vw,3.5rem);color:#fff}
+  .cs-hero .cs-tags{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin-top:1rem}
+  .cs-hero .cs-tag{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:.3rem .8rem;border-radius:2px;border:1px solid var(--border);color:var(--muted2)}
+  .cs-body{max-width:780px;margin:0 auto;padding:2rem 1.5rem 5rem}
+  .cs-body h2{font-family:var(--font-head);font-size:1.5rem;color:var(--cyan);margin:2.5rem 0 1rem}
+  .cs-body p,.cs-body li{font-size:1.05rem;line-height:1.85;color:var(--text);margin-bottom:1rem}
+  .cs-body ul{padding-left:1.5rem}
+  .cs-body ul li::marker{color:var(--cyan)}
+  .cs-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin:2rem 0}
+  .cs-metric{text-align:center;padding:1.5rem;background:rgba(0,212,255,.04);border:1px solid var(--border);border-radius:var(--radius)}
+  .cs-metric-num{font-family:var(--font-head);font-size:1.8rem;font-weight:900;color:var(--cyan)}
+  .cs-metric-label{font-size:.85rem;color:var(--muted);margin-top:.3rem}
+  .cs-back{display:inline-flex;align-items:center;gap:.4rem;color:var(--cyan);text-decoration:none;font-weight:600;margin-bottom:2rem;transition:gap .2s}
+  .cs-back:hover{gap:.7rem}
+  .cs-tech{display:flex;flex-wrap:wrap;gap:.5rem;margin:1.5rem 0}
+  .cs-tech span{font-size:.75rem;font-weight:600;padding:.35rem .8rem;border-radius:99px;background:rgba(0,212,255,.08);color:var(--cyan);border:1px solid rgba(0,212,255,.2)}
+  .cs-flow{margin:2rem 0;padding:1.2rem;border:1px solid var(--border);border-radius:var(--radius);background:rgba(0,212,255,.03)}
+  .cs-flow svg{display:block;width:100%;height:auto}
+  .cs-flow figcaption{font-size:.85rem;color:var(--muted);margin-top:.8rem;text-align:center}
+  .cs-flow .n rect{fill:rgba(0,212,255,.06);stroke:rgba(0,212,255,.45);stroke-width:1.5}
+  .cs-flow .n.chk rect{fill:rgba(245,158,11,.08);stroke:rgba(245,158,11,.65)}
+  .cs-flow .n.ok rect{fill:rgba(52,211,153,.08);stroke:rgba(52,211,153,.65)}
+  .cs-flow text{fill:var(--text);font:600 15px var(--font-body,sans-serif)}
+  .cs-flow text.s{fill:var(--muted);font-weight:400;font-size:12px}
+  .cs-flow text.lbl{fill:var(--muted);font-weight:400;font-size:11px}
+  .cs-flow path.e{stroke:#00d4ff;stroke-width:1.6;fill:none}
+  .cs-flow .m{display:none}
+  @media(max-width:600px){.cs-metrics{grid-template-columns:1fr}.cs-flow .d{display:none}.cs-flow .m{display:block}.cs-flow{padding:.8rem}}
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to main content</a>
+<div class="noise-overlay" aria-hidden="true"></div>
+
+<nav class="nav" aria-label="Main navigation">
+  <a href="../" class="nav-logo">Jonathan Tubay</a>
+  <div class="nav-links">
+    <a href="../#work">Work</a>
+    <a href="../#services">Services</a>
+    <a href="../#testimonials">Reviews</a>
+    <a href="../#experience">Experience</a>
+    <a href="../#contact" class="nav-cta">Contact Me</a>
+  </div>
+</nav>
+
+<main id="main">
+  <section class="cs-hero">
+    <div>
+      <div class="cs-tags">
+        <span class="cs-tag">Shopify</span>
+        <span class="cs-tag">Cin7 Core</span>
+        <span class="cs-tag">Automation</span>
+        <span class="cs-tag">Tools &amp; Hardware</span>
+      </div>
+      <h1>Inventory &amp; Price Sync</h1>
+      <p style="color:var(--muted);font-size:1.1rem;max-width:620px;margin:1rem auto 0">
+        Cin7 Core and Shopify kept in step for a US tools and hardware retailer with thousands of SKUs. Prices, stock and product data now move in checked batches instead of by hand.
+      </p>
+    </div>
+  </section>
+
+  <article class="cs-body">
+    <a href="../#work" class="cs-back">← Back to Portfolio</a>
+
+    <div class="cs-metrics">
+      <div class="cs-metric">
+        <div class="cs-metric-num">10+ hrs</div>
+        <div class="cs-metric-label">Saved per week</div>
+      </div>
+      <div class="cs-metric">
+        <div class="cs-metric-num">~200</div>
+        <div class="cs-metric-label">SKUs per validated batch</div>
+      </div>
+      <div class="cs-metric">
+        <div class="cs-metric-num">2-step</div>
+        <div class="cs-metric-label">Staged, then checked before live</div>
+      </div>
+    </div>
+
+    <h2>The Problem</h2>
+    <p>
+      The client sells tools and hardware online through Shopify, while Cin7 Core holds the inventory and pricing. The two systems did not talk to each other, so every supplier price change meant someone updating both by hand, across a catalog of thousands of SKUs.
+    </p>
+    <ul>
+      <li><strong>Weekly price lists:</strong> new supplier pricing arrived every week and had to be keyed in twice.</li>
+      <li><strong>MAP rules:</strong> many brands set a minimum advertised price. One typo could put the store below a supplier's floor.</li>
+      <li><strong>Product data gaps:</strong> many products had no weight or dimensions, so shipping rates came out wrong or the item could not be added to the cart.</li>
+    </ul>
+
+    <h2>The System</h2>
+    <p>I built a pipeline that moves changes from the price list to the live store in stages, with a check before anything goes public.</p>
+
+    <figure class="cs-flow">
+      <svg class="d" viewBox="0 0 760 230" role="img" aria-labelledby="flowTitle flowDesc">
+        <title id="flowTitle">Sync pipeline</title>
+        <desc id="flowDesc">The weekly price list in Google Sheets feeds Zapier and Airtable workflows, which stage a batch in Cin7 Core. The batch is validated, pushed to Shopify as drafts, then set live.</desc>
+        <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#00d4ff"/></marker></defs>
+        <g class="n"><rect x="10" y="20" width="160" height="70" rx="8"/><text x="90" y="50" text-anchor="middle">Google Sheets</text><text class="s" x="90" y="70" text-anchor="middle">weekly price list</text></g>
+        <g class="n"><rect x="300" y="20" width="160" height="70" rx="8"/><text x="380" y="50" text-anchor="middle">Zapier + Airtable</text><text class="s" x="380" y="70" text-anchor="middle">clean up, MAP rules</text></g>
+        <g class="n"><rect x="590" y="20" width="160" height="70" rx="8"/><text x="670" y="50" text-anchor="middle">Cin7 Core</text><text class="s" x="670" y="70" text-anchor="middle">batch staged</text></g>
+        <g class="n chk"><rect x="590" y="140" width="160" height="70" rx="8"/><text x="670" y="170" text-anchor="middle">Validation</text><text class="s" x="670" y="190" text-anchor="middle">price, MAP, dims</text></g>
+        <g class="n"><rect x="300" y="140" width="160" height="70" rx="8"/><text x="380" y="170" text-anchor="middle">Shopify (draft)</text><text class="s" x="380" y="190" text-anchor="middle">pushed via API</text></g>
+        <g class="n ok"><rect x="10" y="140" width="160" height="70" rx="8"/><text x="90" y="170" text-anchor="middle">Live</text><text class="s" x="90" y="190" text-anchor="middle">reviewed, published</text></g>
+        <path class="e" d="M170 55H296" marker-end="url(#ah)"/>
+        <path class="e" d="M460 55H586" marker-end="url(#ah)"/>
+        <path class="e" d="M670 90V136" marker-end="url(#ah)"/>
+        <path class="e" d="M590 175H464" marker-end="url(#ah)"/><text class="lbl" x="525" y="166" text-anchor="middle">pass</text>
+        <path class="e" d="M300 175H174" marker-end="url(#ah)"/><text class="lbl" x="236" y="166" text-anchor="middle">go-ahead</text>
+      </svg>
+      <svg class="m" viewBox="0 0 300 545" role="img" aria-label="Sync pipeline: Google Sheets price list, Zapier and Airtable, Cin7 Core staging, validation, Shopify draft, live">
+        <defs><marker id="ahm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#00d4ff"/></marker></defs>
+        <g class="n"><rect x="40" y="5" width="220" height="62" rx="8"/><text x="150" y="32" text-anchor="middle">Google Sheets</text><text class="s" x="150" y="52" text-anchor="middle">weekly price list</text></g>
+        <g class="n"><rect x="40" y="99" width="220" height="62" rx="8"/><text x="150" y="126" text-anchor="middle">Zapier + Airtable</text><text class="s" x="150" y="146" text-anchor="middle">clean up, MAP rules</text></g>
+        <g class="n"><rect x="40" y="193" width="220" height="62" rx="8"/><text x="150" y="220" text-anchor="middle">Cin7 Core</text><text class="s" x="150" y="240" text-anchor="middle">batch staged</text></g>
+        <g class="n chk"><rect x="40" y="287" width="220" height="62" rx="8"/><text x="150" y="314" text-anchor="middle">Validation</text><text class="s" x="150" y="334" text-anchor="middle">price, MAP, dims</text></g>
+        <g class="n"><rect x="40" y="381" width="220" height="62" rx="8"/><text x="150" y="408" text-anchor="middle">Shopify (draft)</text><text class="s" x="150" y="428" text-anchor="middle">pushed via API</text></g>
+        <g class="n ok"><rect x="40" y="475" width="220" height="62" rx="8"/><text x="150" y="502" text-anchor="middle">Live</text><text class="s" x="150" y="522" text-anchor="middle">reviewed, published</text></g>
+        <path class="e" d="M150 67V95" marker-end="url(#ahm)"/><path class="e" d="M150 161V189" marker-end="url(#ahm)"/><path class="e" d="M150 255V283" marker-end="url(#ahm)"/><path class="e" d="M150 349V377" marker-end="url(#ahm)"/><path class="e" d="M150 443V471" marker-end="url(#ahm)"/>
+      </svg>
+      <figcaption>Nothing reaches the live store without passing validation and a final go-ahead.</figcaption>
+    </figure>
+
+    <ul>
+      <li><strong>Cin7 ↔ Shopify sync through the APIs:</strong> prices and stock levels flow from Cin7 Core to Shopify without anyone retyping them.</li>
+      <li><strong>Zapier, Airtable and Google Sheets workflows:</strong> the weekly price list is the single input. Workflows clean it up, apply the pricing rules and hand it to the sync.</li>
+      <li><strong>Batch staging and validation:</strong> changes go out in batches of about 200 SKUs. Each batch is staged in Cin7 first and checked before it is pushed to Shopify, where it lands as drafts for a final review.</li>
+      <li><strong>MAP handling:</strong> products with a minimum advertised price are flagged and checked against it, so the store does not advertise below the supplier's floor.</li>
+      <li><strong>Shipping data:</strong> missing weights and dimensions are filled in and synced to Shopify and the shipping app, so rates come out right and products can be added to the cart.</li>
+    </ul>
+
+    <h2>The Tech Stack</h2>
+    <div class="cs-tech">
+      <span>Shopify</span><span>Cin7 Core</span><span>Shopify Admin API</span>
+      <span>Cin7 API</span><span>Zapier</span><span>Airtable</span>
+      <span>Google Sheets</span>
+    </div>
+
+    <h2>The Result</h2>
+    <ul>
+      <li><strong>10+ hours a week saved</strong> on manual price and inventory updates.</li>
+      <li><strong>Batches of around 200 SKUs</strong> go live at a time, each one validated first.</li>
+      <li><strong>Fewer pricing errors:</strong> MAP checks and the staged review catch mistakes before customers see them.</li>
+      <li><strong>Better product data:</strong> weights and dimensions are filled in, so shipping quotes are accurate.</li>
+    </ul>
+    <p>The weekly price list is now a routine job, and the team spends the time it used to take on the store itself.</p>
+
+    <p style="text-align:center;margin-top:3rem">
+      <a href="../#contact" class="btn btn-p">Talk about your sync →</a>
+    </p>
+  </article>
+</main>
+
+<footer>
+  <div class="foot-inner">
+    <p>© <span id="footYear"></span> Jonathan Tubay. Built by hand.</p>
+    <p class="foot-reg">DTI Registered · BIR Accredited · BMBE Certified</p>
+  </div>
+</footer>
+<script>document.getElementById('footYear').textContent=new Date().getFullYear()</script>
+</body>
+</html>

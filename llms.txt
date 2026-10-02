@@ -1,18 +1,29 @@
 # Jonathan Tubay
 
-> Shopify and WordPress developer and automation builder based in Manila, Philippines. 12+ years of experience. Technology Lead at SentryX, and available for freelance projects.
+> Shopify and WordPress developer and automation specialist based in Manila, Philippines. 12+ years of experience. Technology Lead at SentryX, and available for freelance projects worldwide.
 
-## What I build
-- Shopify stores: custom themes, app integrations, catalog, payments and checkout setup, post-launch support
-- WordPress and WooCommerce sites: new builds and CMS migrations, ACF/Gutenberg, mobile-first and SEO-ready
-- Softr apps on Airtable: client portals, internal dashboards, role-based access
-- Workflow automation: Zapier, n8n and custom code (inventory syncs such as Cin7 to Shopify, reports, alerts)
-- Figma-to-production front-end builds
+## Services
+- Shopify development: custom themes, app integrations, catalog, payments and checkout setup, post-launch support
+- WordPress and WooCommerce: new builds and CMS migrations, ACF/Gutenberg, mobile-first and SEO-ready
+- Workflow automation: Zapier, n8n and Make, with Airtable and Google Sheets as data layers (reports, alerts, order and data flows)
+- Inventory and ERP sync: Cin7 Core to Shopify price, inventory and product-data sync, with staged batches, validation before going live, MAP pricing rules, and weight and shipping-dimension updates
+- Also: Softr apps on Airtable (client portals, internal dashboards) and Figma-to-production front-end builds
+
+## How to engage
+- Email jonatsbuilds@gmail.com or use the contact form at https://jonathantubay.com/#contact
+- Replies within 24 hours (Mon-Fri, Manila time, UTC+8), then a call to scope the project
+- Pricing is scoped per project after that call; there are no fixed packages
+- Working hours overlap US mornings, most of the Australian workday and UK mornings
+- Ongoing support after launch is available
+
+## Case studies
+- Inventory sync for a US tools and hardware retailer (Cin7 Core and Shopify, batch staging and validation, MAP pricing, 10+ hours a week saved): https://jonathantubay.com/case-studies/inventory-sync
+- MOEV Solutions, WordPress build for a Philippine EV charging company, launched in 3 weeks: https://jonathantubay.com/case-studies/moev
 
 ## Selected work
-- MOEV Solutions: freelance website build (case study linked below)
+- MOEV Solutions: freelance website build
 - Deirdre P. Malcolm: freelance website build
-- Toolmart Houston: Shopify store and Cin7-to-Shopify inventory and price automation
+- Toolmart Houston: Shopify store build
 - Kingdomland Kids: Shopify store work
 - Sapmok USA: Shopify store revamp
 - Internal tools: KDL Video Health Checker, daily report generators, service and project health dashboards, E.D.I.T.H. and T.H.O.R. assistants
@@ -23,5 +34,5 @@
 
 ## Links
 - Portfolio: https://jonathantubay.com/
-- MOEV case study: https://jonathantubay.com/case-studies/moev.html
+- FAQ: https://jonathantubay.com/#faq
 - Contact: jonatsbuilds@gmail.com

@@ -234,6 +234,13 @@
       /* folds out of the waiting envelope when it is showing, else
          straight off the button */
       var r = env.classList.contains('is-on') && env.style.display !== 'none' ? env.getBoundingClientRect() : btn.getBoundingClientRect();
+      /* desktop 3D: Dumpling picks the envelope up and trots off with it
+         (39-section-3d.js); the plane then launches from her mouth */
+      var carry = window.__smDogCarry && window.__smDogCarry();
+      if (carry) { setTimeout(function () { fly(carry()); }, 650); return; }
+      fly(r);
+    }).observe(btn, { childList: true });
+    function fly(r) {
       var plane = el('div', 'sm-plane', document.body);
       plane.style.left = (r.left + r.width / 2 - 32) + 'px';
       plane.style.top = (r.top + r.height / 2 - 20) + 'px';
@@ -242,6 +249,6 @@
       plane.style.setProperty('--sm-fy', (-(r.top + 160)) + 'px');
       plane.innerHTML = '<div class="sm-plane-body"><span class="sm-trail"></span><span class="sm-wing a"></span><span class="sm-wing b"></span></div>';
       setTimeout(function () { plane.remove(); }, 1200);
-    }).observe(btn, { childList: true });
+    }
   }
 })();

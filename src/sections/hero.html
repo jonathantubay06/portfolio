@@ -29,8 +29,8 @@
        unlocked box re-wrapped the H1 on every animation frame — see
        src/scripts/effects/01-1-text-scramble.js. -->
   <h1 class="glitch-name"><span class="glow">Jonathan</span> <span class="gname-tail">Tubay</span></h1>
-  <!-- #typingRole text is filled by the typing animation loop in main.js -->
-  <p class="hero-sub"><span id="typingRole"></span><span class="typing-cursor" aria-hidden="true">|</span></p>
+  <!-- #typingRole is decorative (aria-hidden); the sr-only span carries the copy. On phones and reduced motion main.js shows static text instead of typing. -->
+  <p class="hero-sub"><span class="sr-only">eCommerce builder, automation specialist and Shopify developer</span><span id="typingRole" aria-hidden="true"></span><span class="typing-cursor" aria-hidden="true">|</span></p>
   <p class="hero-desc">
     I build Shopify stores, WordPress sites, and workflow automations that replace the manual steps your team repeats every week. Based in the Philippines, working worldwide.
   </p>

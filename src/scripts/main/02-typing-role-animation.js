@@ -8,8 +8,11 @@
   const roles = ['eCommerce Builder', 'Automation Specialist', 'Ops Tech Lead', 'Shopify Developer', 'Workflow Automator'];
   let roleIdx = 0, charIdx = 0, deleting = false;
 
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    el.textContent = roles[0];
+  // Phones: the cycling text changed the line width every frame and clipped
+  // long roles, so show one static line that can wrap. Reduced motion too.
+  if (window.matchMedia('(prefers-reduced-motion: reduce), (max-width: 600px)').matches) {
+    el.textContent = 'eCommerce Builder · Automation Specialist';
+    el.parentElement.classList.add('is-static');
     return;
   }
 

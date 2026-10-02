@@ -29,7 +29,9 @@
     "57-audit-fixes.css",
     "58-live-wallpaper.css",
     "59-dark-lift.css",
-    "60-section-motion.css"
+    "60-section-motion.css",
+    "61-content-pass.css",
+    "62-desk-3d.css"
   ],
   "main": [
     "00-preamble.js",
@@ -86,6 +88,7 @@
     "36-hero-3d.js",
     "37-live-wallpaper.js",
     "38-section-motion.js",
-    "39-section-3d.js"
+    "39-section-3d.js",
+    "40-desk-extras.js"
   ]
 }
