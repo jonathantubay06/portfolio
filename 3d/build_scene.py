@@ -417,6 +417,117 @@ def cut_mat(name, png):
     return m
 
 
+# ── photo cards that sit in 3D (2026-10-08) ─────────────────────────
+# Each cut-out is a grid mesh, not a flat quad: a slight cylindrical bend
+# (centre toward the camera) plus a dome from the alpha's distance field
+# (thick fur parts bulge, thin legs and the silhouette stay flat), so the
+# scene lights shade the coat and the page's rim light catches the edge.
+# COLOR_0 is a baked ground AO (darker toward the feet); the page reads
+# it (cardFx in 36-hero-3d.js / 39-section-3d.js). Silhouette = alpha clip.
+import numpy as np
+_HF = {}
+
+
+def alpha_height(png, open_top=False, extra=()):
+    """dome height field 0..1 from the png alpha, rows bottom-up (Blender order).
+    open_top: the top edge is a crop (paw layers), not fur silhouette, so the
+    dome carries on past it instead of curling away (no seam at the overlap).
+    extra: (png, left, top) layers merged into the alpha first, so a body's
+    dome runs smoothly down through its paw layers (call before any use)"""
+    if png in _HF: return _HF[png]
+    im = bpy.data.images.load(os.path.join(TEX, png), check_existing=True)
+    w, h = im.size
+    px = np.empty(w * h * 4, np.float32); im.pixels.foreach_get(px)
+    a = px.reshape(h, w, 4)[..., 3]
+    if extra:
+        a = a[::-1].copy()                             # top-down to place layers
+        for epng, l, t in extra:
+            ei = bpy.data.images.load(os.path.join(TEX, epng), check_existing=True)
+            ew, eh = ei.size
+            ep = np.empty(ew * eh * 4, np.float32); ei.pixels.foreach_get(ep)
+            ea = ep.reshape(eh, ew, 4)[::-1, :, 3]
+            hh_, ww_ = min(eh, h - t), min(ew, w - l)
+            a[t:t + hh_, l:l + ww_] = np.maximum(a[t:t + hh_, l:l + ww_], ea[:hh_, :ww_])
+        a = a[::-1]
+    f = 3
+    hh, ww = h // f, w // f
+    a = a[:hh * f, :ww * f].reshape(hh, f, ww, f).mean((1, 3))
+    m = a > 0.5
+    PAD = 0
+    if open_top:
+        k = max(2, hh // 6)
+        base = m[-k:].any(axis=0) | m[-k - 1]
+        m[-k:] |= base
+        PAD = hh // 2
+        m = np.vstack([m, np.repeat(base[None], PAD, 0)])
+    d = np.zeros(m.shape, np.float32); cur = m.copy()
+    while cur.any():
+        d += cur
+        q = np.pad(cur, 1)
+        cur = cur & q[:-2, 1:-1] & q[2:, 1:-1] & q[1:-1, :-2] & q[1:-1, 2:]
+    t = d / max(d.max(), 1.0)
+    hf = np.sqrt(np.clip(t * (2 - t), 0, 1))          # circular profile
+    if PAD: hf = hf[:-PAD]
+    for _ in range(4):                                 # soften the ridge
+        q = np.pad(hf, 1, mode='edge')
+        hf = (q[:-2, 1:-1] + q[2:, 1:-1] + q[1:-1, :-2] + q[1:-1, 2:] + 2 * hf) / 6
+    _HF[png] = hf
+    return hf
+
+
+def sample(hf, u, v):
+    hh, ww = hf.shape
+    x, y = min(max(u, 0), 1) * (ww - 1), min(max(v, 0), 1) * (hh - 1)
+    x0, y0 = int(x), int(y); x1, y1 = min(x0 + 1, ww - 1), min(y0 + 1, hh - 1); fx, fy = x - x0, y - y0
+    return (hf[y0, x0] * (1 - fx) + hf[y0, x1] * fx) * (1 - fy) + (hf[y1, x0] * (1 - fx) + hf[y1, x1] * fx) * fy
+
+
+def card_depth(png, w, u, v, bulge, sag):
+    """how far (world) a card point stands toward the camera"""
+    return bulge * w * sample(alpha_height(png, '-paw-' in png), u, v) + sag * w * (1 - (2 * u - 1) ** 2)
+
+
+def hug(body_png, BW, BH, ox, oz, png, w, bulge=0.1):
+    """depth fn for a paw layer whose empty sits at body-frame (ox, oz) and
+    already stands at the body's depth there: follow the body surface
+    (+ a hair) so the overlap band lines up from every angle, and let the
+    paw's own small dome grow only toward its lower end; the body's dome
+    already includes the paws (alpha_height extra), so one smooth surface"""
+    d0 = card_depth(body_png, BW, ox / BW + 0.5, oz / BH, 0.12, 0.04)
+    def f(x, z, u, v):
+        bu, bv = (x + ox) / BW + 0.5, (z + oz) / BH
+        return card_depth(body_png, BW, bu, bv, 0.12, 0.04) - d0
+    return f
+
+
+def card(name, w, h, cx, cz, png, m, bulge=0.12, sag=0.04, zbase=0.0, n=26, dfn=None):
+    """vertical card facing -Y, centre (cx, cz) in its parent frame;
+    zbase = parent-frame height of the feet (for the ground AO);
+    dfn(x, z, u, v) overrides the depth (layers that hug the body)"""
+    nx, ny = (n, max(6, round(n * h / w))) if w >= h else (max(6, round(n * w / h)), n)
+    vs, uvs, ao = [], [], []
+    for j in range(ny + 1):
+        for i in range(nx + 1):
+            u, v = i / nx, j / ny
+            x, z = cx + (u - 0.5) * w, cz + (v - 0.5) * h
+            vs.append((x, -(dfn(x, z, u, v) if dfn else card_depth(png, w, u, v, bulge, sag)), z)); uvs.append((u, v))
+            g = min(max((z - zbase) / 0.05, 0), 1); g = g * g * (3 - 2 * g)
+            ao.append(0.55 + 0.45 * g)
+    fs = [(j * (nx + 1) + i, j * (nx + 1) + i + 1, (j + 1) * (nx + 1) + i + 1, (j + 1) * (nx + 1) + i) for j in range(ny) for i in range(nx)]
+    me = bpy.data.meshes.new(name); me.from_pydata(vs, [], fs); me.update()
+    uvl = me.uv_layers.new(name='UVMap')
+    for poly in me.polygons:
+        for li in poly.loop_indices:
+            uvl.data[li].uv = uvs[me.loops[li].vertex_index]
+    ca = me.color_attributes.new('ao', 'FLOAT_COLOR', 'POINT')
+    for k, c in enumerate(ao): ca.data[k].color = (c, c, c, 1)
+    me.color_attributes.active_color = ca
+    for poly in me.polygons: poly.use_smooth = True
+    o = bpy.data.objects.new(name, me); scene.collection.objects.link(o)
+    me.materials.append(m)
+    return o
+
+
 # body and tail plume are separate layers (3d/make_dog_layers.py splits
 # tex/dumpling-cutout.png); the page wags the `dog_tail` empty round the
 # plane normal at the tail base.
@@ -426,28 +537,36 @@ M_PAW_L = cut_mat('dog_paw_l_cutout', 'dumpling-paw-l.png')
 M_PAW_R = cut_mat('dog_paw_r_cutout', 'dumpling-paw-r.png')
 dog = empty('dog')
 body_e = empty('dog_body', (0, 0, 0), dog)
-under(body_e, plane('dog_body_mesh', CUT_W, CUT_H, (0, 0, CUT_H / 2), (math.radians(90), 0, 0), M_CUT))
+alpha_height('dumpling-body.png', extra=(('dumpling-paw-l.png', 0, 456), ('dumpling-paw-r.png', 150, 460)))
+under(body_e, card('dog_body_mesh', CUT_W, CUT_H, 0, CUT_H / 2, 'dumpling-body.png', M_CUT, n=28))
+# depth of the body card at a source px (paws stand in front of it, the tail behind)
+_bd = lambda x, y: card_depth('dumpling-body.png', CUT_W, x / CUT_PX[0], 1 - y / CUT_PX[1], 0.12, 0.04)
 _px = lambda x, y: ((x / CUT_PX[0] - 0.5) * CUT_W, (1 - y / CUT_PX[1]) * CUT_H)   # source pixel -> plane x, z
 
 
-def layer(name, parent, pivot, box, m, dy):
+def layer(name, parent, pivot, box, m, dy, png, bulge, hugs=False):
     """A cut-out layer on its own empty (pivot in source px, crop box l,t,r,b)."""
     pv, l, t, r, b = _px(*pivot), *box
     b = min(b, CUT_PX[1])                             # the card is trimmed to the lowest paw
     c = _px((l + r) / 2, (t + b) / 2)
-    e = empty(name, (pv[0], dy, pv[1]), parent)       # dy: a hair in front, no z-fight
-    under(e, plane(name + '_mesh', CUT_W * (r - l) / CUT_PX[0], CUT_H * (b - t) / CUT_PX[1],
-                   (c[0] - pv[0], 0, c[1] - pv[1]), (math.radians(90), 0, 0), m))
+    e = empty(name, (pv[0], dy, pv[1]), parent)       # dy: depth layer (- = toward the camera)
+    w = CUT_W * (r - l) / CUT_PX[0]
+    under(e, card(name + '_mesh', w, CUT_H * (b - t) / CUT_PX[1],
+                  c[0] - pv[0], c[1] - pv[1], png, m, bulge=bulge, sag=0.02, zbase=-pv[1], n=12,
+                  dfn=hug('dumpling-body.png', CUT_W, CUT_H, pv[0], pv[1], png, w, bulge) if hugs else None))
     return e
 
 
 # make_dog_layers.py: PIVOT/TAIL_BOX, PAW_*_PIVOT/PAW_*_BOX
-tail_e = layer('dog_tail', body_e, (336, 172), (250, 0, 466, 204), M_TAIL, -0.003)
+# the tail a step behind the body's silhouette plane (its base hides behind the rump)
+tail_e = layer('dog_tail', body_e, (336, 172), (250, 0, 466, 204), M_TAIL, 0.006, 'dumpling-tail.png', 0.1)
 # front paws: dog_paws (shared pivot at the chest, spreads/tilts both) ->
 # dog_paw_l / dog_paw_r (elbow pivots; the page pats them in turn)
-paws_e = empty('dog_paws', (_px(180, 480)[0], -0.002, _px(180, 480)[1]), body_e)
+paws_e = empty('dog_paws', (_px(180, 480)[0], -0.002 - _bd(180, 480), _px(180, 480)[1]), body_e)
 for nm, pv, bx in (('dog_paw_l', (100, 478), (0, 456, 176, 586)), ('dog_paw_r', (262, 482), (150, 460, 380, 586))):
-    e = layer(nm, body_e, pv, bx, M_PAW_L if nm.endswith('l') else M_PAW_R, -0.002 - (0.0006 if nm.endswith('l') else 0))
+    # paws stand proud of the chest (body depth at the elbow + a step)
+    e = layer(nm, body_e, pv, bx, M_PAW_L if nm.endswith('l') else M_PAW_R, -0.002 - _bd(*pv) - (0.001 if nm.endswith('l') else 0),
+              'dumpling-paw-%s.png' % nm[-1], 0.1, hugs=True)
     # re-parent under dog_paws keeping the world spot
     e.location = (e.location[0] - paws_e.location[0], e.location[1] - paws_e.location[1], e.location[2] - paws_e.location[2])
     e.parent = paws_e
@@ -477,7 +596,7 @@ PUP_CUTS = {
     TOFU: (0.27 / 590, (((26, 470, 112, 590), (68, 474)), ((114, 470, 204, 590), (160, 474))), None),
     # Pochi's tail is his raised one from a standing photo (pochi-tail-cutout.png), base tucked behind his rump
     POCHI: (0.064 / 95, (((40, 212, 92, 262), (66, 216)), ((88, 212, 140, 262), (114, 216))),
-            ((0, 0, 108, 122), (74, 110), (300, 160), 0.003)),
+            ((0, 0, 108, 122), (74, 110), (300, 160), 0.006)),
 }
 
 
@@ -488,25 +607,29 @@ def pup(name):
     px = lambda x, y: ((x / pw - 0.5) * W, (1 - y / ph) * H)
     root = empty(name)
     be = empty(name + '_body', (0, 0, 0), root)
-    under(be, plane(name + '_body_mesh', W, H, (0, 0, H / 2), (math.radians(90), 0, 0), cut_mat(name + '_cutout', name + '-body.png')))
+    alpha_height(name + '-body.png', extra=tuple((f'{name}-paw-{sd}.png', bx[0], bx[1]) for sd, (bx, _) in zip('lr', paws)))
+    under(be, card(name + '_body_mesh', W, H, 0, H / 2, name + '-body.png', cut_mat(name + '_cutout', name + '-body.png'), n=28))
+    bd = lambda x, y: card_depth(name + '-body.png', W, x / pw, 1 - y / ph, 0.12, 0.04)
 
-    def card(nm, parent, at, size, pv, m, dy):
+    def lcard(nm, parent, at, size, pv, m, dy, png, hugs=False):
         """empty at cut px `at`; card of `size` px with its pivot px `pv`"""
         a = px(*at); sw, sh = size[0] * W / pw, size[1] * H / ph
         e = empty(nm, (a[0], dy, a[1]), parent)
         cx, cz = (size[0] / 2 - pv[0]) * W / pw, (pv[1] - size[1] / 2) * H / ph
-        under(e, plane(nm + '_mesh', sw, sh, (cx, 0, cz), (math.radians(90), 0, 0), m))
+        under(e, card(nm + '_mesh', sw, sh, cx, cz, png, m, bulge=0.1, sag=0.02, zbase=-a[1], n=12,
+                      dfn=hug(name + '-body.png', W, H, a[0], a[1], png, sw) if hugs else None))
         return e
 
     if tl:
         (l, t, r, b), tpv, tat, tdy = tl
-        card(name + '_tail', be, tat, (r - l, b - t), tpv, cut_mat(name + '_tail_cutout', name + '-tail.png'), tdy)
+        lcard(name + '_tail', be, tat, (r - l, b - t), tpv, cut_mat(name + '_tail_cutout', name + '-tail.png'), tdy, name + '-tail.png')
     mid = ((paws[0][1][0] + paws[1][1][0]) / 2, paws[0][1][1])
-    m = px(*mid); pe = empty(name + '_paws', (m[0], -0.002, m[1]), be)
+    m = px(*mid); pe = empty(name + '_paws', (m[0], -0.002 - bd(*mid), m[1]), be)
     for side, (bx, pv) in zip('lr', paws):
         l, t, r, b = bx; b = min(b, ph)
-        e = card(f'{name}_paw_{side}', be, pv, (r - l, b - t), (pv[0] - l, pv[1] - t),
-                 cut_mat(f'{name}_paw_{side}_cutout', f'{name}-paw-{side}.png'), -0.002 - (0.0006 if side == 'l' else 0))
+        e = lcard(f'{name}_paw_{side}', be, pv, (r - l, b - t), (pv[0] - l, pv[1] - t),
+                  cut_mat(f'{name}_paw_{side}_cutout', f'{name}-paw-{side}.png'), -0.002 - bd(*pv) - (0.001 if side == 'l' else 0),
+                  f'{name}-paw-{side}.png', hugs=True)
         e.location = (e.location[0] - pe.location[0], e.location[1] - pe.location[1], e.location[2] - pe.location[2])
         e.parent = pe
     sh = shadow_plane(name + '_shadow', W, shadow_mat(name + '_shadow', name + '-shadow.png'))
@@ -594,7 +717,8 @@ RAW = os.path.join(HERE, 'scene.raw.glb')
 GLB = os.path.join(OUT_DIR, 'scene.glb')
 bpy.ops.export_scene.gltf(filepath=RAW, export_format='GLB',
                           export_apply=True, export_image_format='WEBP', export_image_quality=80,
-                          export_lights=False, export_yup=True, export_tangents=False)
+                          export_lights=False, export_yup=True, export_tangents=False,
+                          export_vertex_color='ACTIVE')   # the dog cards' baked AO (COLOR_0)
 print('exported raw', os.path.getsize(RAW) // 1024, 'KB')
 import subprocess
 cmd = (f'npx -y @gltf-transform/cli@4 optimize "{RAW}" "{GLB}" --compress meshopt --texture-compress webp '

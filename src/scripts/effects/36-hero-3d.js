@@ -272,7 +272,7 @@
         if (o.isMesh && o.material && /^(dog|mochi|tofu|pochi)_(tail_|paw_[lr]_)?cutout$/.test(o.material.name)) {
           var dm = o.material = o.material.clone();
           dm.transparent = false; dm.alphaTest = 0.4; dm.alphaToCoverage = true; dm.depthWrite = true; dm.side = THREE.DoubleSide;
-          dm.metalness = 0; dm.roughness = 1; dm.emissive = new THREE.Color(1, 1, 1); dm.emissiveMap = dm.map; dm.emissiveIntensity = 0.32;
+          dm.metalness = 0; dm.roughness = 1; dm.emissive = new THREE.Color(1, 1, 1); dm.emissiveMap = dm.map; dm.emissiveIntensity = 0.27; cardFx(dm);
           /* clamp: repeat-wrap pulled the paws row onto the card's top edge (stray dashes) */
           if (dm.map) { dm.map.wrapS = dm.map.wrapT = THREE.ClampToEdgeWrapping; dm.map.needsUpdate = true; }
           dm.userData.keepEmissive = true; dm.needsUpdate = true;
@@ -1082,7 +1082,8 @@
         /* the card faces +Z in its own frame; follow half the offset, at
            most ~10deg, so it stays square-on and never turns visibly */
         var off = Math.atan2(Math.sin(yaw - base), Math.cos(yaw - base));
-        dog.root.rotation.y = base + Math.max(-0.18, Math.min(0.18, off * 0.5)) + ctaDir * 0.22 * cta;
+        /* total turn capped at ~18deg: the bulged card never shows its flat edge */
+        dog.root.rotation.y = base + Math.max(-0.32, Math.min(0.32, Math.max(-0.18, Math.min(0.18, off * 0.5)) + ctaDir * 0.22 * cta));
         if (dog.head) { dog.head.rotation.y = dog.head.userData.r0.y + ctaDir * 0.3 * cta; dog.head.rotation.z = dog.head.userData.r0.z + 0.1 * cta; }
       }
       /* the pups (photo cut-outs): breathing, the odd hop, paw pats and
@@ -1110,7 +1111,7 @@
           var pyaw = Math.atan2(dogW.x - P.root.position.x, dogW.z - P.root.position.z), pb0 = P.root.userData.r0.y;
           var poff = Math.atan2(Math.sin(pyaw - pb0), Math.cos(pyaw - pb0));
           var pc = t - ctaT - 0.25 - i * 0.18, pk = pc < 0 ? 0 : pc < 0.3 ? ease(pc / 0.3) : pc < 1.8 ? 1 : ease(1 - (pc - 1.8) / 0.6);
-          P.root.rotation.y = pb0 + Math.max(-0.18, Math.min(0.18, poff * 0.5)) + ctaDir * 0.2 * pk;
+          P.root.rotation.y = pb0 + Math.max(-0.32, Math.min(0.32, Math.max(-0.18, Math.min(0.18, poff * 0.5)) + ctaDir * 0.2 * pk));
         }
       }
       if (cal) cal(t);
@@ -1125,6 +1126,24 @@
       if (bloomOn) composer.render(); else renderer.render(world, cam);
       loop();
     }
+  }
+
+  /* the dog photo cards (3d/build_scene.py card()): baked ground AO in
+     COLOR_0 darkens the feet (lit and self-glow parts alike), and a rim
+     light picks up the bulged edge - cyan from above/left like the key
+     and the cyan point, warm on the side toward the warm point */
+  function cardFx(m) {
+    m.vertexColors = true;
+    m.onBeforeCompile = function (sh) {
+      sh.fragmentShader = sh.fragmentShader.replace('#include <opaque_fragment>',
+        'float rimF = 1.0 - clamp(abs(dot(normal, geometryViewDir)), 0.0, 1.0);\n' +
+        'rimF = rimF * rimF;\n' +
+        'vec3 rimC = mix(vec3(0.3, 0.82, 1.0), vec3(1.0, 0.64, 0.32), smoothstep(-0.2, 0.5, normal.x - 0.5 * normal.y));\n' +
+        'outgoingLight -= totalEmissiveRadiance * (1.0 - vColor.r);\n' +
+        'outgoingLight += rimC * rimF * (0.3 + 0.7 * diffuseColor.rgb) * 0.9;\n' +
+        '#include <opaque_fragment>');
+    };
+    m.customProgramCacheKey = function () { return 'dogcard1'; };
   }
 
   function ease(x) { return x < 0 ? 0 : x > 1 ? 1 : x * x * (3 - 2 * x); }

@@ -154,6 +154,24 @@
 
   /* soft round contact shadow, drawn once */
   var blob = null;
+  /* the dog photo cards (3d/build_scene.py card()): baked ground AO in
+     COLOR_0 darkens the feet (lit and self-glow parts alike), and a rim
+     light picks up the bulged edge - cyan from above/left like the key
+     and the cyan point, warm on the side toward the warm point */
+  function cardFx(m) {
+    m.vertexColors = true;
+    m.onBeforeCompile = function (sh) {
+      sh.fragmentShader = sh.fragmentShader.replace('#include <opaque_fragment>',
+        'float rimF = 1.0 - clamp(abs(dot(normal, geometryViewDir)), 0.0, 1.0);\n' +
+        'rimF = rimF * rimF;\n' +
+        'vec3 rimC = mix(vec3(0.3, 0.82, 1.0), vec3(1.0, 0.64, 0.32), smoothstep(-0.2, 0.5, normal.x - 0.5 * normal.y));\n' +
+        'outgoingLight -= totalEmissiveRadiance * (1.0 - vColor.r);\n' +
+        'outgoingLight += rimC * rimF * (0.3 + 0.7 * diffuseColor.rgb) * 0.9;\n' +
+        '#include <opaque_fragment>');
+    };
+    m.customProgramCacheKey = function () { return 'dogcard1'; };
+  }
+
   function blobTex() {
     if (blob) return blob;
     var c = document.createElement('canvas'); c.width = c.height = 64;
@@ -220,7 +238,7 @@
       if (o.isMesh && o.material && /^dog_(tail_|paw_[lr]_)?cutout$/.test(o.material.name)) {
         var dm = o.material = o.material.clone();
         dm.transparent = false; dm.alphaTest = 0.4; dm.depthWrite = true; dm.side = T.DoubleSide;
-        dm.metalness = 0; dm.roughness = 1; dm.emissive = new T.Color(1, 1, 1); dm.emissiveMap = dm.map; dm.emissiveIntensity = 0.32;
+        dm.metalness = 0; dm.roughness = 1; dm.emissive = new T.Color(1, 1, 1); dm.emissiveMap = dm.map; dm.emissiveIntensity = 0.27; cardFx(dm);
           /* clamp: repeat-wrap pulled the paws row onto the card's top edge (stray dashes) */
           if (dm.map) { dm.map.wrapS = dm.map.wrapT = T.ClampToEdgeWrapping; dm.map.needsUpdate = true; }
         dm.needsUpdate = true;
