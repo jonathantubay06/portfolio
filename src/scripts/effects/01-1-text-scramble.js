@@ -24,6 +24,12 @@
 ══════════════════════════════════════ */
 (function(){
   if (PREFERS_REDUCED_MOTION) return; // decorative motion only — nothing here carries content
+  // Phones and tablets: the H1 is the LCP element there, and a text
+  // element's LCP lands on its last paint, i.e. the end of the scramble.
+  // The 2026-10-07 audit measured 1.76 s of mobile LCP render delay on
+  // span.glow. The final name is already in the HTML, so these devices
+  // simply keep it (the nameIn rotate still plays; it is transform-only).
+  if (matchMedia('(max-width:1023px), (pointer:coarse)').matches) return;
   const h1 = document.querySelector('.glitch-name');
   if (!h1) return;
 

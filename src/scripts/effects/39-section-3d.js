@@ -29,7 +29,17 @@
 ═══════════════════════════════════════ */
 (function () {
   var mq = matchMedia('(min-width:1024px) and (pointer:fine) and (prefers-reduced-motion:no-preference)');
-  if (!mq.matches) return;
+  /* 2026-10-07: the gate is live. A window that grows into it sets the
+     section 3D up then; leaving it stops the loop and frees the GPU
+     memory (pause/resume below). A software rasteriser never starts it
+     (window.__gpu3d, defined in 36-hero-3d.js). */
+  if (!mq.matches) {
+    var later = function () { if (!mq.matches) return; mq.removeEventListener('change', later); main(); };
+    mq.addEventListener('change', later);
+    return;
+  }
+  main();
+  function main() {
   var work = document.getElementById('work'), contact = document.getElementById('contact');
   var feats = [].slice.call(document.querySelectorAll('.proj-feature'));
   if (!work && !contact) return;
@@ -37,22 +47,26 @@
   var V = 'https://cdn.jsdelivr.net/npm/three@0.170.0';
   var BW = 1280, BH = 400;                /* shared drawing buffer, device px (wide for the pipeline strip) */
   var T = null, renderer = null, gl = null, modP = null;
-  var views = [], running = false, last = 0, clock0 = performance.now();
+  var views = [], running = false, last = 0, clock0 = performance.now(), lost = false, released = false;
   var px = innerWidth / 2, py = innerHeight / 2;
   var stat = window.__sm3d = { frames: 0, views: 0 };   /* read by the perf check */
 
   function engine() {
     if (modP) return modP;
+    if (window.__gpu3d && !window.__gpu3d()) return (modP = Promise.reject(new Error('software WebGL')));
     modP = import(V + '/+esm').then(function (m) {
       T = m;
       gl = document.createElement('canvas');
       renderer = new T.WebGLRenderer({ canvas: gl, antialias: true, alpha: true, powerPreference: 'low-power' });
       renderer.setPixelRatio(1);
+      renderer.debug.checkShaderErrors = false;   /* see 36-hero-3d.js: keeps compile waits off the main thread */
       renderer.setSize(BW, BH, false);
       renderer.setClearColor(0x000000, 0);
       renderer.toneMapping = T.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 0.95;
       renderer.setScissorTest(true);
+      gl.addEventListener('webglcontextlost', function (e) { e.preventDefault(); lost = true; running = false; });
+      gl.addEventListener('webglcontextrestored', function () { lost = false; kick(); });
     });
     return modP;
   }
@@ -88,11 +102,13 @@
   }
 
   function kick() {
-    if (running || document.hidden) return;
+    if (running || document.hidden || lost || !mq.matches) return;
+    released = false;
     for (var i = 0; i < views.length; i++) if (views[i].vis && views[i].ready) { running = true; requestAnimationFrame(loop); return; }
   }
   function loop(now) {
-    if (document.hidden) { running = false; return; }
+    if (document.hidden || lost) { running = false; return; }
+    if (!mq.matches) { running = false; release(); return; }
     var any = false;
     for (var i = 0; i < views.length; i++) if (views[i].vis && views[i].ready) { any = true; break; }
     if (!any) { running = false; return; }     /* everything off screen: stop */
@@ -115,6 +131,22 @@
     stat.frames++;
   }
   document.addEventListener('visibilitychange', kick);
+  /* left the desktop gate: free every view's GPU memory; three re-uploads
+     on the next render, so coming back is just kick() */
+  function release() {
+    if (released || !renderer) return;
+    released = true;
+    views.forEach(function (v) {
+      if (!v.scene) return;
+      v.scene.traverse(function (o) {
+        if (o.geometry) o.geometry.dispose();
+        var ms = !o.material ? [] : Array.isArray(o.material) ? o.material : [o.material];
+        ms.forEach(function (m) { for (var k in m) if (m[k] && m[k].isTexture) m[k].dispose(); m.dispose(); });
+      });
+    });
+    renderer.renderLists.dispose();
+  }
+  mq.addEventListener('change', function () { if (mq.matches) kick(); else if (!running) release(); });
   addEventListener('pointermove', function (e) { px = e.clientX; py = e.clientY; }, { passive: true });
 
   window.__sm3dApi = {
@@ -271,15 +303,23 @@
     var form = contact.querySelector('.c-form');
     if (!layout) return;
     if (form) form.addEventListener('input', function () { typing = performance.now(); });
+    /* the hero (36-hero-3d.js) shares its parsed scene.glb as
+       window.__heroGlb, so this is a clone of an object already in memory
+       rather than a second fetch + meshopt decode + parse. It resolves
+       null when the hero did not load the file; then this loads its own. */
     engine().then(function () {
-      return Promise.all([
-        import(V + '/examples/jsm/loaders/GLTFLoader.js/+esm'),
-        import(V + '/examples/jsm/libs/meshopt_decoder.module.js/+esm')
-      ]);
-    }).then(function (m) {
+      var shared = window.__heroGlb;
+      return shared ? shared.then(function (g) { return g || ownGlb(); }) : ownGlb();
+    }).then(function (g) { if (g) buildDog(g, layout); }).catch(function () {});
+  }
+  function ownGlb() {
+    return Promise.all([
+      import(V + '/examples/jsm/loaders/GLTFLoader.js/+esm'),
+      import(V + '/examples/jsm/libs/meshopt_decoder.module.js/+esm')
+    ]).then(function (m) {
       var loader = new m[0].GLTFLoader(); loader.setMeshoptDecoder(m[1].MeshoptDecoder);
-      loader.load('img/hero3d/scene.glb', function (g) { buildDog(g, layout); });
-    }).catch(function () {});
+      return new Promise(function (res, rej) { loader.load('img/hero3d/scene.glb', res, undefined, rej); });
+    });
   }
 
   function buildDog(g, layout) {
@@ -287,6 +327,16 @@
     if (!src) return;
     var scene = new T.Scene(); lights(scene, false);
     var dog = src.clone(true);
+    /* the shared hero copy may be mid-hop or mid-wag: put every part back
+       to the rest pose the hero recorded (userData p0/r0/s0 survive the
+       clone as plain {x,y,z} / {_x,_y,_z} objects) */
+    dog.traverse(function (o) {
+      var u = o.userData;
+      if (o === dog) return;
+      if (u.p0) o.position.set(u.p0.x, u.p0.y, u.p0.z);
+      if (u.r0 && u.r0._x !== undefined) o.rotation.set(u.r0._x, u.r0._y, u.r0._z);
+      if (u.s0) o.scale.set(u.s0.x, u.s0.y, u.s0.z);
+    });
     /* she is a photo card facing +Z (the camera); a slight turn toward
        the form only, so the flat card never shows edge-on */
     dog.position.set(0, 0, 0); dog.rotation.set(0, 0.12, 0);
@@ -454,4 +504,5 @@
   /* not the load event: a slow third-party beacon can hold it */
   if (document.readyState === 'loading') addEventListener('DOMContentLoaded', function () { setTimeout(arm, 1500); });
   else setTimeout(arm, 1500);
+  }
 })();

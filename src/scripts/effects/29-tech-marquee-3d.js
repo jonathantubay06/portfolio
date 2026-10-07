@@ -30,6 +30,11 @@
   let setW = 0;
   let offset = 0, speed = BASE_SPEED, target = BASE_SPEED, dir = 1;
   let lastY = window.scrollY, last = 0, raf = null, visible = false, hovering = false;
+  // scrollY is cached by a passive listener: reading it inside the rAF,
+  // after other rAF writers set transforms, forced a style/layout flush
+  // (the audit's 464 ms forced reflow on desktop).
+  let curY = lastY;
+  window.addEventListener('scroll', () => { curY = window.scrollY; }, { passive: true });
 
   function measure() {
     setW = track.scrollWidth / 2;          // markup holds the set twice
@@ -40,12 +45,12 @@
     last = now;
 
     // Scroll adds speed in the scroll direction, then decays to the drift.
-    const dy = window.scrollY - lastY;
-    lastY = window.scrollY;
+    const dy = curY - lastY;
+    lastY = curY;
     if (dy) { dir = dy > 0 ? 1 : -1; target = BASE_SPEED + Math.min(Math.abs(dy) * 22, 900); }
-    else target += (BASE_SPEED - target) * .06;
+    else target += (BASE_SPEED - target) * (1 - Math.pow(.94, dt * 60));
     if (hovering) target = 0;
-    speed += (target - speed) * .12;
+    speed += (target - speed) * (1 - Math.pow(.88, dt * 60));
 
     offset = (offset + dir * speed * dt) % setW;
     if (offset < 0) offset += setW;
@@ -54,7 +59,7 @@
     raf = visible ? requestAnimationFrame(frame) : null;
   }
 
-  function start() { if (!raf) { last = 0; lastY = window.scrollY; raf = requestAnimationFrame(frame); } }
+  function start() { if (!raf) { last = 0; lastY = curY = window.scrollY; raf = requestAnimationFrame(frame); } }
 
   new IntersectionObserver(([en]) => {
     visible = en.isIntersecting;

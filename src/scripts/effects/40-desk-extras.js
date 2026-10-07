@@ -16,7 +16,16 @@
    no 3D transforms on touch screens and no motion when it is reduced.
 ═══════════════════════════════════════ */
 (function () {
-  var DESK = matchMedia('(min-width:1024px) and (pointer:fine) and (prefers-reduced-motion:no-preference)').matches;
+  /* The desktop gate is live: a window that grows past 1024px (or turns
+     motion back on) gets the 3D parts then, not only at load. B, C and
+     D-3D hang off hero3d:ready, which 36-hero-3d.js only fires under the
+     gate and on a hardware GPU. */
+  var DESKQ = matchMedia('(min-width:1024px) and (pointer:fine) and (prefers-reduced-motion:no-preference)');
+  function whenDesk(fn) {
+    if (DESKQ.matches) { fn(); return; }
+    var h = function () { if (!DESKQ.matches) return; DESKQ.removeEventListener('change', h); fn(); };
+    DESKQ.addEventListener('change', h);
+  }
   var FINE = matchMedia('(pointer:fine)').matches;
   function el(tag, cls, parent, html) {
     var e = document.createElement(tag); if (cls) e.className = cls;
@@ -29,7 +38,7 @@
   }
 
   /* ── A · dogs react to CTAs ─────────────────────────────────────── */
-  if (DESK) {
+  whenDesk(function () {
     var last = 0;
     document.querySelectorAll('.hero-cta .btn, #navCta, a.btn[href="#contact"], a.btn[href="#work"]').forEach(function (b) {
       b.addEventListener('pointerenter', function () {
@@ -38,7 +47,7 @@
         dispatchEvent(new CustomEvent('dog-cta', { detail: { x: r.left + r.width / 2, y: r.top + r.height / 2 } }));
       });
     });
-  }
+  });
 
   /* ── B · keyboard equivalents for the desk links ─────────────────
      The 3D stage is aria-hidden and pointer-only, like the cube
@@ -46,7 +55,8 @@
   var heroSec = document.querySelector('.hero');
   var stage = document.getElementById('heroStage');
   var sceneEl = document.getElementById('heroScene');
-  if (DESK && heroSec && stage) onHero(function () {
+  if (heroSec && stage) onHero(function () {
+    if (document.querySelector('.desk-keys')) return;
     var nav = el('nav', 'desk-keys', null, '<span>Desk:</span>' +
       '<a href="case-studies/inventory-sync">Laptop: inventory sync case study</a>' +
       '<button type="button" data-modal-open="modal-kdl-checker">Monitor: KDL video checker</button>' +
@@ -76,7 +86,7 @@
   }
 
   /* ── C · desk monitor with a live dashboard ────────────────────── */
-  if (DESK) onHero(function (H) {
+  onHero(function (H) {
     var T = H.THREE, holo = H.root.getObjectByName('holo_chart');
     if (!holo || !holo.isMesh) return;
     var camPos = new T.Vector3(2.0, 3.2, 6.3);
@@ -154,7 +164,10 @@
       mess = v;
       tog.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', String(+b.dataset.v === v)); });
       live.textContent = v ? 'Before: a cluttered desk, manual work everywhere.' : 'After: the calm, automated desk.';
-      if (setMess3d) setMess3d(v); else sceneEl.classList.toggle('is-messy', !!v);
+      /* the class drives the SVG overlay, which CSS hides while .has-3d is
+         on; keeping it in step means a paused 3D desk falls back cleanly */
+      if (setMess3d) setMess3d(v);
+      sceneEl.classList.toggle('is-messy', !!v);
     }
     tog.addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) setMess(+b.dataset.v); });
     /* sits over the bottom-left of the art, outside its aria-hidden box */
@@ -167,8 +180,7 @@
     placeTog(); new ResizeObserver(placeTog).observe(sceneEl);
     addEventListener('load', placeTog);
 
-    if (DESK) onHero(function (H) {
-      sceneEl.classList.remove('is-messy');
+    onHero(function (H) {
       var T = H.THREE, items = [], k = 0, kT = mess;
       var group = new T.Group(); group.visible = false; H.root.add(group);
       var camPos = new T.Vector3(2.0, 3.2, 6.3);
@@ -245,7 +257,7 @@
   /* ── E · automation pipeline (desktop) ─────────────────────────── */
   var demo = document.getElementById('automation-demo');
   var board = demo && demo.querySelector('.ad-board');
-  if (DESK && board) {
+  if (board) whenDesk(function () {
     var NODES = [
       { name: 'Shopify', c: 0x95bf47, tip: '<b>Shopify · new order</b>Replaces refreshing the admin for new orders', h: '~2 h/week' },
       { name: 'n8n', c: 0xea4b71, tip: '<b>n8n · checks &amp; routes</b>Replaces copy-paste between tabs and typo fixes', h: '~4 h/week' },
@@ -354,7 +366,7 @@
       wrap.classList.add('is-live');
       api.kick();
     }
-  }
+  });
 
   /* ── F · project cards flip to their result ───────────────────── */
   document.querySelectorAll('.proj-card[data-modal]').forEach(function (card, i) {

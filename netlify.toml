@@ -46,3 +46,34 @@
   for = "/*.png"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
+
+# ── Security headers (2026-10-07 audit) ──────────────────────────────
+# Only HSTS was being sent. The CSP allowlist is built from what the pages
+# actually load:
+#   script  self + inline (theme bootstrap in <head>, the stylesheet
+#           onerror), jsDelivr (three.js ESM, desktop 3D only), the
+#           Cloudflare analytics beacon; 'wasm-unsafe-eval' for the meshopt
+#           decoder that unpacks scene.glb
+#   style   self + inline (style="--brand:…" attributes throughout)
+#   img     self, data: (inline SVG backgrounds), blob: (GLB textures)
+#   connect self (Netlify form post), blob:/data: (GLTFLoader reads its
+#           embedded textures through blob URLs), Cloudflare RUM endpoint,
+#           jsDelivr
+# If Netlify's own Real User Monitoring is left on in the dashboard, its
+# collector is not on this list: switch it off (the audit found two RUM
+# scripts; Cloudflare's is the one this site chose) or add its host here.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' blob: data: https://cdn.jsdelivr.net https://cloudflareinsights.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+    X-Frame-Options = "DENY"
+
+# Browsers ask for /favicon.ico whatever the page declares; serve the PNG
+# instead of a 404.
+[[redirects]]
+  from = "/favicon.ico"
+  to = "/favicon.png"
+  status = 200

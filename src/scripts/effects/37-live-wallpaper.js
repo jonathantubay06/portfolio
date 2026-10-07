@@ -182,6 +182,10 @@
 
   function boot() {
     if (!gate.matches) return;
+    /* software rasteriser (SwiftShader, llvmpipe): the full-screen shader
+       costs a whole frame there; the CSS background stays (probe shared
+       with the hero, 36-hero-3d.js) */
+    if (window.__gpu3d && !window.__gpu3d()) return;
     var canvas = document.createElement('canvas');
     canvas.className = 'live-wallpaper';
     canvas.setAttribute('aria-hidden', 'true');

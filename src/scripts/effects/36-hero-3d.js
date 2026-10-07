@@ -35,7 +35,58 @@
   var scene = document.getElementById('heroScene');
   if (!stage || !scene) return;
   var ok = matchMedia('(min-width:1024px) and (pointer:fine) and (prefers-reduced-motion:no-preference)');
-  if (!ok.matches) return;
+
+  /* ── perf plumbing (2026-10-07 audit) ─────────────────────────────
+     - the gate is live: growing a window past 1024px boots the 3D then,
+       and leaving the gate pauses the loop and frees the GPU memory
+       (api.pause / api.resume below)
+     - window.__gpu3d() probes once for a software rasteriser
+       (SwiftShader, llvmpipe, Microsoft Basic Render) or a context the
+       browser flags as slow; those keep the static plate. 39 and 40 use
+       the same probe.
+     - window.__heroGlb: a promise of the parsed scene.glb, so the
+       Contact Dumpling (39-section-3d.js) clones from this one parse
+       instead of fetching and decoding the file a second time
+     - window.__hero3dPending: the stat counter waits for hero3d:ready
+       or hero3d:skip */
+  window.__gpu3d = window.__gpu3d || (function () {
+    var memo;
+    return function () {
+      if (memo !== undefined) return memo;
+      memo = false;
+      try {
+        var c = document.createElement('canvas'), o = { failIfMajorPerformanceCaveat: true };
+        var g = c.getContext('webgl2', o) || c.getContext('webgl', o);
+        if (g) {
+          var e = g.getExtension('WEBGL_debug_renderer_info');
+          var r = String(g.getParameter(e ? e.UNMASKED_RENDERER_WEBGL : g.RENDERER) || '');
+          memo = !/swiftshader|llvmpipe|softpipe|basic render|software/i.test(r);
+          var lose = g.getExtension('WEBGL_lose_context'); if (lose) lose.loseContext();
+        }
+      } catch (err) { memo = false; }
+      return memo;
+    };
+  })();
+  var booted = false, api = null, glbDone = null;
+  function pend() {
+    window.__hero3dPending = true;
+    if (!window.__heroGlb) window.__heroGlb = new Promise(function (r) { glbDone = r; });
+  }
+  function skip(why) {
+    window.__hero3dPending = false;
+    if (glbDone) { glbDone(null); glbDone = null; }
+    if (window.console && console.info) console.info('[hero 3D] static plate kept: ' + why);
+    dispatchEvent(new Event('hero3d:skip'));
+  }
+  function preconnect() {
+    if (document.querySelector('link[rel="preconnect"][href="https://cdn.jsdelivr.net"]')) return;
+    var l = document.createElement('link'); l.rel = 'preconnect'; l.href = 'https://cdn.jsdelivr.net'; l.crossOrigin = 'anonymous';
+    document.head.appendChild(l);
+  }
+  ok.addEventListener('change', function () {
+    if (ok.matches) { if (!booted) arm(); else if (api) api.resume(); }
+    else if (api) api.pause();
+  });
 
   var V = 'https://cdn.jsdelivr.net/npm/three@0.170.0';
   /* hover labels: node name -> { label, href (click scrolls), act } */
@@ -72,6 +123,8 @@
   OWN.cal = { label: 'Done list' }; OWN.parcels = { label: 'Packed & weighed' };
 
   function boot() {
+    if (!ok.matches) { booted = false; return; }       /* left the gate while waiting: re-arms on change */
+    if (!window.__gpu3d()) { skip('software or slow WebGL'); return; }
     Promise.all([
       import(V + '/+esm'),
       import(V + '/examples/jsm/loaders/GLTFLoader.js/+esm'),
@@ -81,7 +134,7 @@
       import(V + '/examples/jsm/postprocessing/UnrealBloomPass.js/+esm'),
       import(V + '/examples/jsm/postprocessing/OutputPass.js/+esm')
     ]).then(function (m) { start(m[0], m[1].GLTFLoader, m[2].MeshoptDecoder, m[3].EffectComposer, m[4].RenderPass, m[5].UnrealBloomPass, m[6].OutputPass); })
-      .catch(function () { /* offline or blocked CDN: the plate stays */ });
+      .catch(function () { skip('three.js did not load (offline or blocked CDN)'); });
   }
 
   function start(THREE, GLTFLoader, MeshoptDecoder, EffectComposer, RenderPass, UnrealBloomPass, OutputPass) {
@@ -89,8 +142,19 @@
     canvas.className = 'hero-3d';
     scene.appendChild(canvas);
 
-    var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
-    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    var renderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: true, powerPreference: 'high-performance', failIfMajorPerformanceCaveat: true });
+    } catch (err) { canvas.remove(); skip('no hardware WebGL context'); return; }
+    /* 1.5 is visually close to 2 on this soft, bloomed scene and draws
+       about 44% fewer pixels; the governor below can drop it to 1 */
+    renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+    /* production: no shader error logs. With them on, three asks for the
+       link status and info logs of every program, which blocks the main
+       thread until the GPU process finishes compiling (~0.8 s of the
+       desktop TBT in the 2026-10-07 profile). Without them the compile
+       wait stays in the GPU process. */
+    renderer.debug.checkShaderErrors = false;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 0.75;
     renderer.setClearColor(0x000000, 0);
@@ -113,6 +177,7 @@
     var bloom = new UnrealBloomPass(new THREE.Vector2(512, 512), 0.22, 0.4, 0.9);
     composer.addPass(bloom);
     composer.addPass(new OutputPass());
+    var bloomOn = true;
 
     function size() {
       var w = canvas.clientWidth, h = canvas.clientHeight;
@@ -176,6 +241,7 @@
     var zc = new THREE.Vector3(), zcam = new THREE.Vector3(), look = new THREE.Vector3();
     var loader = new GLTFLoader(); loader.setMeshoptDecoder(MeshoptDecoder);
     loader.load('img/hero3d/scene.glb', function (g) {
+      if (glbDone) { glbDone(g); glbDone = null; }
       rig.add(g.scene);
       g.scene.traverse(function (o) {
         if (OWN[o.name]) o.userData.own = OWN[o.name];
@@ -256,13 +322,28 @@
       rig.add(motes);
       flow = dataFlow(); sparks = sparkBurst(); orders = orderPops();
       H.root = g.scene; H.dog = dog; H.pups = pups; H.screens = screens;
-      window.__hero3d = H;
-      dispatchEvent(new Event('hero3d:ready'));
-      scene.classList.add('has-3d');
-      /* after the fade-in, the scroll fade drives opacity directly */
-      setTimeout(function () { canvas.style.transition = 'none'; }, 1000);
-      loop();
-    });
+      /* compile every shader before the first frame, in parallel where
+         KHR_parallel_shader_compile exists, instead of stalling the first
+         render (the audit's 780 ms long task was parse + compile) */
+      /* compiled against the composer's half-float target: the RenderPass
+         draws there (no tone mapping, linear output), and programs built
+         for the canvas would be a different variant, compiled again on
+         the first real frame */
+      var warm = Promise.resolve();
+      if (renderer.compileAsync) {
+        renderer.setRenderTarget(composer.readBuffer);
+        warm = renderer.compileAsync(world, cam);
+        renderer.setRenderTarget(null);
+      }
+      warm.catch(function () {}).then(function () {
+        window.__hero3d = H;
+        dispatchEvent(new Event('hero3d:ready'));
+        if (!paused) scene.classList.add('has-3d');
+        /* after the fade-in, the scroll fade drives opacity directly */
+        setTimeout(function () { canvas.style.transition = 'none'; }, 1000);
+        loop();
+      });
+    }, undefined, function () { skip('scene.glb failed to load'); });
 
     /* round glow sprite shared by the flow and spark points */
     var dot = (function () {
@@ -641,8 +722,9 @@
     /* scroll: as the hero leaves, the camera pulls back, the desk tilts
        and the canvas fades. The listener only stores scrollY; the render
        loop eases toward it. */
-    var sy = scrollY, sp = 0, fade = 1;
-    addEventListener('scroll', function () { sy = scrollY; }, { passive: true });
+    var sy = scrollY, sp = 0, fade = 1, lastInput = performance.now();
+    addEventListener('scroll', function () { sy = scrollY; lastInput = performance.now(); }, { passive: true });
+    addEventListener('pointermove', function () { lastInput = performance.now(); }, { passive: true });
 
     /* pointer: camera leans toward the cursor; labelled props show a tip,
        cubes and the plaque scroll to their section, the gear spins, the
@@ -742,20 +824,97 @@
     addEventListener('scroll', function () { if (zoomT && Math.abs(scrollY - zoomSy) > 40) zoomOut(); }, { passive: true });
 
     /* only render while the hero is visible and the tab is in front */
-    var visible = true, raf = 0, clock = new THREE.Clock();
+    var visible = true, raf = 0, clock = new THREE.Clock(), paused = false, dead = false, lost = false;
     new IntersectionObserver(function (e) { visible = e[0].isIntersecting; if (visible) loop(); }).observe(stage);
     document.addEventListener('visibilitychange', function () { if (!document.hidden) loop(); });
 
+    /* the driver or the OS can drop the context; three restores it, the
+       loop just has to stop meanwhile and the plate show through */
+    canvas.addEventListener('webglcontextlost', function (e) {
+      e.preventDefault(); lost = true;
+      if (raf) { cancelAnimationFrame(raf); raf = 0; }
+      scene.classList.remove('has-3d');
+    });
+    canvas.addEventListener('webglcontextrestored', function () {
+      lost = false;
+      if (!paused && !dead) { scene.classList.add('has-3d'); loop(); }
+    });
+
+    /* pause: stop the loop and free the GPU memory (geometry, textures,
+       programs, render targets). three re-uploads everything on the next
+       render, so resume is just a restart of the loop. */
+    function release() {
+      if (raf) { cancelAnimationFrame(raf); raf = 0; }
+      scene.classList.remove('has-3d'); tip.classList.remove('on');
+      canvas.style.opacity = '0'; fade = -1;
+      world.traverse(function (o) {
+        if (o.geometry) o.geometry.dispose();
+        var ms = !o.material ? [] : Array.isArray(o.material) ? o.material : [o.material];
+        ms.forEach(function (m) { for (var k in m) if (m[k] && m[k].isTexture) m[k].dispose(); m.dispose(); });
+      });
+      composer.renderTarget1.dispose(); composer.renderTarget2.dispose(); bloom.dispose();
+      renderer.renderLists.dispose();
+    }
+    api = {
+      pause: function () { if (paused || dead) return; paused = true; release(); },
+      resume: function () {
+        if (!paused || dead) return;
+        paused = false; govPrev = 0; gov.t0 = 0; gov.s.length = 0; gov.bad = 0;
+        size(); scene.classList.add('has-3d'); loop();
+      }
+    };
+
+    /* quality governor: the median frame time of 2 s windows, after a
+       3 s warm-up. The median ignores one-off hitches (an image decoding,
+       a section mounting); two slow windows in a row are needed before
+       it steps down. Over 22 ms: DPR 1 and no bloom composer. Still over
+       30 ms: stop for good and keep the static plate. Only the gap after
+       a rendered frame is sampled, so the idle half-rate below does not
+       count against it. */
+    var gov = { lvl: 0, t0: 0, s: [], bad: 0, last: 0 }, govPrev = 0, lastRendered = false, skipOdd = false;
+    function govern(ms, now) {
+      if (!gov.t0) { gov.t0 = now + 3000; return; }
+      if (now < gov.t0) return;
+      gov.s.push(ms);
+      if (now - gov.t0 < 2000) return;
+      gov.s.sort(function (a, b) { return a - b; });
+      var med = gov.last = gov.s[gov.s.length >> 1];
+      gov.t0 = now; gov.s.length = 0;
+      var limit = gov.lvl === 0 ? 22 : 30;
+      gov.bad = med > limit ? gov.bad + 1 : 0;
+      if (gov.bad < 2) return;
+      gov.bad = 0;
+      if (gov.lvl === 0) {
+        gov.lvl = 1; bloomOn = false; gov.t0 = now + 1000;
+        renderer.setPixelRatio(1); composer.setPixelRatio(1); size();
+        if (window.console && console.info) console.info('[hero 3D] ' + med.toFixed(1) + ' ms/frame: DPR 1, no bloom');
+      } else if (gov.lvl === 1) {
+        gov.lvl = 2; dead = true; release();
+        skip(med.toFixed(1) + ' ms/frame at the lowest setting');
+      }
+    }
+    window.__hero3dGov = gov;   /* read by the perf check */
+    if (!ok.matches) api.pause();
+
     function loop() {
-      if (raf || !visible || document.hidden || !cubes.length) return;
+      if (raf || paused || dead || lost || !visible || document.hidden || !cubes.length) return;
       raf = requestAnimationFrame(frame);
     }
-    function frame() {
+    function frame(now) {
       raf = 0;
+      var gap = govPrev ? now - govPrev : 0; govPrev = now;
+      if (lastRendered && gap > 0 && gap < 250) govern(gap, now);
+      /* nothing touched for 3 s and no laptop zoom: render every other
+         frame (~30 fps); the motion is all time-based, so only the
+         smoothness changes */
+      if (now - lastInput > 3000 && !zoomT && zoom < 0.01 && (skipOdd = !skipOdd)) { lastRendered = false; loop(); return; }
+      lastRendered = true;
       var t = clock.getElapsedTime(), dt = Math.min(0.05, t - lastT), i; lastT = t;
-      px += (tx - px) * 0.05; py += (ty - py) * 0.05;
-      sp += (Math.min(1, sy / (innerHeight * 0.7)) - sp) * 0.08;
-      mood += (moodT - mood) * 0.05;
+      /* frame-rate independent easing: the same feel at 30, 60 or 144 Hz */
+      var k05 = 1 - Math.pow(0.95, dt * 60), k08 = 1 - Math.pow(0.92, dt * 60);
+      px += (tx - px) * k05; py += (ty - py) * k05;
+      sp += (Math.min(1, sy / (innerHeight * 0.7)) - sp) * k08;
+      mood += (moodT - mood) * k05;
       /* laptop zoom (z: 0 out, 1 in) mutes the lean, parallax and tilt */
       zoom += (zoomT - zoom) * Math.min(1, dt * 3.2);
       var z = ease(zoom), lean = 1 - z;
@@ -928,7 +1087,7 @@
       if (motes) { motes.rotation.y = t * 0.03; motes.position.y = Math.sin(t * 0.4) * 0.05; }
 
       for (i = 0; i < H.ticks.length; i++) H.ticks[i](t, dt);
-      composer.render();
+      if (bloomOn) composer.render(); else renderer.render(world, cam);
       loop();
     }
   }
@@ -1162,8 +1321,15 @@
   }
 
   function whenIdle() { ('requestIdleCallback' in window) ? requestIdleCallback(boot, { timeout: 2500 }) : setTimeout(boot, 1200); }
+  function arm() {
+    if (booted || !ok.matches) return;
+    booted = true; pend(); preconnect(); whenIdle();
+  }
   /* Not the load event: a slow third-party beacon (the analytics pixel)
      can hold 'load' back for a minute, which kept the 3D waiting. */
-  if (document.readyState === 'complete') whenIdle();
-  else addEventListener('DOMContentLoaded', function () { setTimeout(whenIdle, 1500); });
+  if (ok.matches) {
+    pend(); preconnect();
+    if (document.readyState === 'complete') arm();
+    else addEventListener('DOMContentLoaded', function () { setTimeout(arm, 1500); });
+  }
 })();
