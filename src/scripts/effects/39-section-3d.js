@@ -2,9 +2,8 @@
    39. SECTION 3D (desktop only)
    Added 2026-10-02. One shared WebGL renderer for everything 3D below
    the hero:
-     - a mini laptop beside each featured project (.proj-feature) whose
-       screen shows that project's screenshot; it turns slowly and
-       follows the pointer. Procedural boxes, no extra model file.
+     (the mini laptops beside the featured projects were removed on
+       2026-10-07: at 136-176 px they read as blurry stickers)
      - Dumpling, cloned from the hero's img/hero3d/scene.glb (same
        versioned URL, so the browser cache serves it), walking in beside
        the contact form and waiting there, head up, tail going.
@@ -15,7 +14,7 @@
    them and the hero's renderer stays the only other one.
 
    Loading: three.js (the hero's jsDelivr +esm build, so the module is
-   shared) is imported only when #work or #contact comes within ~800px,
+   shared) is imported only when #contact comes within ~800px,
    never on the load event. The GLB loads only when #contact is near.
    The loop runs at ~30fps only while a slot is on screen and the tab is
    visible; it stops entirely otherwise. Placement measures the text in
@@ -40,9 +39,8 @@
   }
   main();
   function main() {
-  var work = document.getElementById('work'), contact = document.getElementById('contact');
-  var feats = [].slice.call(document.querySelectorAll('.proj-feature'));
-  if (!work && !contact) return;
+  var contact = document.getElementById('contact');
+  if (!contact) return;
 
   var V = 'https://cdn.jsdelivr.net/npm/three@0.170.0';
   var BW = 1280, BH = 400;                /* shared drawing buffer, device px (wide for the pipeline strip) */
@@ -154,50 +152,6 @@
     three: function () { return T; }
   };
 
-  /* ── free-space test: never cover text ───────────────────────────
-     Collects the line boxes of every text node in `box` plus the boxes
-     of pills/buttons, and returns true if rect r (client coords, with a
-     margin) touches none of them. */
-  function clear(box, r) {
-    var rects = [], walker = document.createTreeWalker(box, NodeFilter.SHOW_TEXT), n, rg = document.createRange();
-    while ((n = walker.nextNode())) {
-      if (!n.nodeValue.trim()) continue;
-      rg.selectNodeContents(n);
-      var cr = rg.getClientRects();
-      for (var i = 0; i < cr.length; i++) rects.push(cr[i]);
-    }
-    box.querySelectorAll('span, a, button, b, .ptags > *').forEach(function (e) {
-      if (e.classList.contains('sm-slot')) return;
-      var b = e.getBoundingClientRect();
-      if (b.width && b.width < box.clientWidth * 0.9) rects.push(b);
-    });
-    var M = 8;
-    for (var j = 0; j < rects.length; j++) {
-      var q = rects[j];
-      if (q.right + M > r.left && q.left - M < r.right && q.bottom + M > r.top && q.top - M < r.bottom) return false;
-    }
-    return true;
-  }
-
-  /* ── 5 · featured-project laptops ──────────────────────────────── */
-  var LW = 176, LH = 120, laptopGeo = null;
-  var SIZES = [[176, 120], [156, 106], [136, 92]];
-  function laptopParts() {
-    if (laptopGeo) return laptopGeo;
-    laptopGeo = {
-      base: new T.BoxGeometry(1.6, 0.07, 1.08),
-      deck: new T.PlaneGeometry(1.42, 0.62),
-      pad: new T.PlaneGeometry(0.5, 0.26),
-      lid: new T.BoxGeometry(1.6, 1.04, 0.045),
-      screen: new T.PlaneGeometry(1.48, 0.93),
-      shadow: new T.PlaneGeometry(2.6, 1.8),
-      metal: new T.MeshStandardMaterial({ color: 0x9aa6ba, metalness: 0.25, roughness: 0.42 }),
-      keys: new T.MeshStandardMaterial({ color: 0x1c2430, metalness: 0.1, roughness: 0.8 }),
-      padM: new T.MeshStandardMaterial({ color: 0x8592a6, metalness: 0.2, roughness: 0.45 }),
-      shadowM: new T.MeshBasicMaterial({ map: blobTex(), transparent: true, depthWrite: false, opacity: 0.55 })
-    };
-    return laptopGeo;
-  }
   /* soft round contact shadow, drawn once */
   var blob = null;
   function blobTex() {
@@ -213,85 +167,6 @@
     scene.add(new T.HemisphereLight(0xcfe8ff, 0x0a1220, 1.1));
     var k = new T.DirectionalLight(0xffffff, 1.6); k.position.set(-2, 3, 3); scene.add(k);
     var r = new T.DirectionalLight(cool ? 0x33ccff : 0xffb070, 1.2); r.position.set(3, 1.5, -2); scene.add(r);
-  }
-
-  function placeLaptop(v) {
-    var body = v.card.querySelector('.proj-body');
-    var br = body.getBoundingClientRect();
-    v.canvas.style.display = 'none';
-    /* biggest first; the badge row's right end is usually the free spot */
-    for (var s = 0; s < SIZES.length; s++) {
-      var w = SIZES[s][0], h = SIZES[s][1];
-      var spots = [[br.right - w - 10, br.top + 6], [br.right - w - 10, br.bottom - h - 6]];
-      for (var i = 0; i < spots.length; i++) {
-        var r = { left: spots[i][0], top: spots[i][1], right: spots[i][0] + w, bottom: spots[i][1] + h };
-        if (clear(body, r)) {
-          v.canvas.style.display = '';
-          v.canvas.style.left = (r.left - br.left) + 'px';
-          v.canvas.style.top = (r.top - br.top) + 'px';
-          fit(v, w, h);
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  function makeLaptop(card) {
-    var P = laptopParts();
-    var scene = new T.Scene(); lights(scene, true);
-    var rig = new T.Group(); scene.add(rig);
-    var base = new T.Mesh(P.base, P.metal); base.position.y = 0.035; rig.add(base);
-    var deck = new T.Mesh(P.deck, P.keys); deck.rotation.x = -Math.PI / 2; deck.position.set(0, 0.071, -0.12); rig.add(deck);
-    var pad = new T.Mesh(P.pad, P.padM); pad.rotation.x = -Math.PI / 2; pad.position.set(0, 0.071, 0.34); rig.add(pad);
-    var sh = new T.Mesh(P.shadow, P.shadowM); sh.rotation.x = -Math.PI / 2; sh.position.y = -0.002; rig.add(sh);
-    /* lid hinged on the back edge, leaning back ~14deg */
-    var hinge = new T.Group(); hinge.position.set(0, 0.07, -0.53); hinge.rotation.x = -0.24; rig.add(hinge);
-    var lid = new T.Mesh(P.lid, P.metal); lid.position.set(0, 0.52, 0); hinge.add(lid);
-    var scrM = new T.MeshBasicMaterial({ color: 0x0b1220 });
-    var scr = new T.Mesh(P.screen, scrM); scr.position.set(0, 0.52, 0.024); hinge.add(scr);
-
-    /* the screen shows the card's own screenshot, cropped from the top */
-    var img = card.querySelector('.ss-img, .proj-thumb img');
-    var src = img && (img.currentSrc || img.src);
-    if (src) new T.TextureLoader().load(src, function (tex) {
-      tex.colorSpace = T.SRGBColorSpace;
-      var ia = tex.image.width / tex.image.height, sa = 1.48 / 0.93;
-      if (ia < sa) { tex.repeat.set(1, ia / sa); tex.offset.set(0, 1 - ia / sa); }
-      else { tex.repeat.set(sa / ia, 1); tex.offset.set((1 - sa / ia) / 2, 0); }
-      scrM.map = tex; scrM.color.set(0xffffff); scrM.needsUpdate = true;
-    });
-
-    var cam = new T.PerspectiveCamera(28, LW / LH, 0.1, 30);
-    cam.position.set(0, 1.35, 4.1); cam.lookAt(0, 0.42, 0);
-    var v = { card: card, scene: scene, cam: cam, canvas: slot(card.querySelector('.proj-body'), 'sm-laptop'), ready: true };
-    var ry = 0, rx = 0, ph = feats.indexOf(card) * 2.1;
-    v.update = function (t) {
-      var r = v.canvas.getBoundingClientRect();
-      var dx = Math.max(-1, Math.min(1, (px - (r.left + r.width / 2)) / (innerWidth * 0.5)));
-      var dy = Math.max(-1, Math.min(1, (py - (r.top + r.height / 2)) / (innerHeight * 0.5)));
-      /* slow turn of its own, plus a pull toward the pointer */
-      var ty = Math.sin(t * 0.32 + ph) * 0.55 + dx * 0.45, tx = dy * 0.16;
-      ry += (ty - ry) * 0.08; rx += (tx - rx) * 0.08;
-      rig.rotation.y = ry - 0.25; rig.rotation.x = rx;
-      rig.position.y = Math.sin(t * 1.1 + ph) * 0.03;
-    };
-    addView(v);
-    if (!placeLaptop(v)) v.canvas.style.display = 'none';
-    v.canvas.classList.add('is-live');
-    return v;
-  }
-
-  var laptopsMade = false;
-  function laptops() {
-    if (laptopsMade || !feats.length) return;
-    laptopsMade = true;
-    engine().then(function () {
-      var vs = feats.map(makeLaptop);
-      var rq = 0;
-      addEventListener('resize', function () { clearTimeout(rq); rq = setTimeout(function () { vs.forEach(placeLaptop); }, 200); });
-      kick();
-    }).catch(function () { /* CDN blocked: cards stay as they are */ });
   }
 
   /* ── 10 · Dumpling by the contact form ─────────────────────────── */
@@ -357,7 +232,7 @@
     box.getSize(size); box.getCenter(ctr);
     dog.position.set(-ctr.x, -box.min.y, -ctr.z);
     var S = Math.max(size.x, size.y, size.z);
-    var sh = new T.Mesh(new T.PlaneGeometry(S * 1.15, S * 0.8), new T.MeshBasicMaterial({ map: blobTex(), transparent: true, depthWrite: false, opacity: 0.4 }));
+    var sh = new T.Mesh(new T.PlaneGeometry(S * 1.0, S * 0.5), new T.MeshBasicMaterial({ map: blobTex(), transparent: true, depthWrite: false, opacity: 0.75 }));
     sh.rotation.x = -Math.PI / 2; sh.position.y = 0.001; walker.add(sh);
 
     var parts = {};
@@ -456,7 +331,7 @@
         walker.position.y = go > 0 ? Math.abs(Math.sin(go * 13)) * S * 0.05 : 0;
         env.rotation.z = -0.2 + Math.sin(c * 13) * 0.08;
       }
-      sh.material.opacity = 0.4 * Math.min(1, a * 2);
+      sh.material.opacity = 0.75 * Math.min(1, a * 2);
       var up = Math.max(0, Math.min(1, (a - 1.5) / 0.8)), upE = up * up * (3 - 2 * up);
       /* glance at the form while someone types */
       var busy = performance.now() - typing < 1500 ? 1 : 0;
@@ -476,7 +351,7 @@
         parts.body.scale.set(s0.x * (1 + br * 0.014) * hp.sx, s0.y * (1 + br * (busy ? 0.045 : 0.035)) * hp.sy, s0.z);
         parts.body.position.y = parts.body.userData.p0.y + Math.sin(t * 1.05) * S * 0.012 * upE + hp.h * S * 0.11;
       }
-      if (hp.h || hp.on) { var sk = 1 - hp.h * 0.4; sh.scale.set(sk, sk, 1); sh.material.opacity = 0.4 * (1 - hp.h * 0.6); }
+      if (hp.h || hp.on) { var sk = 1 - hp.h * 0.4; sh.scale.set(sk, sk, 1); sh.material.opacity = 0.75 * (1 - hp.h * 0.6); }
       else sh.scale.set(1, 1, 1);
       /* a glance at the form while someone types (the card leans a touch) */
       dog.rotation.y = 0.12 + look * 0.12 + Math.sin(t * 0.7) * 0.03 * upE;
@@ -492,13 +367,11 @@
   var near = new IntersectionObserver(function (es) {
     es.forEach(function (e) {
       if (!e.isIntersecting) return;
-      if (e.target === work) laptops();
       if (e.target === contact) dumpling();
       near.unobserve(e.target);
     });
   }, { rootMargin: '800px 0px' });
   function arm() {
-    if (work) near.observe(work);
     if (contact) near.observe(contact);
   }
   /* not the load event: a slow third-party beacon can hold it */

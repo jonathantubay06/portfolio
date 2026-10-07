@@ -32,6 +32,7 @@
     if (html) e.innerHTML = html; if (parent) parent.appendChild(e); return e;
   }
   function ease(x) { return x < 0 ? 0 : x > 1 ? 1 : x * x * (3 - 2 * x); }
+  var FONT = '"Plus Jakarta Sans",system-ui,sans-serif';
   function onHero(fn) {
     if (window.__hero3d) fn(window.__hero3d);
     else addEventListener('hero3d:ready', function () { fn(window.__hero3d); }, { once: true });
@@ -117,21 +118,22 @@
       if (t > next.skus) { st.skus += 6 + (Math.random() * 18 | 0); flash.skus = t; next.skus = t + 1.3 + Math.random(); }
       if (t > next.hours) { st.hours += 0.1; flash.hours = t; next.hours = t + 3.5; }
       if (bars[bars.length - 1] > 92) { bars.shift(); bars.push(40 + Math.random() * 30); }
-      g.setTransform(1, 0, 0, 1, 0, 0);
+      /* the slot canvas is 2x denser than w x h (36-hero-3d.js slot) */
+      g.setTransform(g.canvas.width / w, 0, 0, g.canvas.height / h, 0, 0);
       g.fillStyle = '#071223'; g.fillRect(0, 0, w, h);
       g.strokeStyle = '#00d4ff'; g.lineWidth = 3; g.beginPath(); g.roundRect(3, 3, w - 6, h - 6, 14); g.stroke();
-      g.font = '700 19px system-ui,sans-serif'; g.fillStyle = '#9fdcff'; g.fillText('OPS DASHBOARD', 24, 38);
+      g.font = '700 19px ' + FONT; g.fillStyle = '#9fdcff'; g.fillText('OPS DASHBOARD', 24, 38);
       var on = (t % 1.2) < 0.8;
       g.fillStyle = on ? '#2ee6a0' : '#14684a'; g.beginPath(); g.arc(w - 82, 32, 6, 0, 7); g.fill();
-      g.font = '700 15px system-ui,sans-serif'; g.fillStyle = '#2ee6a0'; g.fillText('LIVE', w - 70, 38);
+      g.font = '700 15px ' + FONT; g.fillStyle = '#2ee6a0'; g.fillText('LIVE', w - 70, 38);
       [['Orders synced', st.orders.toLocaleString(), 'orders', '#00e6ff'],
        ['SKUs updated', st.skus.toLocaleString(), 'skus', '#ffa04a'],
        ['Hours saved', st.hours.toFixed(1), 'hours', '#2ee6a0']].forEach(function (row, i) {
         var x = 20 + i * 150, y = 62, k = Math.max(0, 1 - (t - flash[row[2]]) / 0.6);
         rr(g, x, y, 140, 96, 10, k > 0 ? 'rgba(0,212,255,' + (0.1 + k * 0.22) + ')' : 'rgba(255,255,255,.05)');
-        g.font = '600 14px system-ui,sans-serif'; g.fillStyle = '#7fb0d4'; g.fillText(row[0], x + 12, y + 26);
-        g.font = '800 30px system-ui,sans-serif'; g.fillStyle = row[3]; g.fillText(row[1], x + 12, y + 68 - k * 3);
-        if (k > 0) { g.font = '700 14px system-ui,sans-serif'; g.fillStyle = '#fff'; g.fillText('▲', x + 118, y + 26); }
+        g.font = '600 14px ' + FONT; g.fillStyle = '#7fb0d4'; g.fillText(row[0], x + 12, y + 26);
+        g.font = '800 30px ' + FONT; g.fillStyle = row[3]; g.fillText(row[1], x + 12, y + 68 - k * 3);
+        if (k > 0) { g.font = '700 14px ' + FONT; g.fillStyle = '#fff'; g.fillText('▲', x + 118, y + 26); }
       });
       var bw = (w - 48) / bars.length;
       for (var i = 0; i < bars.length; i++) {
@@ -152,13 +154,14 @@
     tog.setAttribute('role', 'group'); tog.setAttribute('aria-labelledby', 'deskBaK');
     stage.parentNode.insertBefore(tog, stage.nextSibling);
     var live = el('span', 'sr-only', tog); live.setAttribute('aria-live', 'polite');
-    /* SVG fallback overlay (phones, tablets, or no WebGL); the plate is 1500x1288 */
+    /* SVG fallback overlay (phones and tablets); in the poster's 1500x1288
+       space, placed from the 3D scene's projected screens */
     var svg = el('div', 'desk-mess', sceneEl,
       '<svg viewBox="0 0 1500 1288" aria-hidden="true">' +
-      '<g class="dm-i" style="--d:0s"><rect x="560" y="600" width="170" height="40" rx="4" fill="#e9eef5" transform="rotate(-8 640 620)"/><rect x="566" y="586" width="170" height="16" rx="3" fill="#cfd7e2" transform="rotate(-4 640 600)"/><rect x="572" y="570" width="170" height="16" rx="3" fill="#f4f7fb" transform="rotate(-11 650 580)"/></g>' +
-      '<g class="dm-i" style="--d:.06s"><rect x="660" y="625" width="190" height="120" rx="4" fill="#f6f8fb" transform="rotate(9 750 680)"/><path d="M680 650h150M680 672h150M680 694h150M680 716h150M720 640v95M770 640v95" stroke="#9fb3c8" stroke-width="3" transform="rotate(9 750 680)"/></g>' +
-      '<g class="dm-i" style="--d:.12s"><rect x="845" y="352" width="58" height="56" rx="3" fill="#ffe066" transform="rotate(-9 874 380)"/><rect x="1000" y="360" width="54" height="52" rx="3" fill="#ff9ec7" transform="rotate(7 1027 386)"/><rect x="1160" y="400" width="48" height="46" rx="3" fill="#ffe066" transform="rotate(12 1184 423)"/><rect x="640" y="300" width="50" height="48" rx="3" fill="#9fe3ff" transform="rotate(-14 665 324)"/></g>' +
-      '<g class="dm-i dm-alert" style="--d:.18s"><circle cx="1072" cy="340" r="26" fill="#ff3b4e"/><text x="1072" y="351" text-anchor="middle" font-size="32" font-weight="800" fill="#fff" font-family="system-ui">!</text><circle cx="1240" cy="380" r="22" fill="#ff3b4e"/><text x="1240" y="390" text-anchor="middle" font-size="28" font-weight="800" fill="#fff" font-family="system-ui">!</text><circle cx="760" cy="280" r="22" fill="#ff3b4e"/><text x="760" y="290" text-anchor="middle" font-size="28" font-weight="800" fill="#fff" font-family="system-ui">3</text></g>' +
+      '<g class="dm-i" style="--d:0s"><rect x="250" y="880" width="170" height="40" rx="4" fill="#e9eef5" transform="rotate(-8 335 900)"/><rect x="256" y="866" width="170" height="16" rx="3" fill="#cfd7e2" transform="rotate(-4 340 875)"/><rect x="262" y="850" width="170" height="16" rx="3" fill="#f4f7fb" transform="rotate(-11 345 858)"/></g>' +
+      '<g class="dm-i" style="--d:.06s"><rect x="820" y="930" width="190" height="120" rx="4" fill="#f6f8fb" transform="rotate(9 915 990)"/><path d="M840 955h150M840 977h150M840 999h150M840 1021h150M880 945v95M930 945v95" stroke="#9fb3c8" stroke-width="3" transform="rotate(9 915 990)"/></g>' +
+      '<g class="dm-i" style="--d:.12s"><rect x="800" y="480" width="58" height="56" rx="3" fill="#ffe066" transform="rotate(-9 829 508)"/><rect x="410" y="520" width="54" height="52" rx="3" fill="#ff9ec7" transform="rotate(7 437 546)"/><rect x="1200" y="600" width="48" height="46" rx="3" fill="#ffe066" transform="rotate(12 1224 623)"/><rect x="60" y="340" width="50" height="48" rx="3" fill="#9fe3ff" transform="rotate(-14 85 364)"/></g>' +
+      '<g class="dm-i dm-alert" style="--d:.18s"><circle cx="880" cy="440" r="26" fill="#ff3b4e"/><text x="880" y="451" text-anchor="middle" font-size="32" font-weight="800" fill="#fff" font-family="system-ui">!</text><circle cx="1295" cy="555" r="22" fill="#ff3b4e"/><text x="1295" y="565" text-anchor="middle" font-size="28" font-weight="800" fill="#fff" font-family="system-ui">3</text><circle cx="300" cy="300" r="22" fill="#ff3b4e"/><text x="300" y="310" text-anchor="middle" font-size="28" font-weight="800" fill="#fff" font-family="system-ui">!</text></g>' +
       '</svg>');
     function setMess(v) {
       mess = v;
@@ -202,7 +205,7 @@
         var stack = new T.Group(); stack.position.set(p[0], 0, p[1]);
         for (var j = 0; j < p[2]; j++) {
           var s = new T.Mesh(new T.BoxGeometry(0.3, 0.012, 0.4), paper);
-          s.position.y = 0.006 + j * 0.013; s.rotation.y = (Math.random() - 0.5) * 0.35; stack.add(s);
+          s.position.y = 0.009 + j * 0.013; s.rotation.y = (Math.random() - 0.5) * 0.35; stack.add(s);
         }
         add(stack, 1, i * 0.06);
       });
@@ -230,7 +233,7 @@
         var badge = new T.Sprite(new T.SpriteMaterial({ depthTest: false, transparent: true, map: tex(128, 128, function (g) {
           g.fillStyle = '#ff3b4e'; g.beginPath(); g.arc(64, 64, 56, 0, 7); g.fill();
           g.strokeStyle = '#fff'; g.lineWidth = 8; g.stroke();
-          g.fillStyle = '#fff'; g.font = '900 76px system-ui,sans-serif'; g.textAlign = 'center'; g.fillText(si === 1 ? '3' : '!', 64, 92);
+          g.fillStyle = '#fff'; g.font = '900 76px ' + FONT; g.textAlign = 'center'; g.fillText(si === 1 ? '3' : '!', 64, 92);
         }) }));
         var bp = f.c.clone().addScaledVector(f.u, 0.85).addScaledVector(f.v, 1.25);
         H.root.worldToLocal(bp); badge.position.copy(bp); badge.userData.p = bp.clone(); badge.renderOrder = 5;
@@ -281,27 +284,30 @@
 
     function buildPipe(api) {
       var T = api.three(), scene = new T.Scene(); api.lights(scene, true);
-      var X = [-2.7, -0.9, 0.9, 2.7], nodes = [];
-      function label(text, col) {
+      var X = [-2.85, -0.95, 0.95, 2.85], nodes = [];
+      function label(text, col, hrs) {
         var c = document.createElement('canvas'); c.width = 256; c.height = 128;
         var g = c.getContext('2d');
         g.fillStyle = '#0b1424'; g.beginPath(); g.roundRect(0, 0, 256, 128, 22); g.fill();
         g.fillStyle = '#' + col.toString(16).padStart(6, '0'); g.beginPath(); g.roundRect(0, 0, 256, 12, 6); g.fill();
-        g.fillStyle = '#fff'; g.font = '800 48px system-ui,sans-serif'; g.textAlign = 'center'; g.fillText(text, 128, 84);
+        g.fillStyle = '#fff'; g.font = '800 44px ' + FONT; g.textAlign = 'center'; g.fillText(text, 128, 66);
+        if (hrs) { g.fillStyle = '#2ee6a0'; g.font = '700 22px ' + FONT; g.fillText(hrs, 128, 104); }
         var t = new T.CanvasTexture(c); t.colorSpace = T.SRGBColorSpace; return t;
       }
-      var boxG = new T.BoxGeometry(1.2, 0.6, 0.45), faceG = new T.PlaneGeometry(1.1, 0.55);
+      var boxG = new T.BoxGeometry(1.6, 0.8, 0.5), faceG = new T.PlaneGeometry(1.48, 0.74);
       NODES.forEach(function (n, i) {
         var g = new T.Group(); g.position.x = X[i]; scene.add(g);
         var m = new T.MeshStandardMaterial({ color: 0x18243a, metalness: 0.35, roughness: 0.4, emissive: n.c, emissiveIntensity: 0.15 });
         g.add(new T.Mesh(boxG, m));
-        var face = new T.Mesh(faceG, new T.MeshBasicMaterial({ map: label(n.name, n.c), transparent: true }));
-        face.position.z = 0.228; g.add(face);
+        var face = new T.Mesh(faceG, new T.MeshBasicMaterial({ map: label(n.name, n.c, n.h.replace('~', '').replace('/week', '/wk')), transparent: true }));
+        face.position.z = 0.253; g.add(face);
+        /* brand-colour rim so each block reads on the dark card */
+        g.add(new T.LineSegments(new T.EdgesGeometry(boxG), new T.LineBasicMaterial({ color: n.c, transparent: true, opacity: 0.8 })));
         nodes.push({ g: g, m: m, pulse: 0, hover: 0 });
       });
       var linkM = new T.MeshStandardMaterial({ color: 0x0b2030, emissive: 0x00d4ff, emissiveIntensity: 0.7 });
       for (var i = 0; i < 3; i++) {
-        var L = new T.Mesh(new T.CylinderGeometry(0.025, 0.025, X[i + 1] - X[i] - 1.2, 10), linkM);
+        var L = new T.Mesh(new T.CylinderGeometry(0.025, 0.025, X[i + 1] - X[i] - 1.6, 10), linkM);
         L.rotation.z = Math.PI / 2; L.position.set((X[i] + X[i + 1]) / 2, -0.05, 0); scene.add(L);
       }
       /* order packets: little order slips with a green tick */
@@ -317,11 +323,11 @@
       var packets = [];
       for (i = 0; i < 4; i++) { var p = new T.Mesh(pG, pM); scene.add(p); packets.push(p); }
       var shadow = new T.Mesh(new T.PlaneGeometry(7.4, 1.1), new T.MeshBasicMaterial({ map: api.blobTex(), transparent: true, opacity: 0.35, depthWrite: false }));
-      shadow.rotation.x = -Math.PI / 2; shadow.position.y = -0.36; scene.add(shadow);
+      shadow.rotation.x = -Math.PI / 2; shadow.position.y = -0.46; scene.add(shadow);
 
       var cam = new T.PerspectiveCamera(24, 6, 0.1, 40);
       var v = { scene: scene, cam: cam, canvas: api.slot(wrap, 'sm-pipe'), ready: true };
-      function size() { var r = wrap.getBoundingClientRect(); if (r.width) api.fit(v, r.width, r.height); var a = r.width / r.height, tn = Math.tan(12 * Math.PI / 180); cam.position.set(0, 0.85, Math.max(4.1 / (tn * a), 1.05 / tn)); cam.lookAt(0, 0.1, 0); }
+      function size() { var r = wrap.getBoundingClientRect(); if (r.width) api.fit(v, r.width, r.height); var a = r.width / r.height, tn = Math.tan(12 * Math.PI / 180); cam.position.set(0, 0.85, Math.max(4.3 / (tn * a), 1.1 / tn)); cam.lookAt(0, 0.1, 0); }
       size(); new ResizeObserver(size).observe(wrap);
       var mx = 0, hov = -1, PER = 5.4, pv = new T.Vector3();
       v.update = function (t) {

@@ -100,12 +100,10 @@
     logo_gear: { label: 'Give it a spin', act: 'gear' },
     laptop_base: LAPTOP, laptop_lid: LAPTOP, laptop_keys: LAPTOP,
     drone: { label: 'Fulfilment' }, rack: { label: 'Monitoring 24/7' },
-    holo_code: { label: 'Custom integrations' },
     holo_chart: { label: 'KDL video checker', modal: 'modal-kdl-checker', hl: true },
     tablet: TABLET, tablet_screen: TABLET, tablet_stand: TABLET,
     holo_order: { label: 'Real-time orders' }, bot: { label: 'Warehouse automation', act: 'bot' },
-    dog: { label: 'Dumpling, chief morale officer' },
-    shelf: { label: 'Read the reviews', href: '#testimonials' }
+    dog: { label: 'Dumpling, chief morale officer' }
   };
 
   /* the pups: node name in scene.glb -> hover label (names swap here and
@@ -265,7 +263,7 @@
         if (/^bot_wheel_/.test(o.name)) wheels.push(o);
         if ((/^rack_led_/.test(o.name) || o.name === 'bot_led') && o.material) { o.material = o.material.clone(); leds.push(o); }
         if (PUPS[o.name]) pups.push({ cfg: PUPS[o.name], root: o });
-        if (/^dog_(body|head|ear_l|ear_r|tail|paws|paw_l|paw_r|shadow)$/.test(o.name)) { dog[o.name.slice(4)] = o; o.userData.p0 = o.position.clone(); o.userData.r0 = o.rotation.clone(); o.userData.s0 = o.scale.clone(); }
+        if (/^dog_(body|head|ear_l|ear_r|tail|paws|paw_l|paw_r|shadow)$/.test(o.name)) { dog[o.name.slice(4)] = o; o.userData.p0 = o.position.clone(); o.userData.r0 = o.rotation.clone(); o.userData.s0 = o.scale.clone(); if (o.name === 'dog_shadow') o.userData.s0.multiplyScalar(1.3); }
         if (o.name === 'dog') { dog.root = o; o.userData.r0 = o.rotation.clone(); o.userData.p0 = o.position.clone(); }
         /* the dogs are photo cut-outs: alpha-to-coverage (the composer's
            4x MSAA target) for a smooth, halo-free fur edge, both faces,
@@ -280,7 +278,7 @@
           dm.userData.keepEmissive = true; dm.needsUpdate = true;
         }
         /* contact shadows: paw pads + ambient pool, strength baked in the texture */
-        if (o.isMesh && o.material && /^(dog|mochi|tofu|pochi)_shadow$/.test(o.material.name)) { o.material = o.material.clone(); o.material.transparent = true; o.material.depthWrite = false; o.material.opacity = 0.9; o.material.polygonOffset = true; o.material.polygonOffsetFactor = -1; }
+        if (o.isMesh && o.material && /^(dog|mochi|tofu|pochi)_shadow$/.test(o.material.name)) { o.material = o.material.clone(); o.material.transparent = true; o.material.depthWrite = false; o.material.opacity = 1; o.material.polygonOffset = true; o.material.polygonOffsetFactor = -1; }
         /* Blender's emission strengths read hot under ACES; tame them */
         if (o.material && o.material.emissiveIntensity && !o.material.userData.keepEmissive) {
           var n = o.material.name || '';
@@ -304,19 +302,35 @@
         p.root.userData.r0 = p.root.rotation.clone();
         ['body', 'tail', 'paws', 'paw_l', 'paw_r', 'shadow'].forEach(function (k) {
           var o = g.scene.getObjectByName(p.root.name + '_' + k);
-          if (o) { o.userData.p0 = o.position.clone(); o.userData.r0 = o.rotation.clone(); o.userData.s0 = o.scale.clone(); }
+          if (o) { o.userData.p0 = o.position.clone(); o.userData.r0 = o.rotation.clone(); o.userData.s0 = o.scale.clone(); if (k === 'shadow') o.userData.s0.multiplyScalar(1.3); }
           p[k] = o;
         });
         p.ph = Math.random() * 6; p.wag = 0;
         /* staggered first hops: Pochi soon, Mochi much later */
         p.hopAt = 2 + p.cfg.hop[0] * 0.5 + Math.random() * p.cfg.hop[1];
       });
+      /* a tight dark contact blob under every dog, on top of the baked
+         soft shadow, so the cards sit on the desk instead of hovering */
+      [dog.root].concat(pups.map(function (p) { return p.root; })).forEach(function (r) {
+        if (!r) return;
+        var bb = new THREE.Box3().setFromObject(r), w = bb.max.x - bb.min.x;
+        var c = document.createElement('canvas'); c.width = c.height = 64;
+        var cg = c.getContext('2d'), gr = cg.createRadialGradient(32, 32, 0, 32, 32, 32);
+        gr.addColorStop(0, 'rgba(0,0,0,.85)'); gr.addColorStop(0.55, 'rgba(0,0,0,.45)'); gr.addColorStop(1, 'rgba(0,0,0,0)');
+        cg.fillStyle = gr; cg.fillRect(0, 0, 64, 64);
+        var m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 }));
+        r.updateMatrixWorld(true);
+        var s = r.getWorldScale(v1);
+        m.scale.set(w * 0.8 / s.x, 1, w * 0.32 / s.z); m.position.y = 0.003 / s.y; m.renderOrder = 2; r.add(m);
+      });
       cal = deskCalendar(g.scene); weigh = parcelScale(g.scene); steam = mugSteam(g.scene);
+      ['holo_order', 'holo_gauge'].forEach(function (n) { glassSlab(g.scene.getObjectByName(n)); });
       deskSheen(g.scene);
       dust = lampDust(); sky = skyPanel();
       /* drifting data motes around the desk */
-      var N = 160, pos = new Float32Array(N * 3);
-      for (var i = 0; i < N; i++) { pos[i * 3] = (Math.random() - 0.5) * 4; pos[i * 3 + 1] = Math.random() * 2.4; pos[i * 3 + 2] = (Math.random() - 0.5) * 3; }
+      var N = 110, pos = new Float32Array(N * 3);
+      /* x > -0.4: none drift over the headline side of the canvas */
+      for (var i = 0; i < N; i++) { pos[i * 3] = -0.4 + Math.random() * 2.6; pos[i * 3 + 1] = Math.random() * 2.4; pos[i * 3 + 2] = (Math.random() - 0.5) * 3; }
       var pg = new THREE.BufferGeometry(); pg.setAttribute('position', new THREE.BufferAttribute(pos, 3));
       motes = new THREE.Points(pg, new THREE.PointsMaterial({ color: 0x5fdcff, size: 0.018, transparent: true, opacity: 0.7, depthWrite: false }));
       rig.add(motes);
@@ -344,6 +358,29 @@
         loop();
       });
     }, undefined, function () { skip('scene.glb failed to load'); });
+
+    /* ── glass slabs (2026-10-07): the floating cards were bare planes;
+       each gets a thin bevelled glass body behind its face (0.012 deep)
+       with a cyan rim, so it has an edge and catches the light when the
+       camera leans. Child of the card mesh, so it floats with it. */
+    function glassSlab(card) {
+      if (!card || !card.isMesh) return;
+      var gb = card.geometry; gb.computeBoundingBox();
+      var sz = gb.boundingBox.getSize(new THREE.Vector3()), ctr = gb.boundingBox.getCenter(new THREE.Vector3());
+      card.updateWorldMatrix(true, false);
+      var e = card.matrixWorld.elements, sc = [Math.hypot(e[0], e[1], e[2]), Math.hypot(e[4], e[5], e[6]), Math.hypot(e[8], e[9], e[10])];
+      var ax = [0, 1, 2].sort(function (i, j) { return sz.getComponent(i) * sc[i] - sz.getComponent(j) * sc[j]; })[0];
+      var nw = new THREE.Vector3().setComponent(ax, 1).transformDirection(card.matrixWorld);
+      var front = nw.dot(v1.copy(camBase).sub(card.getWorldPosition(v2))) > 0 ? 1 : -1;
+      var dim = [0, 1, 2].map(function (i) { return i === ax ? 0.012 / sc[i] : sz.getComponent(i) + 0.03 / sc[i]; });
+      var geo = new THREE.BoxGeometry(dim[0], dim[1], dim[2]);
+      var slab = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: 0x0a2038, metalness: 0.3, roughness: 0.2, transparent: true, opacity: 0.6,
+        emissive: 0x0b4a6e, emissiveIntensity: 0.35, depthWrite: false }));
+      slab.position.copy(ctr).setComponent(ax, ctr.getComponent(ax) - front * 0.0075 / sc[ax]);
+      slab.material.userData.keepEmissive = true;
+      var rim = new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineBasicMaterial({ color: 0x5fe0ff, transparent: true, opacity: 0.3 }));
+      slab.add(rim); card.add(slab);
+    }
 
     /* round glow sprite shared by the flow and spark points */
     var dot = (function () {
@@ -442,8 +479,8 @@
         g.beginPath(); g.roundRect(3, 3, 314, 82, 18); g.fill(); g.stroke();
         g.fillStyle = '#14aa78'; g.beginPath(); g.arc(44, 44, 22, 0, 7); g.fill();
         g.strokeStyle = '#fff'; g.lineWidth = 5; g.lineCap = 'round'; g.beginPath(); g.moveTo(34, 45); g.lineTo(42, 53); g.lineTo(55, 36); g.stroke();
-        g.fillStyle = '#e8f4ff'; g.font = '700 25px system-ui,sans-serif'; g.fillText('New order ' + AMT[seq % AMT.length], 80, 42);
-        g.fillStyle = '#78c8f0'; g.font = '600 17px system-ui,sans-serif'; g.fillText('#' + seq + ' · paid', 80, 68);
+        g.fillStyle = '#e8f4ff'; g.font = '700 25px ' + FONT; g.fillText('New order ' + AMT[seq % AMT.length], 80, 42);
+        g.fillStyle = '#78c8f0'; g.font = '600 17px ' + FONT; g.fillText('#' + seq + ' · paid', 80, 68);
         p.tex.needsUpdate = true; p.x = X[seq % 3]; seq++;
       }
       return function (t) {
@@ -506,14 +543,16 @@
       var page = paintSlot(root, 'cal_page', 256, 204), top = paintSlot(root, 'cal_flip_page', 256, 204);
       var hinge = root.getObjectByName('cal_flip');
       if (!page || !top || !hinge) return null;
-      top.m.transparent = true;
+      top.m.transparent = true; top.m.side = THREE.FrontSide; page.m.side = THREE.FrontSide;
+      var back = root.getObjectByName('cal_flip_back');
+      if (back && back.material) { back.material = back.material.clone(); back.material.transparent = true; }
       var r0 = hinge.rotation.x, PERIOD = 8, last = -1;
       function draw(s, k) {
         var g = s.g, w = NOTES[k % NOTES.length];
         g.fillStyle = '#f4f1ea'; g.fillRect(0, 0, 256, 204);
         g.fillStyle = '#e8572a'; g.fillRect(0, 0, 256, 44);
-        g.fillStyle = '#fff'; g.font = '700 22px system-ui,sans-serif'; g.textAlign = 'center'; g.fillText('TODAY', 128, 30);
-        g.fillStyle = '#142032'; g.font = '800 ' + (w.length > 9 ? 31 : 38) + 'px system-ui,sans-serif'; g.fillText(w, 128, 116);
+        g.fillStyle = '#fff'; g.font = '700 22px ' + FONT; g.textAlign = 'center'; g.fillText('TODAY', 128, 30);
+        g.fillStyle = '#142032'; g.font = '800 ' + (w.length > 9 ? 31 : 38) + 'px ' + FONT; g.fillText(w, 128, 116);
         g.fillStyle = '#14aa78'; g.beginPath(); g.arc(128, 160, 22, 0, 7); g.fill();
         g.strokeStyle = '#fff'; g.lineWidth = 5; g.lineCap = 'round'; g.beginPath(); g.moveTo(117, 161); g.lineTo(125, 169); g.lineTo(139, 151); g.stroke();
         s.tex.needsUpdate = true;
@@ -521,11 +560,12 @@
       return function (t) {
         var cyc = Math.floor(t / PERIOD), u = (t % PERIOD - (PERIOD - 1.4)) / 1.4;
         if (cyc !== last) { last = cyc; draw(top, cyc); draw(page, cyc + 1); }
-        if (u < 0) { hinge.rotation.x = r0; top.m.opacity = 1; top.mesh.visible = true; return; }
+        if (u < 0) { hinge.rotation.x = r0; top.m.opacity = 1; top.mesh.visible = true; if (back) { back.material.opacity = 1; back.visible = true; } return; }
         var e = ease(u);
         hinge.rotation.x = r0 - e * 3.3 + Math.sin(u * 18) * 0.12 * (1 - u);
         top.m.opacity = 1 - ease((u - 0.55) / 0.45);
         top.mesh.visible = top.m.opacity > 0.01;
+        if (back) { back.material.opacity = top.m.opacity; back.visible = top.mesh.visible; }
       };
     }
 
@@ -553,29 +593,29 @@
       return api;
     }
 
-    /* ── mug steam: a few soft wisps rise, sway and fade, recycled */
+    /* ── mug steam: three soft puffs rise (0.25 units/s), swell, sway
+       and fade; additive, so they read as warm vapour, never as lines */
     function mugSteam(root) {
       var mug = root.getObjectByName('mug');
       if (!mug) return null;
-      var c = document.createElement('canvas'); c.width = 64; c.height = 128;
-      var g = c.getContext('2d');
-      /* one curling stroke, blurred into a wisp */
-      g.filter = 'blur(5px)'; g.strokeStyle = 'rgba(255,244,228,.9)'; g.lineWidth = 9; g.lineCap = 'round';
-      g.beginPath(); g.moveTo(32, 120); g.bezierCurveTo(10, 90, 54, 64, 30, 36); g.bezierCurveTo(18, 22, 36, 12, 34, 6); g.stroke();
+      var c = document.createElement('canvas'); c.width = c.height = 64;
+      var g = c.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+      gr.addColorStop(0, 'rgba(255,246,232,1)'); gr.addColorStop(0.45, 'rgba(255,246,232,.45)'); gr.addColorStop(1, 'rgba(255,246,232,0)');
+      g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
       var tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
       var top = new THREE.Vector3(); mug.getWorldPosition(top); top.y += 0.09;
-      var N = 5, list = [];
+      var N = 3, RISE = 0.3, LIFE = RISE / 0.25, list = [];
       for (var i = 0; i < N; i++) {
-        var sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, color: 0xfff1dc, transparent: true, opacity: 0, depthWrite: false }));
-        sp.renderOrder = 4; rig.add(sp); list.push({ s: sp, o: i / N, side: i % 2 ? 1 : -1 });
+        var sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, color: 0xfff1dc, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending }));
+        sp.renderOrder = 4; rig.add(sp); list.push({ s: sp, o: i / N });
       }
       return function (t) {
         for (var i = 0; i < N; i++) {
-          var w = list[i], u = (t / 3.6 + w.o) % 1, s = 0.07 + u * 0.09;
-          w.s.position.set(top.x + Math.sin(t * 1.3 + i * 2) * 0.02 * u + w.side * 0.012, top.y + u * 0.32, top.z + Math.cos(t * 0.9 + i) * 0.015 * u);
-          w.s.scale.set(s * 0.55, s, 1);
-          w.s.material.rotation = w.side * (0.15 + u * 0.4) * Math.sin(t * 0.7 + i);
-          w.s.material.opacity = Math.sin(u * Math.PI) * 0.26;
+          var w = list[i], u = (t / LIFE + w.o) % 1, sz = 0.05 + u * 0.1;
+          w.s.position.set(top.x + Math.sin(t * 0.9 + i * 2.1) * 0.025 * u, top.y + u * RISE, top.z + Math.cos(t * 0.7 + i) * 0.015 * u);
+          w.s.scale.set(sz, sz, 1);
+          /* smooth in and out, so the recycle at u = 0 never pops */
+          w.s.material.opacity = Math.sin(u * Math.PI) * Math.sin(u * Math.PI) * 0.35;
         }
       };
     }
@@ -644,73 +684,65 @@
       };
     }
 
-    /* ── sky behind the desk: a faint, feathered window onto a distant
-       skyline whose sky follows Manila time (night, dawn, day, sunset,
-       evening). Redrawn once a minute; drawn first, never bloomed. */
+    /* ── skyline behind the desk (2026-10-07): a few real extruded
+       towers instead of a painted panel, so they shift with the camera
+       like everything else. Navy massing, lit windows at night, one
+       faint palette-clamped glow behind them (navy to burnt orange at
+       dawn/dusk, never magenta). Transparent and drawn first, so they
+       never cover a prop. Redrawn once a minute (Manila time). */
     function skyPanel() {
-      var W = 512, H = 256, c = document.createElement('canvas'); c.width = W; c.height = H;
+      var wc = document.createElement('canvas'); wc.width = 64; wc.height = 128;
+      var wg = wc.getContext('2d'); wg.fillStyle = '#000'; wg.fillRect(0, 0, 64, 128);
+      for (var wy = 6; wy < 124; wy += 10) for (var wx = 5; wx < 60; wx += 9)
+        if (((wx * 7 + wy * 13) | 0) % 7 < 2) { wg.fillStyle = (wx + wy) % 3 ? '#ffc46e' : '#7fd8ff'; wg.fillRect(wx, wy, 4, 5); }
+      var wtex = new THREE.CanvasTexture(wc); wtex.colorSpace = THREE.SRGBColorSpace;
+      var tm = new THREE.MeshStandardMaterial({ color: 0x0b1a30, roughness: 0.85, metalness: 0.1, emissive: 0xffffff, emissiveMap: wtex,
+        emissiveIntensity: 0, transparent: true, opacity: 0.28, depthWrite: false });
+      /* [x, z, width, depth, height] in rig space, behind the desk */
+      var T = [[-2.6, -5.0, 0.5, 0.45, 1.5], [-1.95, -5.4, 0.42, 0.4, 1.8], [-1.3, -4.9, 0.36, 0.36, 1.2], [-0.6, -5.5, 0.55, 0.5, 1.9],
+        [0.1, -5.1, 0.4, 0.4, 1.4], [0.8, -5.45, 0.48, 0.44, 1.7], [1.5, -5.0, 0.38, 0.36, 1.25], [2.15, -5.3, 0.5, 0.45, 1.5]];
+      var box = new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0);
+      var city = new THREE.InstancedMesh(box, tm, T.length), m4 = new THREE.Matrix4();
+      T.forEach(function (b, i) { m4.makeScale(b[2], b[4], b[3]).setPosition(b[0], -1.0, b[1]); city.setMatrixAt(i, m4); });
+      city.renderOrder = -1; city.frustumCulled = false; rig.add(city);
+      /* the glow behind: a feathered gradient card */
+      var W = 256, H = 128, c = document.createElement('canvas'); c.width = W; c.height = H;
       var g = c.getContext('2d'), tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
-      /* [hour, top, bottom] keyframes, Manila local time */
-      var KEY = [[0, '#060d24', '#0d1a3a'], [4.8, '#08122e', '#1a2452'], [5.8, '#2c3a78', '#e0866a'], [7, '#3f86cc', '#f2c49a'],
-        [9, '#2f8fe0', '#a6d6f2'], [16, '#3a8ad8', '#b0d8ee'], [17.4, '#5a4c9c', '#ff8a52'], [18.2, '#3a2c70', '#e0607a'],
-        [19.2, '#141c4c', '#4a3466'], [20.5, '#060d24', '#0d1a3a'], [24, '#060d24', '#0d1a3a']];
-      var rnd = 11, R = function () { rnd = (rnd * 16807) % 2147483647; return rnd / 2147483647; };
-      var towers = [], stars = [], i;
-      for (var x = 0; x < W;) { var w = 16 + R() * 34; towers.push([x, w, 40 + R() * 90]); x += w + 2 + R() * 6; }
-      for (i = 0; i < 40; i++) stars.push([R() * W, R() * H * 0.55, R()]);
+      var glow = new THREE.Mesh(new THREE.PlaneGeometry(6.4, 3.4), new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity: 0.3, depthWrite: false, toneMapped: false }));
+      glow.position.set(-0.2, 0.9, -5.8); glow.rotation.y = 0.26; glow.renderOrder = -2; rig.add(glow);
+      /* [hour, top, bottom], Manila time, all inside the site palette */
+      var KEY = [[0, '#060d24', '#0d1a3a'], [5, '#08122e', '#16244e'], [6, '#1b2a5a', '#c46a3a'], [7.5, '#1d3f72', '#3f7fae'],
+        [16.5, '#1d3f72', '#3f7fae'], [17.8, '#1b2a5a', '#c46a3a'], [19, '#0e1a40', '#1b2a5a'], [20.5, '#060d24', '#0d1a3a'], [24, '#060d24', '#0d1a3a']];
       function mix(a, b, f) {
         var A = parseInt(a.slice(1), 16), B = parseInt(b.slice(1), 16), o = '#';
         for (var s = 16; s >= 0; s -= 8) o += ('0' + Math.round(((A >> s) & 255) * (1 - f) + ((B >> s) & 255) * f).toString(16)).slice(-2);
         return o;
       }
-      var mesh = new THREE.Mesh(new THREE.PlaneGeometry(5.2, 2.6), new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity: 0.3, depthWrite: false, toneMapped: false }));
-      mesh.position.set(-0.4, 1.35, -3.1); mesh.rotation.y = 0.26; mesh.renderOrder = -1; rig.add(mesh);
       var api = function (hourOverride) {
         var h = hourOverride != null ? hourOverride : (Date.now() / 3.6e6 + 8) % 24, k = 0;
         while (KEY[k + 1][0] <= h) k++;
         var f = (h - KEY[k][0]) / (KEY[k + 1][0] - KEY[k][0]);
         var night = h < 5.5 || h > 19.5 ? 1 : h < 6.5 ? 6.5 - h : h > 18.5 ? h - 18.5 : 0;
-        var top = mix(KEY[k][1], KEY[k + 1][1], f), gr = g.createLinearGradient(0, 0, 0, H);
-        gr.addColorStop(0, top); gr.addColorStop(1, mix(KEY[k][2], KEY[k + 1][2], f));
+        var gr = g.createLinearGradient(0, 0, 0, H);
+        gr.addColorStop(0, mix(KEY[k][1], KEY[k + 1][1], f)); gr.addColorStop(1, mix(KEY[k][2], KEY[k + 1][2], f));
         g.globalCompositeOperation = 'source-over'; g.fillStyle = gr; g.fillRect(0, 0, W, H);
-        for (i = 0; i < stars.length; i++) { g.fillStyle = 'rgba(220,235,255,' + (night * (0.3 + stars[i][2] * 0.6)).toFixed(2) + ')'; g.fillRect(stars[i][0], stars[i][1], 2, 2); }
-        if (night < 1) {  /* sun arcs over the day, low and warm at the ends */
-          var sd = Math.max(0, Math.min(1, (h - 6) / 12)), sx = 60 + sd * 390, sy2 = 150 - Math.sin(sd * Math.PI) * 110;
-          g.fillStyle = 'rgba(255,236,190,' + (0.9 * (1 - night)).toFixed(2) + ')'; g.beginPath(); g.arc(sx, sy2, 16, 0, 7); g.fill();
-        }
-        if (night > 0) {  /* crescent moon: a disc with a sky-coloured bite */
-          g.fillStyle = 'rgba(230,240,255,' + (0.85 * night).toFixed(2) + ')'; g.beginPath(); g.arc(400, 56, 13, 0, 7); g.fill();
-          g.fillStyle = top; g.beginPath(); g.arc(407, 51, 12, 0, 7); g.fill();
-        }
-        for (i = 0; i < towers.length; i++) {
-          var T = towers[i]; g.fillStyle = '#0a1424'; g.fillRect(T[0], H - T[2], T[1], T[2]);
-          if (night > 0.2) {
-            g.fillStyle = 'rgba(255,196,110,' + (0.65 * night).toFixed(2) + ')';
-            for (var wy = H - T[2] + 8; wy < H - 6; wy += 11) for (var wx = T[0] + 4; wx < T[0] + T[1] - 5; wx += 8)
-              if (((wx * 7 + wy * 13) | 0) % 5 < 2) g.fillRect(wx, wy, 3, 4);
-          }
-        }
-        /* the towers share the hero's navy, so the skyline reads as a cut
-           out of the sky glow, never as dark slabs; then the window frame
-           and a feather on every edge into the dark hero */
-        g.fillStyle = 'rgba(10,20,36,.85)'; g.fillRect(W / 3 - 2, 0, 4, H); g.fillRect(W * 2 / 3 - 2, 0, 4, H);
         g.globalCompositeOperation = 'destination-in';
         g.save(); g.scale(1, H / W);
         var fe = g.createRadialGradient(W / 2, W / 2, 0, W / 2, W / 2, W / 2);
-        fe.addColorStop(0, '#000'); fe.addColorStop(0.5, '#000'); fe.addColorStop(1, 'rgba(0,0,0,0)');
+        fe.addColorStop(0, '#000'); fe.addColorStop(0.45, '#000'); fe.addColorStop(1, 'rgba(0,0,0,0)');
         g.fillStyle = fe; g.fillRect(0, 0, W, W); g.restore();
         g.globalCompositeOperation = 'source-over';
-        /* bright daytime sky reads louder, so it gets less opacity */
-        mesh.material.opacity = 0.26 + night * 0.1;
         tex.needsUpdate = true;
+        glow.material.opacity = 0.22 + night * 0.06;
+        tm.emissiveIntensity = 0.06 + night * 0.22;
       };
       api(); return api;
     }
 
     /* drone loop round the desk (three coords: x, up, toward the viewer) */
     var dronePath = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(0.3, 1.0, 0.75), new THREE.Vector3(1.3, 1.1, 0.55), new THREE.Vector3(1.45, 1.2, -0.55),
-      new THREE.Vector3(0.45, 1.22, -1.2), new THREE.Vector3(-0.75, 1.1, -0.95), new THREE.Vector3(-0.6, 0.98, 0.45)], true);
+      new THREE.Vector3(0.3, 0.98, 0.75), new THREE.Vector3(1.3, 1.02, 0.55), new THREE.Vector3(1.45, 1.05, -0.55),
+      new THREE.Vector3(0.45, 1.05, -1.2), new THREE.Vector3(-0.75, 1.02, -0.95), new THREE.Vector3(-0.6, 0.96, 0.45)], true);
 
     /* day/night mood: the hero stays dark, but the lamp and glow follow
        the site theme a little (light = daytime: lamp down, less bloom) */
@@ -925,7 +957,8 @@
          then eased toward the face-on view of the laptop screen */
       v1.set(camBase.x + px * 0.9 * lean, camBase.y - py * 0.5 * lean, camBase.z - px * 0.6 * lean).sub(target).multiplyScalar((1 + sp * 0.45 * lean) * (1 - H.dolly * 0.16));
       cam.position.copy(target).add(v1).lerp(zcam, z);
-      cam.lookAt(look.copy(target).lerp(zc, z));
+      look.copy(target); look.y -= H.dolly * 0.1;
+      cam.lookAt(look.lerp(zc, z));
       rig.rotation.x = sp * 0.15 * lean;
       var f = 1 - sp;
       if (Math.abs(f - fade) > 0.004) { fade = f; canvas.style.opacity = f.toFixed(3); }
@@ -944,7 +977,7 @@
         c.scale.setScalar(c.userData.s0 * (1 + c.userData.lift * 0.8));
         /* icons light up one by one: cart, gear, database (4.5s round) */
         var ph = ((t / 4.5 - i / 3) % 1 + 1) % 1, glow = Math.max(0, Math.sin(ph * Math.PI * 3)) * (ph < 1 / 3 ? 1 : 0);
-        if (c.material) c.material.emissiveIntensity = 0.3 + glow * 1.6 + (c === hover ? 0.8 : 0);
+        if (c.material) c.material.emissiveIntensity = 0.3 + glow * 1.1 + (c === hover ? 0.7 : 0);
       }
       /* one pulse runs through the wires in order */
       for (i = 0; i < wires.length; i++) {
@@ -952,11 +985,11 @@
         wires[i].material.emissiveIntensity = 0.9 + 3 * Math.max(0, Math.sin(wp * Math.PI * 2)) ** 3;
       }
       cyan.intensity = 6 + Math.sin(t * 2) * 2;
-      lamp.intensity = (3 + Math.sin(t * 7) * 0.15 + Math.sin(t * 13) * 0.1) * (1.2 - mood * 0.5);
+      lamp.intensity = (3 + Math.sin(t * 1.7) * 0.05 + Math.sin(t * 0.63) * 0.04) * (1.2 - mood * 0.5);
       key.intensity = 1.2 + mood * 0.35; hemi.intensity = 0.35 + mood * 0.15;
-      bloom.strength = 0.24 - mood * 0.07;
+      bloom.strength = 0.2 - mood * 0.06;
       /* face-on, the white store page would bloom; ease it down a little */
-      if (screens) screens.glow((1.08 - mood * 0.22) * (1 - z * 0.3));
+      if (screens) screens.glow(Math.min(0.85, (1.08 - mood * 0.22) * (1 - z * 0.3)));
 
       /* gear: idle turn, plus a decaying burst after a click */
       gearAng += (0.35 + gearBoost) * dt; gearBoost *= Math.exp(-dt * 1.8);
@@ -1029,11 +1062,11 @@
       if (dog.body) {
         var hp = dogHop(t), br = Math.sin(t * 2.1) * 0.5 + 0.5, bs = dog.body.userData.s0;
         dog.body.scale.set(bs.x * (1 + br * 0.014) * hp.sx, bs.y * (1 + br * 0.035) * hp.sy, bs.z);
-        dog.body.position.y = dog.body.userData.p0.y + Math.sin(t * 1.05) * 0.003 + hp.h * 0.04;
+        dog.body.position.y = dog.body.userData.p0.y + Math.sin(t * 1.05) * 0.003 + hp.h * 0.04 * (1 + 0.5 * cta);
         if (dog.shadow) {
           var ss = dog.shadow.userData.s0, sk = 1 - hp.h * 0.4;
           dog.shadow.scale.set(ss.x * sk, ss.y, ss.z * sk);
-          dog.shadow.material.opacity = 0.9 * (1 - hp.h * 0.6);
+          dog.shadow.material.opacity = 1 - hp.h * 0.6;
         }
         pawPose(dog, t, hp, hopAt - t);
         if (dog.tail) {
@@ -1060,11 +1093,11 @@
         if (P.body) {
           var php = pupHop(P, t), pbr = Math.sin(pt * C.br) * 0.5 + 0.5, pbs = P.body.userData.s0;
           P.body.scale.set(pbs.x * (1 + pbr * 0.012) * php.sx, pbs.y * (1 + pbr * 0.03) * php.sy, pbs.z);
-          P.body.position.y = P.body.userData.p0.y + php.h * C.jump;
+          P.body.position.y = P.body.userData.p0.y + php.h * C.jump * (1 + 0.5 * cta);
           if (P.shadow) {
             var pss = P.shadow.userData.s0, psk = 1 - php.h * 0.4;
             P.shadow.scale.set(pss.x * psk, pss.y, pss.z * psk);
-            P.shadow.material.opacity = 0.9 * (1 - php.h * 0.6);
+            P.shadow.material.opacity = 1 - php.h * 0.6;
           }
           pawPose(P, pt, php, P.hopAt - t, C.pat);
           if (P.tail) {
@@ -1083,7 +1116,9 @@
       if (cal) cal(t);
       if (weigh) weigh(t);
       if (steam) steam(t);
-      if (screens && t - lastDraw > 1 / 30) { screens(t); lastDraw = t; }
+      /* screen canvases re-upload as textures: 30 fps at rest, 12 fps
+         while the page scrolls (nobody reads them then) */
+      if (screens && t - lastDraw > (Math.abs(sy / (innerHeight * 0.7) - sp) > 0.01 ? 1 / 12 : 1 / 30)) { screens(t); lastDraw = t; }
       if (motes) { motes.rotation.y = t * 0.03; motes.position.y = Math.sin(t * 0.4) * 0.05; }
 
       for (i = 0; i < H.ticks.length; i++) H.ticks[i](t, dt);
@@ -1093,6 +1128,8 @@
   }
 
   function ease(x) { return x < 0 ? 0 : x > 1 ? 1 : x * x * (3 - 2 * x); }
+  /* canvas text uses the page's own face (falls back until it has loaded) */
+  var FONT = '"Plus Jakarta Sans",system-ui,sans-serif';
 
   /* ── live screens ────────────────────────────────────────────────
      The laptop, tablet, chart and keyboard textures from Blender are
@@ -1107,43 +1144,41 @@
      cart badge pops, then the payment confirms and stays until the
      camera zooms back out.                                          */
   function liveScreens(THREE, root) {
-    function slot(name, w, h) {
+    /* s: backing-store scale. Drawing stays in w x h units; the canvas
+       is s times denser so labels stay sharp at DPR 1.5-2 (2026-10-07) */
+    function slot(name, w, h, s) {
       var mesh = root.getObjectByName(name);
       if (!mesh || !mesh.material) return null;
-      var c = document.createElement('canvas'); c.width = w; c.height = h;
+      s = s || 1;
+      var c = document.createElement('canvas'); c.width = w * s; c.height = h * s;
       var tex = new THREE.CanvasTexture(c);
       tex.flipY = false; tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
       var m = mesh.material = mesh.material.clone();
       m.map = tex; if (m.emissiveMap) m.emissiveMap = tex;
       m.userData.e0 = m.emissiveIntensity; mats.push(m);
-      return { g: c.getContext('2d'), w: w, h: h, tex: tex };
+      var g = c.getContext('2d'); g.scale(s, s);
+      return { g: g, w: w, h: h, s: s, tex: tex };
     }
     var mats = [];
-    var L = slot('laptop_screen', 640, 400), T = slot('tablet_screen', 300, 410),
-        C = slot('holo_chart', 480, 300), K = slot('laptop_keys', 512, 256), G = slot('holo_gauge', 256, 256),
-        D = slot('holo_code', 360, 240);
+    var L = slot('laptop_screen', 640, 400, 1.6), T = slot('tablet_screen', 300, 410, 1.25),
+        C = slot('holo_chart', 480, 300, 2), K = slot('laptop_keys', 512, 256), G = slot('holo_gauge', 256, 256, 1.5),
+        D = slot('holo_code', 360, 240, 2);
     function rr(g, x, y, w, h, r, fill) { g.fillStyle = fill; g.beginPath(); g.roundRect(x, y, w, h, r); g.fill(); }
 
-    /* one long generic store page, drawn once, windowed each frame */
-    var page = document.createElement('canvas'); page.width = 640; page.height = 1200;
+    /* the laptop shows real work: the Tool Mart storefront (the same
+       long screenshot the Work section scrolls, so it is usually cached
+       already). Kept in 640-wide page units at 1.6x density: 720 px of
+       screenshot = 640 units, the first 1156 units (product row, brands)
+       are used. Until it decodes the screen stays a dim page colour. */
+    var PS = 1.6, PH = 1156, page = document.createElement('canvas');
+    page.width = 640 * PS; page.height = PH * PS;
     (function (g) {
-      g.fillStyle = '#f6f4f0'; g.fillRect(0, 0, 640, 1200);
-      g.fillStyle = '#fff'; g.fillRect(0, 0, 640, 34);
-      rr(g, 20, 11, 60, 11, 3, '#142032');
-      for (var i = 0; i < 4; i++) rr(g, 300 + i * 56, 13, 40, 7, 3, '#aab0ba');
-      rr(g, 20, 46, 600, 150, 10, '#12284a');
-      g.fillStyle = '#0096dc'; g.beginPath(); g.arc(500, 120, 95, 0, 7); g.fill();
-      g.fillStyle = '#ff8c28'; g.beginPath(); g.arc(500, 120, 58, 0, 7); g.fill();
-      rr(g, 45, 78, 210, 22, 5, '#fff'); rr(g, 45, 112, 160, 11, 4, '#96b4d2'); rr(g, 45, 146, 86, 24, 12, '#00d4ff');
-      var cols = ['#e6c8aa', '#b4d2e6', '#dcb4be', '#bedcbe', '#d6d0f0', '#f0dcb4', '#c8e6dc', '#e6c8d6'];
-      for (var r = 0; r < 4; r++) for (var k = 0; k < 4; k++) {
-        var x = 20 + k * 152, y = 214 + r * 200;
-        rr(g, x, y, 140, 186, 8, '#fff'); rr(g, x + 8, y + 8, 124, 120, 6, cols[(r * 4 + k) % 8]);
-        rr(g, x + 8, y + 140, 90, 9, 3, '#283246'); rr(g, x + 8, y + 158, 48, 9, 3, '#0096dc');
-      }
-      rr(g, 20, 1030, 600, 150, 10, '#142032');
-      rr(g, 45, 1060, 180, 14, 4, '#fff'); rr(g, 45, 1090, 260, 9, 3, '#5a7896');
+      g.fillStyle = '#e9edf2'; g.fillRect(0, 0, page.width, page.height);
+      var im = new Image(); im.decoding = 'async';
+      im.onload = function () { g.drawImage(im, 0, 0, 720, PH * 720 / 640, 0, 0, page.width, page.height); };
+      im.src = 'img/scroll-toolmart.webp';
     })(page.getContext('2d'));
+    function pageWin(g, sc, h, dy) { g.drawImage(page, 0, sc * PS, 640 * PS, h * PS, 0, dy || 0, 640, h); }
 
     /* generic order-sync snippet: [indent, [text, colour], ...] */
     var KW = '#3fe0ff', ID = '#f2f8ff', STR = '#ffa04a', CM = '#7fb0d4', DOTS = ['#ff8c28', '#00d4ff', '#2ee6a0'];
@@ -1171,10 +1206,10 @@
       }
       if (L && sale0 >= 0) { sale(L.g, t - sale0); L.tex.needsUpdate = true; }
       else if (L) {
-        var sc = ease((lt - 0.5) / 2.6) * 800 - ease((lt - 5) / 1.8) * 800;
-        L.g.drawImage(page, 0, sc, 640, 400, 0, 0, 640, 400);
+        var sc = ease((lt - 0.5) / 2.6) * 700 - ease((lt - 5) / 1.8) * 700;
+        pageWin(L.g, sc, 400);
         /* scrollbar */
-        rr(L.g, 630, 6 + sc / 1200 * 388, 5, 130, 3, 'rgba(20,32,50,.35)');
+        rr(L.g, 630, 6 + sc / PH * 388, 5, 130, 3, 'rgba(20,32,50,.35)');
         L.tex.needsUpdate = true;
       }
       /* tablet: a pulse walks the three nodes, rows scroll */
@@ -1198,12 +1233,12 @@
       if (C && draw.chart) { draw.chart(C.g, t, C.w, C.h); C.tex.needsUpdate = true; }
       else if (C) {
         var g3 = C.g, ct = t % 5, pr = ease(ct / 3);
-        g3.setTransform(1.5, 0, 0, 1.5, 0, 0);
+        g3.setTransform(C.s * 1.5, 0, 0, C.s * 1.5, 0, 0);
         if (ct < 0.04) vals = vals.map(function (v, i) { return Math.max(18, Math.min(90, 20 + i * 8 + (Math.random() * 24 - 12))); });
         g3.fillStyle = '#081426'; g3.fillRect(0, 0, 320, 200);
         g3.strokeStyle = '#00d4ff'; g3.lineWidth = 3; g3.beginPath(); g3.roundRect(3, 3, 314, 194, 12); g3.stroke();
         rr(g3, 20, 18, 90, 10, 4, '#78c8f0');
-        g3.fillStyle = '#fff'; g3.font = '700 26px system-ui,sans-serif';
+        g3.fillStyle = '#fff'; g3.font = '700 26px ' + FONT;
         g3.fillText('$' + Math.round(1200 + 4800 * pr).toLocaleString(), 20, 60);
         var n = vals.length, upto = pr * (n - 1);
         g3.beginPath();
@@ -1223,9 +1258,9 @@
         g4.lineCap = 'round';
         g4.strokeStyle = '#16304e'; g4.lineWidth = 16; g4.beginPath(); g4.arc(128, 118, 72, 0, 7); g4.stroke();
         g4.strokeStyle = '#2ee6a0'; g4.beginPath(); g4.arc(128, 118, 72, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * 0.999 * gp); g4.stroke();
-        g4.fillStyle = '#fff'; g4.font = '700 30px system-ui,sans-serif'; g4.textAlign = 'center';
+        g4.fillStyle = '#fff'; g4.font = '700 30px ' + FONT; g4.textAlign = 'center';
         g4.fillText((99.9 * gp).toFixed(1) + '%', 128, 128);
-        g4.fillStyle = '#78c8f0'; g4.font = '600 16px system-ui,sans-serif'; g4.fillText('UPTIME', 128, 226);
+        g4.fillStyle = '#78c8f0'; g4.font = '600 16px ' + FONT; g4.fillText('UPTIME', 128, 226);
         g4.textAlign = 'left';
         G.tex.needsUpdate = true;
       }
@@ -1261,37 +1296,34 @@
     }
     function sale(g, s) {
       s = Math.min(s, 9);
-      var sc = ease((s - 0.4) / 1.2) * 170, cx = 172, cy = 214 - sc;
-      g.drawImage(page, 0, sc, 640, 400, 0, 0, 640, 400);
-      /* sticky header with the cart and its badge */
-      g.drawImage(page, 0, 0, 640, 34, 0, 0, 640, 34);
-      g.strokeStyle = '#142032'; g.lineWidth = 2.5; g.lineJoin = 'round';
-      g.beginPath(); g.moveTo(584, 10); g.lineTo(589, 10); g.lineTo(593, 23); g.lineTo(607, 23); g.lineTo(610, 13); g.lineTo(591, 13); g.stroke();
-      g.fillStyle = '#142032'; g.beginPath(); g.arc(595, 27, 2, 0, 7); g.arc(605, 27, 2, 0, 7); g.fill();
+      var sc = ease((s - 0.4) / 1.2) * 520, cx = 177, cy = 591 - sc;
+      pageWin(g, sc, 400);
+      /* the store's own header stays put (sticky), cart badge on its cart icon */
+      pageWin(g, 0, 67);
       if (s > 3.3) {
         var bp = Math.min(1, (s - 3.3) / 0.25), bs = 8 * (bp < 1 ? 0.6 + bp * 0.7 : 1);
-        g.fillStyle = '#ff8c28'; g.beginPath(); g.arc(612, 9, bs, 0, 7); g.fill();
-        g.fillStyle = '#fff'; g.font = '700 11px system-ui,sans-serif'; g.textAlign = 'center'; g.fillText('1', 612, 13); g.textAlign = 'left';
+        g.fillStyle = '#e8572a'; g.beginPath(); g.arc(610, 34, bs, 0, 7); g.fill();
+        g.fillStyle = '#fff'; g.font = '700 11px ' + FONT; g.textAlign = 'center'; g.fillText('1', 610, 38); g.textAlign = 'left';
       }
       /* the product lights up once the cursor reaches it */
       if (s > 1.9) {
         var hl = Math.min(1, (s - 1.9) / 0.3);
-        g.strokeStyle = 'rgba(0,212,255,' + hl + ')'; g.lineWidth = 4;
-        g.beginPath(); g.roundRect(cx - 2, cy - 2, 144, 190, 10); g.stroke();
+        g.strokeStyle = 'rgba(0,150,220,' + hl + ')'; g.lineWidth = 4;
+        g.beginPath(); g.roundRect(cx - 2, cy - 2, 144, 218, 8); g.stroke();
       }
       /* "Add to cart": appears, gets pressed at 2.9s, turns into "Added" */
       if (s > 2.0) {
-        var pr = s > 2.9 && s < 3.15, done = s >= 3.15, bx = cx + 8, by = cy + 146;
-        g.fillStyle = '#fff'; g.fillRect(cx + 6, cy + 136, 128, 46);
-        g.fillStyle = done ? '#14aa78' : pr ? '#0077b8' : '#0096dc';
+        var pr = s > 2.9 && s < 3.15, done = s >= 3.15, bx = cx + 8, by = cy + 176;
+        g.fillStyle = '#fff'; g.fillRect(cx + 4, cy + 168, 132, 44);
+        g.fillStyle = done ? '#14aa78' : pr ? '#000' : '#111';
         g.beginPath(); g.roundRect(bx + (pr ? 3 : 0), by + (pr ? 2 : 0), 124 - (pr ? 6 : 0), 30 - (pr ? 4 : 0), 8); g.fill();
-        g.fillStyle = '#fff'; g.font = '700 15px system-ui,sans-serif'; g.textAlign = 'center';
+        g.fillStyle = '#fff'; g.font = '700 15px ' + FONT; g.textAlign = 'center';
         g.fillText(done ? 'Added ✓' : 'Add to cart', bx + 62, by + 20); g.textAlign = 'left';
       }
       /* cursor: in from the right, to the product, down to the button */
       if (s > 1.0 && s < 4.2) {
         var m1 = ease((s - 1.0) / 0.9), m2 = ease((s - 2.3) / 0.55);
-        var ax = 520 + (cx + 90 - 520) * m1 + (cx + 70 - (cx + 90)) * m2, ay = 330 + (cy + 80 - 330) * m1 + (cy + 160 - (cy + 80)) * m2;
+        var ax = 520 + (cx + 90 - 520) * m1 + (cx + 70 - (cx + 90)) * m2, ay = 330 + (cy + 90 - 330) * m1 + (cy + 190 - (cy + 90)) * m2;
         arrow(g, ax, ay, s > 2.9 && s < 3.15);
       }
       /* checkout: dim the page, a card rises, a spinner, then "Paid" */
@@ -1303,14 +1335,14 @@
         if (!paid) {
           g.strokeStyle = '#0096dc'; g.lineWidth = 7; g.lineCap = 'round';
           g.beginPath(); g.arc(320, 170 + up, 30, s * 7, s * 7 + 4.2); g.stroke();
-          g.fillStyle = '#5a6a80'; g.font = '600 20px system-ui,sans-serif'; g.textAlign = 'center'; g.fillText('Processing payment', 320, 248 + up);
+          g.fillStyle = '#5a6a80'; g.font = '600 20px ' + FONT; g.textAlign = 'center'; g.fillText('Processing payment', 320, 248 + up);
         } else {
           var ck = Math.min(1, (s - 5.4) / 0.3);
           g.fillStyle = '#14aa78'; g.beginPath(); g.arc(320, 165 + up, 34 * (0.7 + 0.3 * ck), 0, 7); g.fill();
           g.strokeStyle = '#fff'; g.lineWidth = 8; g.lineCap = 'round'; g.lineJoin = 'round';
           g.beginPath(); g.moveTo(304, 166); g.lineTo(315, 178); g.lineTo(337, 152); g.stroke();
-          g.fillStyle = '#142032'; g.font = '800 32px system-ui,sans-serif'; g.textAlign = 'center'; g.fillText('Paid ✓', 320, 240);
-          g.fillStyle = '#5a6a80'; g.font = '600 17px system-ui,sans-serif'; g.fillText('Order #1043 · $129.00', 320, 272);
+          g.fillStyle = '#142032'; g.font = '800 32px ' + FONT; g.textAlign = 'center'; g.fillText('Paid ✓', 320, 240);
+          g.fillStyle = '#5a6a80'; g.font = '600 17px ' + FONT; g.fillText('Order #1043 · $1,677.63', 320, 272);
         }
         g.textAlign = 'left'; g.lineCap = 'butt'; g.globalAlpha = 1;
       }
