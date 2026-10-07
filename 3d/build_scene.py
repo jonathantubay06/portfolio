@@ -52,7 +52,7 @@ M_WIRE = mat('wire', emit=(0.2, 0.85, 1.0), strength=5)
 M_KEYS = mat('keyboard', image=os.path.join(TEX, 'keyboard.png'), rough=0.6)
 M_SCREEN = mat('screen', image=os.path.join(TEX, 'storefront.png'), emit_image=True, strength=0.9)
 M_TABLET = mat('tablet_ui', image=os.path.join(TEX, 'tablet.png'), emit_image=True, strength=0.9)
-M_POT = mat('pot', (0.02, 0.02, 0.025), rough=0.6)
+M_POT = mat('pot', (0.09, 0.06, 0.05), rough=0.6)
 M_LEAF = mat('leaf', (0.03, 0.12, 0.05), rough=0.5)
 M_PEN = mat('pen', (0.02, 0.02, 0.02), rough=0.25, metal=0.6)
 M_GOLD = mat('pen_tip', (0.8, 0.55, 0.25), rough=0.2, metal=1.0)
@@ -109,23 +109,20 @@ for o in (lid,):
     o.rotation_euler[0] = math.radians(-14)
 
 # ── tablet on a stand, turned toward the laptop ──────────────────────
-tab = box('tablet', (0.66, 0.03, 0.9), (1.2, 0.3, 0.52), M_DARK, bevel=0.02, rot=(math.radians(-12), 0, math.radians(-28)))
+tab = box('tablet', (0.53, 0.03, 0.72), (1.22, 0.32, 0.43), M_DARK, bevel=0.02, rot=(math.radians(-12), 0, math.radians(-28)))
 # Screen placed in the tablet's own frame, then baked to world space.
 from mathutils import Matrix, Euler
-tui = plane('tablet_screen', 0.6, 0.84, (0, 0, 0), (0, 0, 0), M_TABLET)
+tui = plane('tablet_screen', 0.48, 0.67, (0, 0, 0), (0, 0, 0), M_TABLET)
 bpy.context.view_layer.update()
 tui.matrix_world = tab.matrix_world @ Matrix.Translation((0, -0.017, 0)) @ Euler((math.radians(90), 0, 0)).to_matrix().to_4x4()
-box('tablet_stand', (0.3, 0.3, 0.05), (1.28, 0.42, 0.03), M_ALU, bevel=0.01, rot=(0, 0, math.radians(-28)))
+box('tablet_stand', (0.26, 0.26, 0.05), (1.28, 0.42, 0.03), M_ALU, bevel=0.01, rot=(0, 0, math.radians(-28)))
 
-# ── project cards on the desk (real work) ────────────────────────────
-for i, name in enumerate(['moev', 'sapmok', 'Deirdre']):
-    m = mat('card_' + name, image=os.path.join(IMG, f'preview-{name}-360w.webp'), emit_image=True, strength=0.6)
-    x = -1.35 + i * 0.52
-    box('card_frame_' + name, (0.48, 0.32, 0.02), (x, -0.72, 0.012), M_DARK, bevel=0.006, rot=(0, 0, math.radians(-8)))
-    plane('card_' + name, 0.44, 0.27, (x, -0.72, 0.024), (0, 0, math.radians(-8)), m)
+# (2026-10-07: the three screenshot cards at the desk lip were removed;
+# blurry, cropped by the canvas, and the Work section shows the real ones)
 
 # ── plant + pen ──────────────────────────────────────────────────────
-bpy.ops.mesh.primitive_cylinder_add(radius=0.11, depth=0.2, location=(-1.25, 0.55, 0.1)); p = bpy.context.object; p.name = 'pot'; p.data.materials.append(M_POT)
+bpy.ops.mesh.primitive_cylinder_add(radius=0.11, depth=0.2, location=(-1.25, 0.55, 0.1), vertices=32); p = bpy.context.object; p.name = 'pot'; p.data.materials.append(M_POT)
+_b = p.modifiers.new('bevel', 'BEVEL'); _b.width = 0.008; _b.segments = 3; bpy.ops.object.shade_smooth()
 for k in range(9):
     a = k * 2 * math.pi / 9
     bpy.ops.mesh.primitive_uv_sphere_add(radius=0.05, location=(-1.25 + 0.1 * math.cos(a), 0.55 + 0.1 * math.sin(a), 0.3 + 0.03 * (k % 3)), segments=14, ring_count=8)
@@ -142,6 +139,10 @@ for name, tex, loc in CUBES:
     m = mat(name + '_mat', image=os.path.join(TEX, tex), emit_image=True, strength=1.2)
     c = box(name, (0.3, 0.3, 0.3), loc, m, bevel=0.035)
     c.rotation_euler = (0, 0, math.radians(8))
+    # bake the bevel first, so the UV pass sees the bevel strips and can
+    # give them a blank spot instead of a stretched slice of the icon
+    bpy.ops.object.select_all(action='DESELECT'); c.select_set(True); bpy.context.view_layer.objects.active = c
+    bpy.ops.object.modifier_apply(modifier='bevel')
     # The cube primitive's UVs are a cross layout; give every face the
     # whole icon instead.
     import bmesh
@@ -151,7 +152,11 @@ for name, tex, loc in CUBES:
     up = Vector((0, 0, 1))
     for f in bm.faces:
         n = f.normal
-        # upright icon on the sides; top/bottom use x/y
+        # icon only on the front (toward the camera, -y) and the top flat
+        # faces; bevel strips, sides, back and bottom sample a blank texel
+        if not ((n.z > 0.97) or (n.y < -0.97)):
+            for lp in f.loops: lp[uv].uv = (0.02, 0.02)
+            continue
         if abs(n.z) > 0.9:
             ax, ay = Vector((1, 0, 0)), Vector((0, 1 if n.z > 0 else -1, 0))
         else:
@@ -193,8 +198,8 @@ def wire(name, pts):
 # 3D version of the gear logo (seen from the front, +x is the viewer's
 # left here, hence cyan on 'left' = orange on screen-left): two half rings with teeth, orange + cyan,
 # floating behind the laptop. The page spins it.
-M_ORANGE = mat('logo_orange', (1.0, 0.45, 0.08), rough=0.3, metal=0.3, emit=(1.0, 0.4, 0.05), strength=0.6)
-M_CYAN = mat('logo_cyan', (0.1, 0.7, 1.0), rough=0.3, metal=0.3, emit=(0.0, 0.6, 1.0), strength=0.6)
+M_ORANGE = mat('logo_orange', (1.0, 0.5, 0.14), rough=0.35, metal=0.2, emit=(1.0, 0.45, 0.1), strength=0.3)
+M_CYAN = mat('logo_cyan', (0.1, 0.6, 0.9), rough=0.35, metal=0.3, emit=(0.0, 0.55, 0.95), strength=0.3)
 M_DIAL = mat('logo_dial', (0.02, 0.05, 0.1), rough=0.4, emit=(0.0, 0.3, 0.6), strength=0.3)
 import bmesh
 def gear_half(name, m, a0, a1, teeth=6):
@@ -221,13 +226,13 @@ def gear_half(name, m, a0, a1, teeth=6):
     o = bpy.data.objects.new(name, me)
     scene.collection.objects.link(o)
     sol = o.modifiers.new('solid', 'SOLIDIFY'); sol.thickness = 0.1
-    bev = o.modifiers.new('bevel', 'BEVEL'); bev.width = 0.012; bev.segments = 2
+    bev = o.modifiers.new('bevel', 'BEVEL'); bev.width = 0.02; bev.segments = 3
     o.data.materials.append(m)
     return o
 
 logo = bpy.data.objects.new('logo_gear', None)
 scene.collection.objects.link(logo)
-logo.location = (-0.25, 1.75, 1.3)
+logo.location = (-0.25, 2.15, 1.45)
 # The page spins the halves. Each half mesh hangs under its own empty:
 # gltf-transform's quantizer rewrites the transform of mesh nodes, so the
 # page only ever rotates/scales empties (pivot stays at the gear centre).
@@ -237,7 +242,7 @@ dial.parent = logo
 for nm, m, a0, a1 in (('logo_left', M_CYAN, 92, 268), ('logo_right', M_ORANGE, -88, 88)):
     e = bpy.data.objects.new(nm, None); scene.collection.objects.link(e); e.parent = logo
     g = gear_half(nm + '_mesh', m, math.radians(a0), math.radians(a1)); g.parent = e
-logo.scale = (1.0, 1.0, 1.0)
+logo.scale = (0.6, 0.6, 0.6)
 # face the page camera, which sits ~18deg to the right of front
 logo.rotation_euler = (0, 0, math.radians(18))
 
@@ -247,10 +252,7 @@ M_ORDER = mat('holo_order', image=os.path.join(TEX, 'holo-order.png'), emit_imag
 plane('holo_chart', 0.64, 0.4, (-1.15, -0.05, 1.05), (math.radians(90), 0, math.radians(25)), M_CHART)
 plane('holo_order', 0.6, 0.2, (1.55, -0.35, 1.3), (math.radians(90), 0, math.radians(-30)), M_ORDER)
 
-# phone + coffee mug on the desk
-box('phone', (0.2, 0.4, 0.02), (0.75, -0.55, 0.012), M_DARK, bevel=0.02, rot=(0, 0, math.radians(20)))
-M_PHONE = mat('phone_screen', emit=(0.0, 0.5, 0.9), strength=0.6)
-plane('phone_screen', 0.18, 0.37, (0.75, -0.55, 0.024), (0, 0, math.radians(20)), M_PHONE)
+# coffee mug on the desk
 bpy.ops.mesh.primitive_cylinder_add(radius=0.07, depth=0.16, location=(-0.95, -0.35, 0.08))
 mug = bpy.context.object; mug.name = 'mug'; mug.data.materials.append(mat('mug', (0.9, 0.9, 0.92), rough=0.3))
 bpy.ops.mesh.primitive_torus_add(major_radius=0.045, minor_radius=0.012, location=(-0.875, -0.35, 0.08), rotation=(math.radians(90), 0, 0), major_segments=20, minor_segments=8)
@@ -266,25 +268,16 @@ M_LAMP = mat('lamp_body', (0.05, 0.05, 0.06), rough=0.3, metal=0.8)
 M_BULB = mat('lamp_bulb', emit=(1.0, 0.7, 0.35), strength=8)
 bpy.ops.mesh.primitive_cylinder_add(radius=0.12, depth=0.03, location=(-1.6, 0.2, 0.015)); bpy.context.object.data.materials.append(M_LAMP); bpy.context.object.name = 'lamp_base'
 bpy.ops.mesh.primitive_cylinder_add(radius=0.015, depth=0.7, location=(-1.58, 0.22, 0.36), rotation=(math.radians(0), math.radians(8), 0)); bpy.context.object.data.materials.append(M_LAMP); bpy.context.object.name = 'lamp_arm'
-bpy.ops.mesh.primitive_cone_add(radius1=0.13, radius2=0.05, depth=0.16, location=(-1.45, 0.1, 0.7), rotation=(math.radians(-35), math.radians(30), 0)); bpy.context.object.data.materials.append(M_LAMP); bpy.context.object.name = 'lamp_head'
-bpy.ops.mesh.primitive_uv_sphere_add(radius=0.045, location=(-1.42, 0.07, 0.64)); bpy.context.object.data.materials.append(M_BULB); bpy.context.object.name = 'lamp_bulb'
+bpy.ops.mesh.primitive_cone_add(vertices=32, radius1=0.13, radius2=0.05, depth=0.16, location=(-1.45, 0.1, 0.7), rotation=(math.radians(-35), math.radians(30), 0)); bpy.context.object.data.materials.append(M_LAMP); bpy.context.object.name = 'lamp_head'
+_b = bpy.context.object.modifiers.new('bevel', 'BEVEL'); _b.width = 0.004; _b.segments = 2; bpy.ops.object.shade_smooth()
+bpy.ops.mesh.primitive_uv_sphere_add(radius=0.036, location=(-1.43, 0.08, 0.655)); bpy.context.object.data.materials.append(M_BULB); bpy.context.object.name = 'lamp_bulb'
 
 # stack of books, back right of the laptop
 # top book is blue so the cream dog asleep on it stands out
 for i, col in enumerate([(0.85, 0.85, 0.88), (0.9, 0.35, 0.1), (0.05, 0.35, 0.6)]):
     box(f'book_{i}', (0.42, 0.3, 0.05), (0.55, 0.85, 0.028 + i * 0.052), mat(f'book_{i}', col, rough=0.6), bevel=0.006, rot=(0, 0, math.radians(8 - i * 7)))
 
-# headphones, front right
-M_HP = mat('headphones', (0.03, 0.03, 0.035), rough=0.35)
-bpy.ops.mesh.primitive_torus_add(major_radius=0.16, minor_radius=0.018, location=(1.25, -0.25, 0.03), major_segments=32, minor_segments=8); hp = bpy.context.object; hp.name = 'headphones_band'; hp.scale = (1, 0.75, 1); hp.data.materials.append(M_HP)
-for dx in (-0.16, 0.16):
-    bpy.ops.mesh.primitive_cylinder_add(radius=0.07, depth=0.05, location=(1.25 + dx, -0.25, 0.03)); c = bpy.context.object; c.data.materials.append(M_HP); c.name = 'headphones_cup'
-
-# floating shopping bag near the cart cube (the page bobs holo_*)
-M_BAG = mat('holo_bag_mat', (1.0, 0.5, 0.12), rough=0.4, emit=(1.0, 0.45, 0.1), strength=0.4)
-bag = box('holo_bag', (0.2, 0.09, 0.22), (-1.2, 0.35, 1.65), M_BAG, bevel=0.01, rot=(0, 0, math.radians(20)))
-bpy.ops.mesh.primitive_torus_add(major_radius=0.05, minor_radius=0.008, location=(-1.2, 0.35, 1.78), rotation=(math.radians(90), 0, math.radians(20)), major_segments=20, minor_segments=8)
-hd = bpy.context.object; hd.name = 'bag_handle'; hd.data.materials.append(M_BAG); hd.parent = bag; hd.matrix_parent_inverse = bag.matrix_world.inverted()
+# (headphones and the floating bag removed 2026-10-07: clutter)
 
 # uptime gauge panel (the page draws the ring)
 M_GAUGE = mat('holo_gauge', image=os.path.join(TEX, 'holo-gauge.png'), emit_image=True, strength=1.0)
@@ -369,203 +362,11 @@ for i, (wx, wy) in enumerate([(0.05, 0.06), (-0.05, 0.06), (0.05, -0.06), (-0.05
           cyl(f'bot_hub_{i}', 0.008, 0.02, (0, 0, 0), M_ACC_C, rot=(math.radians(90), 0, 0), verts=8))
 bot.location = (-0.2, -0.47, 0.002)
 
-# floating code window (the page types into it)
-M_CODE = mat('holo_code', image=os.path.join(TEX, 'holo-code.png'), emit_image=True, strength=1.0)
-plane('holo_code', 0.58, 0.39, (1.15, 0.3, 1.9), (math.radians(90), 0, math.radians(-22)), M_CODE)
 
-# ── round 5: Dumpling, the wall shelf, the label printer ─────────────
-def ball(name, r, loc, m, sc=(1, 1, 1), sub=2):
-    """Low-poly ball (icosphere) scaled into an ellipsoid; scale applied."""
-    bpy.ops.mesh.primitive_ico_sphere_add(radius=r, location=loc, subdivisions=sub)
-    o = bpy.context.object; o.name = name; o.scale = sc
-    bpy.ops.object.transform_apply(location=False, rotation=False, scale=True)
-    o.data.materials.append(m); bpy.ops.object.shade_smooth()
-    return o
+# ── round 5: Dumpling ──────────────────────────────────────────────
+# (the earlier procedural fur dog - fur_mat/blob/nub/arc - lives in git
+# history before 2026-10-07; the dogs are photo cut-outs for now)
 
-
-def join(name, objs):
-    """Merge meshes into one (one draw call per material, not per ball)."""
-    bpy.ops.object.select_all(action='DESELECT')
-    for o in objs: o.select_set(True)
-    bpy.context.view_layer.objects.active = objs[0]
-    bpy.ops.object.join()
-    o = bpy.context.object; o.name = name
-    return o
-
-
-# Dumpling: pale cream pom x poodle, short clipped curly coat, round
-# head, short muzzle, button nose, long straight beige ears hanging like
-# a bob, plumed tail, no collar. Asleep, curled on the book stack, head
-# on her front paws, tail wrapped round the side facing the camera.
-# Each part is a few ellipsoids fused by a voxel remesh into one smooth
-# silhouette, then a small noise push along the normals for the curls.
-# The page breathes dog_body (scale) and flicks dog_ear_l/r and dog_tail
-# (rotation), so each sits under its own empty.
-UV_SPAN, CURL_TILES = 0.4, 8.8   # about 22 curl tiles per metre
-
-
-def fur_mat(name, color, rough=0.92, curl=0.9):
-    """Warm cream coat: flat colour + a tiled curl normal map (tex/dog-curls.png)."""
-    m = mat(name, color, rough=rough)
-    nt = m.node_tree; bsdf = nt.nodes['Principled BSDF']
-    tex = nt.nodes.new('ShaderNodeTexImage')
-    tex.image = bpy.data.images.load(os.path.join(TEX, 'dog-curls.png'), check_existing=True)
-    tex.image.colorspace_settings.name = 'Non-Color'
-    # UVs span 0-1 over UV_SPAN metres (so they quantize); tiling comes from
-    # a Mapping node, exported as KHR_texture_transform
-    uvn = nt.nodes.new('ShaderNodeUVMap')
-    mp = nt.nodes.new('ShaderNodeMapping'); mp.inputs['Scale'].default_value = (CURL_TILES, CURL_TILES, 1)
-    nt.links.new(uvn.outputs['UV'], mp.inputs['Vector']); nt.links.new(mp.outputs['Vector'], tex.inputs['Vector'])
-    nm = nt.nodes.new('ShaderNodeNormalMap'); nm.inputs['Strength'].default_value = curl
-    nt.links.new(tex.outputs['Color'], nm.inputs['Color'])
-    nt.links.new(nm.outputs['Normal'], bsdf.inputs['Normal'])
-    return m
-
-
-# one apricot-cream all over (ref #EBD3AE-#F2E0C4), muzzle a shade paler,
-# ears a touch more golden (#D9B88A). Values are linear and pushed warm,
-# because the cool key light bleaches cream toward white on the page.
-M_NOSE = mat('dog_nose', (0.03, 0.012, 0.006), rough=0.12)
-from mathutils import noise as _noise, Vector as _V
-
-
-def curl_uv(o, k=1 / UV_SPAN, per_vertex=False, off=(0, 0, 0)):
-    """Box-projected UVs at a fixed world scale so curls stay the same size
-    on every part (the remesh leaves no UVs). per_vertex: project by each
-    vertex normal so a small nub never splits vertices (stays cheap)."""
-    me = o.data
-    uv = me.uv_layers.get('UVMap') or me.uv_layers.new(name='UVMap')
-    pick = lambda nrm: [(1, 2), (0, 2), (0, 1)][max(range(3), key=lambda i: abs(nrm[i]))]
-    if per_vertex:
-        vuv = []
-        for v in me.vertices:
-            u, w = pick(v.normal); c = v.co + _V(off)
-            vuv.append((c[u] * k + 0.5, c[w] * k + 0.5))
-        for lp in me.loops: uv.data[lp.index].uv = vuv[lp.vertex_index]
-        return
-    for p in me.polygons:
-        u, w = pick(p.normal)
-        for li in p.loop_indices:
-            c = me.vertices[me.loops[li].vertex_index].co
-            uv.data[li].uv = (c[u] * k + 0.5, c[w] * k + 0.5)
-
-
-def blob(name, specs, m, voxel=0.0045, fur=0.0018, freq=65, ratio=0.2, wave=None,
-         nubs=0, nub_r=(0.004, 0.006), keep=None, seed=1, extra=(), nub_mode='ball', hide=None):
-    """Fuse (center, radii) ellipsoids into one smooth furry mesh, then stud
-    it with `nubs` low-poly curl bumps (where keep(co, normal) is true) so the
-    outline reads curly. `extra` = more meshes merged in (toes etc.)."""
-    o = join(name, [ball(f'{name}_{k}', 1, c, m, r, 3) for k, (c, r) in enumerate(specs)])
-    for typ, kw in (('REMESH', dict(mode='VOXEL', voxel_size=voxel)),
-                    ('SMOOTH', dict(factor=0.9, iterations=8))):
-        md = o.modifiers.new(typ, typ)
-        for k, v in kw.items(): setattr(md, k, v)
-        bpy.ops.object.modifier_apply(modifier=md.name)
-    o.data.update()
-    for v in o.data.vertices:
-        q = v.co * freq
-        # soft tufts: ridged noise gives a fuzzy, uneven fringe (not big lumps)
-        t = 1 - abs(_noise.noise(q * 2.6))
-        d = _noise.noise(q) + 0.5 * _noise.noise(q * 2.1) + 0.6 * t * t
-        if wave: d += wave[0] * math.sin(v.co.z * wave[1] + v.co.x * 40)
-        v.co += v.normal * fur * d
-    # curl nubs: packed round bumps pushed out of the dense remeshed surface
-    # (before decimation, so they cost no extra vertices) - the outline
-    # turns scalloped like a teddy-bear poodle coat
-    import random
-    from mathutils.kdtree import KDTree
-    rnd = random.Random(seed)
-    o.data.update()
-    pts = [(v.co.copy(), v.normal.copy()) for v in o.data.vertices]
-    pts_n = {c.to_tuple(6): n for c, n in pts}
-    rnd.shuffle(pts)
-    sites = []
-    grid = {}
-    cell = nub_r[1] * 2.4
-    for co, n in pts:
-        if len(sites) >= nubs: break
-        if keep and not keep(co, n): continue
-        r = rnd.uniform(*nub_r)
-        key = tuple(int(math.floor(c / cell)) for c in co)
-        near = [s for dx in (-1, 0, 1) for dy in (-1, 0, 1) for dz in (-1, 0, 1)
-                for s in grid.get((key[0] + dx, key[1] + dy, key[2] + dz), ())]
-        if all((co - c).length > (r + rr) * 0.85 for c, rr in near):
-            sites.append((co, r)); grid.setdefault(key, []).append((co, r))
-    if sites and nub_mode == 'disp':
-        kd = KDTree(len(sites))
-        for i, (c, _) in enumerate(sites): kd.insert(c, i)
-        kd.balance()
-        for v in o.data.vertices:
-            h = 0.0
-            for c, i, dist in kd.find_range(v.co, nub_r[1] * 1.1):
-                x = dist / sites[i][1]
-                if x < 1: h = max(h, sites[i][1] * 0.62 * (1 - x * x) ** 0.6)
-            v.co += v.normal * h
-    md = o.modifiers.new('dec', 'DECIMATE'); md.ratio = ratio
-    bpy.ops.object.modifier_apply(modifier=md.name)
-    if hide is not None:                             # faces nobody sees (on the book)
-        bm = bmesh.new(); bm.from_mesh(o.data)
-        bmesh.ops.delete(bm, geom=[f for f in bm.faces if hide(f.calc_center_median(), f.normal)], context='FACES')
-        bm.to_mesh(o.data); bm.free()
-    if not o.data.materials: o.data.materials.append(m)
-    curl_uv(o)
-    for e in extra: curl_uv(e, per_vertex=True, off=e.location)
-    parts = [o] + list(extra)
-    if nub_mode == 'ball':
-        for k, (co, r) in enumerate(sites):
-            n = pts_n[co.to_tuple(6)]
-            parts.append(nub(f'{name}_n{k}', co, n, r, m, rnd.random() * 6.3))
-    if len(parts) > 1:
-        bpy.ops.object.select_all(action='DESELECT')
-        for p in parts: p.select_set(True)
-        bpy.context.view_layer.objects.active = o
-        bpy.ops.object.join(); o = bpy.context.object; o.name = name
-    bpy.ops.object.shade_smooth()
-    print('DOGTRIS', name, len(sites), sum(len(p.vertices) - 2 for p in o.data.polygons))
-    return o
-
-
-def nub(name, co, n, r, m, spin=0.0):
-    """One curl nub: an 11-vertex dome (pole + 2 rings of 5) standing on the
-    surface at co along normal n, its rim sunk below the coat."""
-    n = n.normalized()
-    t = n.orthogonal().normalized(); b = n.cross(t)
-    vs = [co + n * r * 0.75]
-    for el, rad in ((0.42, 0.78), (-0.25, 1.0)):     # (height, ring radius) x r
-        for i in range(5):
-            a = spin + i * math.pi * 0.4 + (0.6 if el < 0 else 0)
-            vs.append(co + n * r * el + (t * math.cos(a) + b * math.sin(a)) * r * rad)
-    fs = [(0, 1 + i, 1 + (i + 1) % 5) for i in range(5)]
-    for i in range(5):
-        a0, a1 = 1 + i, 1 + (i + 1) % 5
-        b0, b1 = 6 + i, 6 + (i + 1) % 5
-        fs += [(a0, b0, a1), (a1, b0, b1)]
-    me = bpy.data.meshes.new(name); me.from_pydata([tuple(v) for v in vs], [], fs)
-    o = bpy.data.objects.new(name, me); scene.collection.objects.link(o)
-    me.materials.append(m)
-    me.update(); curl_uv(o, per_vertex=True)
-    return o
-
-
-def arc(name, pts, r, m):
-    """Thin tube through pts (a closed-eye line or a lash)."""
-    cu = bpy.data.curves.new(name, 'CURVE'); cu.dimensions = '3D'
-    cu.bevel_depth = r; cu.bevel_resolution = 1; cu.use_fill_caps = True
-    sp = cu.splines.new('POLY'); sp.points.add(len(pts) - 1)
-    for p, c in zip(sp.points, pts): p.co = (*c, 1)
-    o = bpy.data.objects.new(name, cu); scene.collection.objects.link(o)
-    bpy.ops.object.select_all(action='DESELECT'); o.select_set(True)
-    bpy.context.view_layer.objects.active = o
-    bpy.ops.object.convert(target='MESH')
-    o = bpy.context.object; o.data.materials.append(m); bpy.ops.object.shade_smooth()
-    return o
-
-
-M_TONGUE = mat('dog_tongue', (0.85, 0.22, 0.25), rough=0.45)
-
-
-VIEW = _V((0.72, -0.58, 0.39))
-rim = lambda n, w=0.5: abs(n.dot(VIEW)) < w     # silhouette band seen from the page camera
 
 # Dumpling herself: a photo cut-out billboard (tex/dumpling-cutout.png,
 # play-bow, facing left, tail up) standing on the book stack. A vertical
@@ -656,45 +457,7 @@ dog.location = (0.6, 0.8, BOOK_TOP)
 # face the page camera (it sits ~11deg right of straight-on from here)
 dog.rotation_euler = (0, 0, math.radians(11))
 
-# small floating wall shelf, back left: a trophy and a "5 stars" plaque
-M_TROPHY = mat('trophy', (0.95, 0.62, 0.2), rough=0.3, metal=0.5, emit=(1.0, 0.62, 0.15), strength=0.5)
-M_PLAQUE = mat('plaque_face', image=os.path.join(TEX, 'plaque.png'), emit_image=True, strength=0.9)
-shelf = empty('shelf')
-under(shelf,
-      box('shelf_plank', (0.56, 0.14, 0.026), (0, 0, 0), M_ALU, bevel=0.006),
-      box('shelf_glow', (0.54, 0.004, 0.006), (0, -0.071, -0.014), M_ACC_C, bevel=0),
-      box('shelf_bracket_a', (0.018, 0.12, 0.06), (-0.2, 0.01, -0.042), M_DARK, bevel=0.003),
-      box('shelf_bracket_b', (0.018, 0.12, 0.06), (0.2, 0.01, -0.042), M_DARK, bevel=0.003),
-      box('trophy_base', (0.07, 0.07, 0.03), (-0.14, 0, 0.028), M_DARK, bevel=0.004),
-      cyl('trophy_stem', 0.009, 0.04, (-0.14, 0, 0.062), M_TROPHY, verts=10))
-bpy.ops.mesh.primitive_cone_add(radius1=0.016, radius2=0.042, depth=0.062, location=(-0.14, 0, 0.111), vertices=16)
-cup = bpy.context.object; cup.name = 'trophy_cup'; cup.data.materials.append(M_TROPHY); cup.parent = shelf
-for s in (-1, 1):
-    bpy.ops.mesh.primitive_torus_add(major_radius=0.017, minor_radius=0.004, location=(-0.14 + s * 0.042, 0, 0.115), rotation=(math.radians(90), 0, 0), major_segments=12, minor_segments=6)
-    hd = bpy.context.object; hd.name = 'trophy_handle'; hd.data.materials.append(M_TROPHY); hd.parent = shelf
-pl = box('plaque', (0.21, 0.02, 0.135), (0.08, 0.02, 0.083), M_DARK, bevel=0.004, rot=(math.radians(-8), 0, 0)); pl.parent = shelf
-pf = plane('plaque_face', 0.19, 0.118, (0.08, 0.0085, 0.084), (math.radians(82), 0, 0), M_PLAQUE); pf.parent = shelf
-shelf.location = (-1.62, 1.1, 1.1)
-shelf.scale = (1.05, 1.05, 1.05)
-shelf.rotation_euler = (0, 0, math.radians(18))
 
-# label printer by the robot's turn-around point; the page slides the
-# label (printer_label) out each time an order pops, then drops it
-M_PRN = mat('printer', (0.16, 0.17, 0.2), rough=0.4, metal=0.2)
-M_PAPER = mat('label_paper', (0.92, 0.92, 0.9), rough=0.7, emit=(0.8, 0.85, 0.9), strength=0.25)
-prn = empty('printer')
-under(prn,
-      box('printer_body', (0.14, 0.12, 0.07), (0, 0, 0.035), M_PRN, bevel=0.012),
-      box('printer_lid', (0.12, 0.08, 0.012), (0, 0.012, 0.072), M_DARK, bevel=0.004),
-      box('printer_slot', (0.09, 0.004, 0.008), (0, -0.061, 0.03), M_DARK, bevel=0),
-      box('printer_stripe', (0.142, 0.122, 0.006), (0, 0, 0.012), M_ACC_O, bevel=0))
-pled = box('printer_led', (0.012, 0.012, 0.004), (0.045, -0.035, 0.072), M_LED_G, bevel=0); pled.parent = prn
-lab = empty('printer_label', (0, -0.06, 0.03), prn)
-under(lab, box('label_strip', (0.074, 0.1, 0.002), (0, -0.05, 0), M_PAPER, bevel=0),
-      box('label_code', (0.05, 0.022, 0.0025), (0, -0.075, 0), M_DARK, bevel=0),
-      box('label_addr', (0.04, 0.008, 0.0025), (-0.008, -0.035, 0), M_LED_O, bevel=0))
-prn.location = (0.62, -0.22, 0.0)
-prn.rotation_euler = (0, 0, math.radians(-25))
 
 
 # ── round 6: Dumpling's siblings, desk calendar, parcels on a scale ──
@@ -756,7 +519,7 @@ mochi, tofu, pochi = pup(MOCHI), pup(TOFU), pup(POCHI)
 # degrees right of straight-on from here)
 # a step forward of the parcels so Mochi (now the biggest) does not hide
 # them, and pulled in toward the canvas centre (its edge feather)
-for o, loc, rz in ((mochi, (1.02, -0.72), 10), (tofu, (1.27, -0.75), 8), (pochi, (1.52, -0.7), 5)):
+for o, loc, rz in ((mochi, (1.0, -0.57), 10), (tofu, (1.25, -0.6), 8), (pochi, (1.48, -0.55), 5)):
     o.location = (*loc, 0.0); o.rotation_euler = (0, 0, math.radians(rz))
 
 
@@ -773,10 +536,14 @@ for dx in (-0.04, 0.04):
     under(tilt, cyl('cal_ring', 0.006, 0.008, (dx, -0.003, 0.124), M_ALU, rot=(0, math.radians(90), 0), verts=10))
 fl = empty('cal_flip', (0, -0.003, 0.12), tilt)
 under(fl, plane('cal_flip_page', 0.146, 0.116, (0, 0, -0.058), (math.radians(90), 0, 0), M_CAL))
+# back of the flipping sheet: blank paper (the page draws the front single-sided)
+M_CALB = mat('cal_back_paper', (0.8, 0.78, 0.74), rough=0.8, emit=(0.8, 0.78, 0.74), strength=0.25)
+under(fl, plane('cal_flip_back', 0.146, 0.116, (0, 0.0006, -0.058), (math.radians(-90), 0, 0), M_CALB))
 cal.location = (1.55, 0.12, 0.0); cal.rotation_euler = (0, 0, math.radians(-12)); cal.scale = (1.55, 1.55, 1.55)
 
 # little parcel stack on a digital scale beside the label printer; the
 # page draws the weight on scale_lcd and bumps parcel_top each order
+M_PAPER = mat('label_paper', (0.92, 0.92, 0.9), rough=0.7, emit=(0.8, 0.85, 0.9), strength=0.25)
 M_LCD = mat('scale_lcd', rough=0.4, image=os.path.join(TEX, 'desk-mat.png'), emit_image=True, strength=1.0)
 pk = empty('parcels')
 
@@ -796,7 +563,6 @@ under(pk, box('scale_base', (0.15, 0.14, 0.018), (0, 0, 0.009), M_ALU, bevel=0.0
       plane('scale_lcd', 0.07, 0.014, (0, -0.0705, 0.009), (math.radians(90), 0, 0), M_LCD))
 parcel('parcel_top', (0.1, 0.09, 0.07), (0, 0, 0.024), 4)
 parcel('parcel_a', (0.13, 0.11, 0.085), (0.15, 0.03, 0), -10)
-parcel('parcel_b', (0.09, 0.08, 0.06), (0.15, 0.03, 0.085), 14)
 pk.location = (0.86, -0.1, 0.0); pk.rotation_euler = (0, 0, math.radians(8))
 
 
@@ -874,7 +640,7 @@ if RENDER:
         # where named props land on the page (canvas box 498,31 975x837 at 1440x900)
         from bpy_extras.object_utils import world_to_camera_view
         bpy.context.view_layer.update()
-        for nm in ('dog', 'shelf', 'printer', 'bot', 'holo_bag', 'cube_cart', 'holo_chart', 'lamp_bulb', 'book_2', 'mochi', 'tofu', 'pochi', 'cal', 'parcels', 'mug'):
+        for nm in ('dog', 'bot', 'cube_cart', 'holo_chart', 'lamp_bulb', 'book_2', 'mochi', 'tofu', 'pochi', 'cal', 'parcels', 'mug'):
             o = bpy.data.objects.get(nm)
             if o:
                 c = world_to_camera_view(scene, cam, o.matrix_world.translation)

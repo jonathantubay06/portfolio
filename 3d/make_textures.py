@@ -153,69 +153,8 @@ def gauge():
     im.save(os.path.join(OUT, 'holo-gauge.png'))
 
 
-def holo_code():
-    """Frame for the floating code window; the page types the code lines."""
-    W, H = 360, 240
-    im = Image.new('RGB', (W, H), (8, 20, 38))
-    d = ImageDraw.Draw(im)
-    d.rounded_rectangle((4, 4, W - 4, H - 4), 18, outline=(0, 212, 255), width=4)
-    for i, c in enumerate([(255, 140, 40), (0, 212, 255), (46, 230, 160)]):
-        d.ellipse((20 + i * 20, 18, 32 + i * 20, 30), fill=c)
-    for y in range(52, H - 20, 22):
-        d.rounded_rectangle((24, y, 24 + (y * 37) % 200 + 60, y + 8), 4, fill=(40, 90, 140))
-    im.save(os.path.join(OUT, 'holo-code.png'))
-
-
-def plaque():
-    """Face of the little "5 stars" plaque on the wall shelf."""
-    import math
-    from PIL import ImageFont
-    W, H = 256, 160
-    im = Image.new('RGB', (W, H), (14, 26, 46))
-    d = ImageDraw.Draw(im)
-    d.rounded_rectangle((5, 5, W - 5, H - 5), 16, outline=(255, 176, 72), width=6)
-    f = ImageFont.truetype('C:/Windows/Fonts/segoeuib.ttf', 70)
-    def star(cx, cy, R):
-        d.polygon([(cx + R * (1 if i % 2 == 0 else 0.42) * math.sin(i * math.pi / 5),
-                    cy - R * (1 if i % 2 == 0 else 0.42) * math.cos(i * math.pi / 5)) for i in range(10)], fill=(255, 176, 50))
-    # "5 *" on top, a row of small stars under it
-    d.text((100, 62), '5', font=f, fill=(255, 236, 200), anchor='mm')
-    star(162, 64, 36)
-    for k in range(5):
-        star(48 + k * 40, 124, 14)
-    im.save(os.path.join(OUT, 'plaque.png'))
-
-
-def dog_curls(n=256, curls=520, seed=7):
-    """Tileable normal map of dense round poodle ringlets (Dumpling's teddy coat)."""
-    import numpy as np
-    rng = np.random.default_rng(seed)
-    y, x = np.mgrid[0:n, 0:n] / n
-    h = np.zeros((n, n))
-    for _ in range(curls):
-        cx, cy, r = rng.random(), rng.random(), rng.uniform(0.032, 0.05)
-        dx = (x - cx + 0.5) % 1 - 0.5
-        dy = (y - cy + 0.5) % 1 - 0.5
-        d = np.hypot(dx, dy) / r
-        a = np.arctan2(dy, dx)
-        # round dome + a deep spiral groove: a tight ringlet, not a lump
-        ring = 0.5 + 0.5 * np.cos(d * 7.5 - a * rng.choice([-1, 1]))
-        dome = np.sqrt(np.clip(1 - d * d, 0, 1))
-        h = np.maximum(h, dome * (0.45 + 0.55 * ring) + rng.uniform(0, 0.15) * (d < 1))
-    gx = (np.roll(h, -1, 1) - np.roll(h, 1, 1)) * n / 2
-    gy = (np.roll(h, -1, 0) - np.roll(h, 1, 0)) * n / 2
-    k = 0.05
-    nx, ny, nz = -gx * k, gy * k, np.ones_like(h)
-    L = np.sqrt(nx * nx + ny * ny + nz * nz)
-    rgb = np.stack([nx / L, ny / L, nz / L], -1) * 0.5 + 0.5
-    Image.fromarray((rgb * 255).astype('uint8')).save(os.path.join(OUT, 'dog-curls.png'))
-
-
-dog_curls()
 desk_mat()
-plaque()
 gauge()
-holo_code()
 holo_chart()
 holo_order()
 storefront()
