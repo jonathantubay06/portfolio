@@ -182,6 +182,17 @@ for (const f of manifest.styles) {
   const css = read(path.join(SRC, 'styles', f));
   const open = (css.match(/\/\*/g) || []).length, close = (css.match(/\*\//g) || []).length;
   if (open !== close) throw new Error(`src/styles/${f}: ${open} "/*" but ${close} "*/" (unclosed comment)`);
+  /* A stray "}" is just as quiet: the browser folds it into the next
+     selector, which then matches nothing (60-section-motion.css lost its
+     .sm-stars rule this way until 2026-10-07). Count braces outside
+     comments and strings. */
+  const bare = css.replace(/\/\*[\s\S]*?\*\//g, '').replace(/"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'/g, '');
+  let depth = 0;
+  for (const ch of bare) {
+    if (ch === '{') depth++;
+    else if (ch === '}' && --depth < 0) throw new Error(`src/styles/${f}: a "}" closes nothing (stray brace)`);
+  }
+  if (depth) throw new Error(`src/styles/${f}: ${depth} unclosed "{"`);
 }
 const styleCss = minify.css(concat('styles', manifest.styles));
 const mainJs = minify.js(concat('scripts/main', manifest.main));

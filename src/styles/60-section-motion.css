@@ -176,7 +176,6 @@
   50% {translate:0 -4px}
   100%{translate:0 0}
 }
-}
 .sm-stars{position:absolute;z-index:-1;inset:0;overflow:hidden;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .6s ease}
 .tq.sm-active .sm-stars{opacity:1}
 .sm-star{
