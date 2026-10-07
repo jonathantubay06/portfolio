@@ -85,16 +85,6 @@
 }
 .hero-scene.is-lit .hero-light{opacity:1}
 
-/* ── CTA hover lights the matching part of the render ─────────────── */
-.fx-laptop{transition:background-color .35s ease}
-.hero:has(.hero-cta .btn-p:hover) .fx-laptop,
-.hero:has(.hero-cta .btn-p:focus-visible) .fx-laptop{background-color:rgba(150,225,255,.13)}
-.hero:has(.hero-cta .btn-g:hover) .fx-lamp,
-.hero:has(.hero-cta .btn-g:focus-visible) .fx-lamp{animation-duration:1.8s}
-.hero:has(.hero-cta .btn-g:hover) .fx-ping,
-.hero:has(.hero-cta .btn-g:focus-visible) .fx-ping{animation-duration:1.8s}
-.hero:has(.hero-cta .btn-g:hover) .fx-wire,
-.hero:has(.hero-cta .btn-g:focus-visible) .fx-wire{animation-duration:2.2s}
 
 /* ── name reveal ──────────────────────────────────────────────────────
    Rotation only, no opacity: the H1 is the page's largest paint (LCP),

@@ -9,16 +9,11 @@
    - a slightly deeper idle float
    Opacity and transform only; everything is off under reduced motion.
 ═══════════════════════════════════════ */
-.fx-base path{fill:none;stroke:#7fe0ff;stroke-width:2.2;stroke-linecap:round;opacity:.22;filter:drop-shadow(0 0 4px rgba(120,230,255,.8))}
 .fx-cube{fill:#38d6ff;opacity:0;mix-blend-mode:screen;filter:blur(28px)}
 .fx-bits rect{fill:#9beeff;opacity:0;filter:drop-shadow(0 0 6px #38d6ff);transform-box:fill-box;transform-origin:center}
 
 @media(prefers-reduced-motion:no-preference){
   @keyframes heroFloat{0%,100%{translate:0 0}50%{translate:0 -12px}}
-  .fx-wire{stroke-width:4;stroke-dasharray:40 4000}
-  .fx-wire.p2{animation-delay:3.4s}
-  .fx-wire.w2.p2{animation-delay:4.2s}
-  .fx-base path{animation:fxBase 5.2s ease-in-out infinite}
   .fx-cube{animation:fxCube 5.2s ease-in-out infinite}
   .fx-cube.c2{animation-delay:1.6s}
   .fx-cube.c3{animation-delay:3.2s}
@@ -28,14 +23,10 @@
   .fx-bits rect:nth-child(4){animation-delay:2.4s}
   .fx-bits rect:nth-child(5){animation-delay:3.2s}
   .fx-bits rect:nth-child(6){animation-delay:4s}
-  .fx-lamp{fill:#a6ecff}
-  @keyframes fxLamp{0%,100%{opacity:0}8%{opacity:.8}30%{opacity:0}}
 }
-@keyframes fxBase{0%,100%{opacity:.16}50%{opacity:.34}}
 @keyframes fxCube{0%,100%{opacity:0}20%{opacity:.42}45%{opacity:0}}
 @keyframes fxBit{0%{opacity:0;transform:translateY(0) rotate(0)}15%{opacity:.9}100%{opacity:0;transform:translateY(-160px) rotate(90deg)}}
 
-[data-theme="light"] .fx-base path{opacity:.3}
 [data-theme="light"] .fx-cube{mix-blend-mode:normal;fill:#4cc3ff}
 
 /* ── Desktop 3D (36-hero-3d.js) ──
@@ -45,6 +36,20 @@
 .hero-3d{pointer-events:none;position:absolute;inset:-16% -14% -16% -18%;width:132%;height:132%;z-index:3;opacity:0;transition:opacity .9s var(--ease-smooth-out,ease)}
 .has-3d .hero-3d{opacity:1}
 .has-3d .hero-plate,.has-3d .hero-fx,.has-3d .hs{opacity:0;pointer-events:none;transition:opacity .9s ease}
+/* Desktop still = a frame of this canvas (img/hero3d/hero-poster-*),
+   laid exactly where the canvas will be: the canvas box is 132% of the
+   scene, centred 2% left of it, with the same feather. The poster stays
+   under the canvas until the fade-in is over, so the swap is invisible.
+   Overlays drawn for the phone crop (hotspots, glows, the before/after
+   SVG) would sit wrong at this framing, so they are off here. */
+@media(min-width:1024px){
+  .hero-scene .hero-plate{transform:translateX(-2%) scale(1.32);
+    -webkit-mask-image:radial-gradient(closest-side at 50% 50%,#000 74%,transparent 100%);
+    mask-image:radial-gradient(closest-side at 50% 50%,#000 74%,transparent 100%)}
+  .hero-scene .hero-fx,.hero-scene .hs,.hero-scene .desk-mess{display:none}
+  .hero-scene.has-3d .hero-plate{transition:opacity .2s ease 1s}
+  .hero:has(.hero-scene:not(.has-3d)) .desk-ba{visibility:hidden}
+}
 .hero-3d-tip{position:absolute;z-index:4;pointer-events:none;transform:translate(14px,-130%);padding:.35rem .7rem;border-radius:99px;
   background:rgba(6,14,26,.85);border:1px solid rgba(0,212,255,.45);color:#e8f4ff;font:600 12px/1.2 var(--font-body);white-space:nowrap;
   opacity:0;transition:opacity .15s ease}

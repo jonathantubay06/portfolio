@@ -5,11 +5,10 @@
   .svc-ico-3d{animation:none!important;transform:none!important}
 
   /* Hero render: freeze the plate and every overlay. */
-  .hero-scene,.hero-ambient,.fx-laptop::before,.fx-laptop::after,
-  .fx-tablet::before,.fx-wire,.fx-lamp,.fx-ping,.fx-pen{
+  .hero-scene,.hero-ambient{
     animation:none!important;transform:none!important;
   }
-  .fx-svg,.fx-laptop,.fx-tablet{display:none}
+  .fx-svg{display:none}
 
   *,*::before,*::after{
     animation-duration:.01ms!important;

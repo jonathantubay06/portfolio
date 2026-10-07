@@ -49,9 +49,11 @@ The build also:
 
 `img/preview-*.webp` are the full-size renders. Each has `-360w`, `-720w`
 and `-1080w` variants used by the card `srcset`; the modals use `-1080w`
-plus the original. `hero-plate.webp` has a `-930w` variant, and the hero
-uses `<picture>` with a 1x1 GIF below 1024px because `.hero-art` is
-`display:none` there and an `<img>` in a hidden subtree is still fetched.
+plus the original. The hero's still is `img/hero3d/hero-poster-*.webp`, a
+frame of the live WebGL desk (desktop: `-1000w`/`-1600w`, framed like the
+canvas so the 3D fade-in swaps nothing; phones/tablets: `-m480w`/`-m720w`/
+`-m930w`, cropped to the scene box). Re-capture it whenever the scene
+changes (see 3d/build_scene.py, "poster").
 
 Regenerating variants after replacing a render is a Pillow resize at
 quality 82 (`method=6`); the widths above are the only ones referenced.

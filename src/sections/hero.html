@@ -83,64 +83,44 @@
            first scroll or tap, so it never becomes the LCP. <picture> stops at the first matching source,
            so the large plate is never requested on a phone.
 
-           Above 1024px the slot is min(100%,930px,78vh*1.1646) — roughly
-           52vw at common widths — so 930w covers 1x displays and the
-           original 1500w covers 2x. -->
+           The still is a frame of the 3D desk itself (2026-10-07). Above
+           1024px it is the full canvas frame, laid exactly where the
+           canvas goes (132% of the scene box, 56-hero-motion.css), so the
+           WebGL fade-in changes nothing but motion. -->
       <picture>
         <source media="(max-width:599px)"
                 srcset="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
-                data-phone="img/hero-plate-480w.webp 1x, img/hero-plate-720w.webp 2x">
+                data-phone="img/hero3d/hero-poster-m480w.webp 1x, img/hero3d/hero-poster-m720w.webp 2x">
+        <source media="(min-width:1024px)"
+                srcset="img/hero3d/hero-poster-1000w.webp 1000w, img/hero3d/hero-poster-1600w.webp 1600w"
+                sizes="min(69vw, 1230px)">
         <source media="(min-width:600px)"
-                srcset="img/hero-plate-720w.webp 720w, img/hero-plate-930w.webp 930w, img/hero-plate.webp 1500w"
-                sizes="(max-width:1023px) min(86vw, 520px), min(52vw, 930px)">
-        <img class="hero-plate" src="img/hero-plate.webp" alt=""
+                srcset="img/hero3d/hero-poster-m480w.webp 480w, img/hero3d/hero-poster-m720w.webp 720w, img/hero3d/hero-poster-m930w.webp 930w"
+                sizes="min(86vw, 520px)">
+        <img class="hero-plate" src="img/hero3d/hero-poster-m930w.webp" alt=""
              width="1500" height="1288" fetchpriority="high" decoding="async">
       </picture>
       <!-- Cursor light: a soft glow that follows the pointer across the
            desk (--mx/--my set by 18-hero-render-pointer-parallax.js). -->
       <div class="hero-light"></div>
 
+      <!-- Light motion over the still poster (phones/tablets, or no
+           WebGL): a glow behind each cube in the order the data flows,
+           and data bits rising off the laptop screen. Coordinates are
+           the poster's 1500x1288 space, projected from the 3D scene. -->
       <div class="hero-fx">
-        <div class="fx-laptop"></div>
-        <div class="fx-tablet"></div>
-
         <svg class="fx-svg" viewBox="0 0 1500 1288" aria-hidden="true">
-          <!-- 2026-09-28 motion pass (56-hero-motion.css): faint always-on
-               wire glow, glows behind the three cubes, second packet per
-               wire, and data bits rising off the laptop lid. -->
-          <g class="fx-base">
-            <path d="M778,204 L795,210 L827,213 L860,216 L875,213 L891,200 L908,184 L923,183"/>
-            <path d="M1058,213 L1076,213 L1092,216 L1109,238 L1127,263 L1143,269 L1178,274 L1211,281"/>
-            <path d="M987,249 L990,285 L992,330"/>
-            <path d="M1290,361 L1290,397 L1290,431"/>
-          </g>
-          <ellipse class="fx-cube c1" cx="728" cy="200" rx="95" ry="85"/>
-          <ellipse class="fx-cube c2" cx="1006" cy="176" rx="100" ry="90"/>
-          <ellipse class="fx-cube c3" cx="1295" cy="282" rx="100" ry="90"/>
-          <path class="fx-wire w1 p2" d="M778,204 L795,210 L827,213 L860,216 L875,213 L891,200 L908,184 L923,183"/>
-          <path class="fx-wire w2 p2" d="M1058,213 L1076,213 L1092,216 L1109,238 L1127,263 L1143,269 L1178,274 L1211,281"/>
+          <ellipse class="fx-cube c1" cx="366" cy="220" rx="95" ry="85"/>
+          <ellipse class="fx-cube c2" cx="737" cy="152" rx="100" ry="90"/>
+          <ellipse class="fx-cube c3" cx="1084" cy="305" rx="95" ry="88"/>
           <g class="fx-bits">
-            <rect x="690" y="300" width="7" height="7" rx="1.5"/>
-            <rect x="745" y="318" width="5" height="5" rx="1"/>
-            <rect x="800" y="335" width="8" height="8" rx="1.5"/>
-            <rect x="850" y="352" width="5" height="5" rx="1"/>
-            <rect x="905" y="372" width="6" height="6" rx="1.5"/>
-            <rect x="640" y="288" width="5" height="5" rx="1"/>
+            <rect x="470" y="470" width="7" height="7" rx="1.5"/>
+            <rect x="560" y="462" width="5" height="5" rx="1"/>
+            <rect x="650" y="470" width="8" height="8" rx="1.5"/>
+            <rect x="730" y="478" width="5" height="5" rx="1"/>
+            <rect x="810" y="486" width="6" height="6" rx="1.5"/>
+            <rect x="420" y="476" width="5" height="5" rx="1"/>
           </g>
-          <path class="fx-wire w1" d="M778,204 L795,210 L827,213 L860,216 L875,213 L891,200 L908,184 L923,183"/>
-          <path class="fx-wire w2" d="M1058,213 L1076,213 L1092,216 L1109,238 L1127,263 L1143,269 L1178,274 L1211,281"/>
-          <path class="fx-wire w3" d="M987,249 L990,285 L992,330"/>
-          <path class="fx-wire w4" d="M1290,361 L1290,397 L1290,431"/>
-
-          <circle class="fx-lamp n1" cx="1176" cy="514" r="26"/>
-          <circle class="fx-lamp n2" cx="1152" cy="614" r="24"/>
-          <circle class="fx-lamp n3" cx="1130" cy="715" r="26"/>
-          <circle class="fx-ping n1" cx="1176" cy="514" r="30"/>
-          <circle class="fx-ping n2" cx="1152" cy="614" r="28"/>
-          <circle class="fx-ping n3" cx="1130" cy="715" r="30"/>
-
-          <ellipse class="fx-pen" cx="1068" cy="991" rx="22" ry="13"
-                   transform="rotate(-25 1068 991)"/>
         </svg>
       </div>
 
@@ -154,9 +134,9 @@
            Out of the tab order and inside an aria-hidden region: they
            duplicate links the page already has (like the side dots), so
            they are a pointer shortcut only. -->
-      <a class="hs" href="#work" tabindex="-1" style="--l:43.7;--t:8.5;--w:9.7;--h:12.4"><span class="hs-label">Store builds <b>→</b></span></a>
-      <a class="hs" href="#automation-demo" tabindex="-1" style="--l:61.7;--t:6.2;--w:10.7;--h:13.2"><span class="hs-label">Try an automation <b>→</b></span></a>
-      <a class="hs" href="#toolkit" tabindex="-1" style="--l:81;--t:14.4;--w:10.7;--h:13.6"><span class="hs-label">Data &amp; monitoring <b>→</b></span></a>
+      <a class="hs" href="#work" tabindex="-1" style="--l:18.2;--t:9.9;--w:12.3;--h:12.9"><span class="hs-label">Store builds <b>→</b></span></a>
+      <a class="hs" href="#automation-demo" tabindex="-1" style="--l:43.1;--t:6;--w:11.9;--h:13.1"><span class="hs-label">Try an automation <b>→</b></span></a>
+      <a class="hs" href="#toolkit" tabindex="-1" style="--l:66.2;--t:16.4;--w:12;--h:14.2"><span class="hs-label">Data &amp; monitoring <b>→</b></span></a>
     </div>
   </div>
 </section>
