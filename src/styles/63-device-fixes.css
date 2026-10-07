@@ -1,0 +1,53 @@
+/* ═══════════════════════════════════════
+   DEVICE FIXES (2026-10-07 audit, docs/audit-2026-10-07.md section 2)
+   Last in the cascade on purpose: each rule here corrects a measured
+   overlap or tap-size problem on a real device profile.
+═══════════════════════════════════════ */
+
+/* iPad: the "Scroll to explore" bubble sat on top of the stat strip.
+   Desktop (>=1024) already hides it; now nothing under 1024 shows it. */
+@media (max-width:1023px){.scroll-hint{display:none}}
+
+/* The keyboard-shortcut hint only makes sense with a keyboard and mouse.
+   On touch screens it covered card text. 23-16-keyboard-shortcuts.js
+   also only shows it after a first keypress. */
+@media not all and (hover:hover) and (pointer:fine){#kb-hint{display:none}}
+
+/* Touch tablets: the back-to-top ring covered the service "+" and card
+   text. Phones already hide it (the sticky bar is their floating action);
+   touch tablets scroll up natively, so it goes there too. */
+@media (max-width:1023px) and (pointer:coarse){#back-to-top{display:none}}
+
+/* Phones: anchor jumps and focus scrolling keep targets clear of the
+   sticky "Let's talk" bar. The footer already pads for it. */
+@media (max-width:768px){html{scroll-padding-bottom:5.5rem}}
+
+/* iPhone SE and other narrow phones: four stats in one row wrapped the
+   clock to two lines and the labels to three. 2x2 below 375px. */
+#tz-time{white-space:nowrap}
+@media (max-width:374px){
+  .stat-strip{grid-template-columns:repeat(2,1fr)}
+  .stat-item,.stat-item:nth-child(2),.stat-item:nth-child(3){padding:.6rem .3rem;border-right:1px solid var(--border);border-bottom:1px solid var(--border)}
+  .stat-item:nth-child(2n){border-right:none}
+  .stat-item:nth-child(n+3){border-bottom:none}
+  .stat-lbl{font-size:.6rem}
+}
+
+/* Hero eyebrow: "Available for projects" on phones, so it fits one line */
+@media (max-width:600px){
+  .hero-eyebrow{white-space:nowrap;letter-spacing:.14em;gap:.5rem}
+  .hero-eyebrow::before,.hero-eyebrow::after{width:18px}
+  .hero-eyebrow .eyebrow-long{display:none}
+}
+
+/* Light theme: the hero stays dark by design; its bottom edge now fades
+   into the cream page instead of ending on a hard navy line. */
+[data-theme="light"] .hero::after{background:linear-gradient(to bottom,transparent,#faf8f5)}
+
+/* Light theme: gold "Read full review" on white was under 3:1 */
+[data-theme="light"] .tq-client .tq-readmore{color:#9a5b00}
+
+/* Tap targets: at least 24px hit areas without changing the layout */
+.tq-readmore,.tl-more,.proj-thumb .pc-flip-tab{position:relative}
+.proj-thumb .pc-flip-tab{position:absolute}
+.tq-readmore::before,.tl-more::before,.proj-thumb .pc-flip-tab::before{content:'';position:absolute;inset:-8px -6px}

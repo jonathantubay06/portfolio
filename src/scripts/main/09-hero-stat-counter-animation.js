@@ -41,10 +41,20 @@ const counterIO = new IntersectionObserver(entries => {
   // so the numbers don't finish counting before the user even sees them
   if (entries[0].isIntersecting && !countersRun) {
     countersRun = true; // mark done so repeated scrolling doesn't re-trigger
-    statNums.forEach(el => {
+    const run = () => statNums.forEach(el => {
       const val = el.textContent.trim();
       if (/\d/.test(val)) animateCounter(el, val, 1800); // 1800ms feels punchy but readable
     });
+    // Desktop 3D: count after the WebGL desk has faded in (36-hero-3d.js
+    // fires hero3d:ready), so two things are not animating at once. The
+    // timeout covers a skipped or failed 3D boot.
+    if (window.__hero3dPending) {
+      let done = false;
+      const once = () => { if (!done) { done = true; setTimeout(run, 900); } };
+      addEventListener('hero3d:ready', once, { once: true });
+      addEventListener('hero3d:skip', once, { once: true });
+      setTimeout(once, 6000);
+    } else run();
   }
 }, { threshold: 0.5 });
 

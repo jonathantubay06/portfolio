@@ -22,7 +22,7 @@
     { text: '',                                            delay: 1300 },
     { text: '✓ ',          ok: 'Skills loaded',           rest: ' — Shopify · WordPress · Automation', delay: 1500 },
     { text: '✓ ',          ok: 'Status',                  rest: ' — AVAILABLE FOR PROJECTS',           delay: 1900 },
-    { text: '✓ ',          ok: 'Location',                rest: ' — Las Piñas, PH  (remote-first)',     delay: 2300 },
+    { text: '✓ ',          ok: 'Location',                rest: ' — Manila, PH  (remote-first)',     delay: 2300 },
     { text: '→ ',          cmd: 'jonatsbuilds@gmail.com',                                               delay: 2800 },
   ];
 

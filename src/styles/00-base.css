@@ -151,6 +151,11 @@
    RESET & CUSTOM PROPERTIES
 ═══════════════════════════════════════ */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+/* Form controls do not inherit the page font. WebKit (iPhone, iPad) then
+   draws every <button> without its own font rule in a serif fallback
+   ("DETAILS", "See Deirdre P. Malcolm Art"). Rules further down that set a
+   font on a specific button still win. */
+button,input,select,textarea{font:inherit;letter-spacing:inherit}
 
 :root{
   --bg:#060e1a;

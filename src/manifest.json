@@ -31,7 +31,8 @@
     "59-dark-lift.css",
     "60-section-motion.css",
     "61-content-pass.css",
-    "62-desk-3d.css"
+    "62-desk-3d.css",
+    "63-device-fixes.css"
   ],
   "main": [
     "00-preamble.js",

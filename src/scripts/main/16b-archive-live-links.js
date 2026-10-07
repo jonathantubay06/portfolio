@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════
    ARCHIVED PROJECTS
    Links marked data-live-until="YYYY-MM-DD" go to a site that will close
-   (Sapmok USA, closing 2026). After that date the link becomes a plain
+   (Sapmok USA closed in 2026; us.sapmok.com no longer resolves as of 2026-10-07). After that date the link becomes a plain
    "Archived" label and the card's live badge/tag say so, with no deploy
    needed. Before it, nothing changes.
 ═══════════════════════════════════════ */

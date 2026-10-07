@@ -2,8 +2,9 @@
    Press H → Home, W → Work, S → Services,
    T → Testimonials, E → Experience, C → Contact,
    D → Dark/Light theme toggle.
-   A one-time hint tooltip shows on first scroll
-   (after 200px) and auto-hides after 4s.
+   A one-time hint tooltip shows after the first
+   keypress (mouse + keyboard devices only) and
+   auto-hides after 4s.
    The hint never shows again (localStorage flag).
    Shortcuts are disabled while typing in any form.
 ══════════════════════════════════════ */
@@ -18,17 +19,22 @@
     c: 'contact',
   };
 
-  // Show keyboard shortcut hint — once only, after user scrolls 200px
+  // Show the shortcut hint once, and only to keyboard users: a mouse and
+  // keyboard device (hover + fine pointer) after the first keypress outside
+  // a form. On touch screens it used to appear on scroll and cover card text.
   const hint = document.getElementById('kb-hint');
-  if (hint && !localStorage.getItem('jt-kb-seen')) {
-    const onScroll = () => {
-      if (window.scrollY < 200) return;
+  let seen = true;
+  try { seen = !!localStorage.getItem('jt-kb-seen'); } catch (e) {}
+  if (hint && !seen && matchMedia('(hover:hover) and (pointer:fine)').matches) {
+    const onKey = e => {
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      document.removeEventListener('keydown', onKey);
       hint.classList.add('show');
-      localStorage.setItem('jt-kb-seen', '1'); // never show again
+      try { localStorage.setItem('jt-kb-seen', '1'); } catch (e) {} // never show again
       setTimeout(() => hint.classList.remove('show'), 4000);
-      window.removeEventListener('scroll', onScroll);
     };
-    window.addEventListener('scroll', onScroll, { passive: true });
+    document.addEventListener('keydown', onKey);
   }
 
   // Keydown handler — skip if user is typing in a form field

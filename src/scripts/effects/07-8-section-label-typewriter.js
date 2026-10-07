@@ -11,6 +11,9 @@
 ══════════════════════════════════════ */
 (function(){
   if (PREFERS_REDUCED_MOTION) return; // decorative motion only — nothing here carries content
+  // Phones: the label was often caught half-typed ("SOCIAL PRO") while
+  // scrolling past, so they keep the static text.
+  if (matchMedia('(max-width:768px)').matches) return;
   const labels = document.querySelectorAll('.sec-label');
   if (!labels.length) return;
 

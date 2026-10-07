@@ -1,7 +1,7 @@
 /* TEAM */
 Developer: Jonathan Tubay
 Site: https://jonathantubay.com
-Location: Las Piñas City, Philippines
+Location: Manila, Philippines
 Contact: jonatsbuilds@gmail.com
 
 /* TECH */

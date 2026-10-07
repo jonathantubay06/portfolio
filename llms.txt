@@ -10,15 +10,15 @@
 - Also: Softr apps on Airtable (client portals, internal dashboards) and Figma-to-production front-end builds
 
 ## How to engage
-- Email jonatsbuilds@gmail.com or use the contact form at https://jonathantubay.com/#contact
+- Email jonatsbuilds@gmail.com or use the [contact form](https://jonathantubay.com/#contact)
 - Replies within 24 hours (Mon-Fri, Manila time, UTC+8), then a call to scope the project
 - Pricing is scoped per project after that call; there are no fixed packages
 - Working hours overlap US mornings, most of the Australian workday and UK mornings
 - Ongoing support after launch is available
 
 ## Case studies
-- Inventory sync for a US tools and hardware retailer (Cin7 Core and Shopify, batch staging and validation, MAP pricing, 10+ hours a week saved): https://jonathantubay.com/case-studies/inventory-sync
-- MOEV Solutions, WordPress build for a Philippine EV charging company, launched in 3 weeks: https://jonathantubay.com/case-studies/moev
+- [Inventory sync case study](https://jonathantubay.com/case-studies/inventory-sync): a US tools and hardware retailer (Cin7 Core and Shopify, batch staging and validation, MAP pricing, 10+ hours a week saved)
+- [MOEV Solutions case study](https://jonathantubay.com/case-studies/moev): WordPress build for a Philippine EV charging company, launched in 3 weeks
 
 ## Selected work
 - MOEV Solutions: freelance website build
@@ -30,9 +30,9 @@
 
 ## Proof
 - 11 client and LinkedIn reviews on the site
-- 10+ projects shipped
+- 10+ sites and tools shipped: 5 live sites I build and look after, plus 5 monitoring tools and AI agents
 
 ## Links
-- Portfolio: https://jonathantubay.com/
-- FAQ: https://jonathantubay.com/#faq
-- Contact: jonatsbuilds@gmail.com
+- [Portfolio](https://jonathantubay.com/)
+- [FAQ](https://jonathantubay.com/#faq)
+- [Contact](mailto:jonatsbuilds@gmail.com)
