@@ -53,7 +53,7 @@ plus the original. The hero's still is `img/hero3d/hero-poster-*.webp`, a
 frame of the live WebGL desk (desktop: `-1000w`/`-1600w`, framed like the
 canvas so the 3D fade-in swaps nothing; phones/tablets: `-m480w`/`-m720w`/
 `-m930w`, cropped to the scene box). Re-capture it whenever the scene
-changes (see 3d/build_scene.py, "poster").
+changes (steps in 3d/build_scene.py, "hero poster").
 
 Regenerating variants after replacing a render is a Pillow resize at
 quality 82 (`method=6`); the widths above are the only ones referenced.

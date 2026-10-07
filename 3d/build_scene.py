@@ -604,6 +604,15 @@ if subprocess.run(cmd, shell=True).returncode == 0:
 else:
     print('gltf-transform failed; run by hand:', cmd)
 
+# ── hero poster (img/hero3d/hero-poster-*.webp) ──────────────────────
+# Not rendered here: Eevee lights differ from the page. After changing
+# the scene, capture the live canvas instead: serve dist/, open it at
+# 1920x1080 DPR 1.5 in Chromium on a GPU with preserveDrawingBuffer
+# forced on the .hero-3d canvas, wait ~9 s, canvas.toDataURL(); save
+# 1600w/1000w as is, and crop x 18-118/132, y 16-116/132 (the scene
+# box) for m930w/m720w/m480w (WebP q70, alpha q60). Re-measure the
+# phone hotspots (hero.html --l/--t/--w/--h) from the cube bounds.
+
 # ── optional preview render ──────────────────────────────────────────
 # --cam page  matches the page camera (36-hero-3d.js camBase/target, fov 30)
 # --cam dog   close-up on Dumpling;  default: the wide 3/4 studio view
