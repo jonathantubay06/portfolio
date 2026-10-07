@@ -1165,18 +1165,70 @@
         D = slot('holo_code', 360, 240, 2);
     function rr(g, x, y, w, h, r, fill) { g.fillStyle = fill; g.beginPath(); g.roundRect(x, y, w, h, r); g.fill(); }
 
-    /* the laptop shows real work: the Tool Mart storefront (the same
-       long screenshot the Work section scrolls, so it is usually cached
-       already). Kept in 640-wide page units at 1.6x density: 720 px of
-       screenshot = 640 units, the first 1156 units (product row, brands)
-       are used. Until it decodes the screen stays a dim page colour. */
+    /* the laptop shows a demo storefront drawn here ("Brightline
+       Goods", invented: no client name, logo or product, because the
+       laptop links to the anonymous inventory case study). 640 x 1156
+       page units at 1.6x density; the product row (y 591-804, cards
+       146 apart from x 31) is where the sale below plays. */
     var PS = 1.6, PH = 1156, page = document.createElement('canvas');
     page.width = 640 * PS; page.height = PH * PS;
     (function (g) {
-      g.fillStyle = '#e9edf2'; g.fillRect(0, 0, page.width, page.height);
-      var im = new Image(); im.decoding = 'async';
-      im.onload = function () { g.drawImage(im, 0, 0, 720, PH * 720 / 640, 0, 0, page.width, page.height); };
-      im.src = 'img/scroll-toolmart.webp';
+      g.scale(PS, PS);
+      var INK = '#16202e', MUTE = '#6b7686', ACC = '#0e8f7e', WARM = '#f2ece3';
+      function t(txt, x, y, font, col, al) { g.font = font + ' ' + FONT; g.fillStyle = col; g.textAlign = al || 'left'; g.fillText(txt, x, y); }
+      g.fillStyle = '#fbfaf7'; g.fillRect(0, 0, 640, PH);
+      /* announcement bar + header */
+      g.fillStyle = INK; g.fillRect(0, 0, 640, 18); t('Free shipping on orders over $50', 320, 13, '600 9px', '#e8eef5', 'center');
+      g.fillStyle = '#fff'; g.fillRect(0, 18, 640, 49); g.fillStyle = '#e7e3dc'; g.fillRect(0, 66, 640, 1);
+      g.fillStyle = ACC; g.beginPath(); g.arc(44, 42, 9, 0, 7); g.fill(); g.fillStyle = '#fff'; g.beginPath(); g.arc(44, 42, 4, 0, 7); g.fill();
+      t('Brightline', 60, 47, '800 15px', INK);
+      ['Shop', 'New in', 'Home', 'Outdoor', 'Sale'].forEach(function (n, i) { t(n, 250 + i * 50, 46, '600 10px', i === 4 ? '#c2410c' : INK); });
+      g.strokeStyle = INK; g.lineWidth = 1.6; g.beginPath(); g.arc(560, 41, 6, 0, 7); g.moveTo(565, 46); g.lineTo(569, 50); g.stroke();
+      g.beginPath(); g.moveTo(592, 35); g.lineTo(596, 35); g.lineTo(600, 48); g.lineTo(612, 48); g.lineTo(615, 38); g.lineTo(598, 38); g.stroke();
+      g.fillStyle = INK; g.beginPath(); g.arc(602, 52, 1.6, 0, 7); g.arc(610, 52, 1.6, 0, 7); g.fill();
+      /* hero banner */
+      var hg = g.createLinearGradient(0, 80, 640, 300); hg.addColorStop(0, '#103b47'); hg.addColorStop(1, '#0e8f7e');
+      g.fillStyle = hg; g.beginPath(); g.roundRect(24, 80, 592, 230, 14); g.fill();
+      g.fillStyle = 'rgba(255,255,255,.08)'; g.beginPath(); g.arc(520, 190, 120, 0, 7); g.fill();
+      g.fillStyle = '#f4b860'; g.beginPath(); g.arc(505, 185, 62, 0, 7); g.fill();
+      g.fillStyle = '#fff6e8'; g.beginPath(); g.roundRect(470, 160, 70, 52, 8); g.fill();
+      g.fillStyle = '#f4b860'; g.fillRect(470, 176, 70, 6);
+      t('NEW SEASON', 56, 130, '700 10px', '#9fe7da'); t('Everyday goods,', 56, 168, '800 30px', '#fff'); t('built to last.', 56, 204, '800 30px', '#fff');
+      t('Free returns. Ships in 24 hours.', 56, 232, '500 12px', '#cfe9e4');
+      g.fillStyle = '#fff'; g.beginPath(); g.roundRect(56, 252, 110, 32, 16); g.fill(); t('Shop new in', 111, 272, '700 11px', INK, 'center');
+      /* trust row */
+      ['Free shipping $50+', 'Easy 30-day returns', 'Ships in 24 h'].forEach(function (n, i) {
+        var x = 24 + i * 200; g.fillStyle = '#fff'; g.strokeStyle = '#e7e3dc'; g.lineWidth = 1; g.beginPath(); g.roundRect(x, 330, 192, 44, 8); g.fill(); g.stroke();
+        g.fillStyle = ACC; g.beginPath(); g.arc(x + 22, 352, 8, 0, 7); g.fill(); t(n, x + 38, 356, '600 11px', INK);
+      });
+      /* category tiles */
+      [['Kitchen', '#f3dfc8'], ['Bags', '#d9e6f2'], ['Lighting', '#efe3f3'], ['Outdoor', '#dcefe0']].forEach(function (c, i) {
+        var x = 31 + i * 146; g.fillStyle = c[1]; g.beginPath(); g.roundRect(x, 396, 140, 120, 10); g.fill(); t(c[0], x + 12, 502, '700 12px', INK);
+      });
+      t('Best sellers', 31, 568, '800 18px', INK); t('View all →', 609, 568, '600 10px', ACC, 'right');
+      /* product art: simple drawn objects, no brands */
+      function art(k, x, y) {
+        g.save(); g.translate(x + 70, y + 64);
+        if (k === 0) { g.fillStyle = '#e9e4dc'; g.beginPath(); g.roundRect(-26, -24, 44, 52, 6); g.fill(); g.strokeStyle = '#e9e4dc'; g.lineWidth = 7; g.beginPath(); g.arc(20, 2, 12, -1.2, 1.2); g.stroke(); g.fillStyle = ACC; g.fillRect(-26, -6, 44, 8); }
+        else if (k === 1) { g.fillStyle = '#2f5d7c'; g.beginPath(); g.roundRect(-30, -26, 60, 62, 14); g.fill(); g.fillStyle = '#244a63'; g.beginPath(); g.roundRect(-20, 6, 40, 22, 6); g.fill(); g.strokeStyle = '#244a63'; g.lineWidth = 5; g.beginPath(); g.arc(0, -26, 14, Math.PI, 0); g.stroke(); }
+        else if (k === 2) { g.fillStyle = '#c9a26b'; g.fillRect(-3, -6, 6, 40); g.fillRect(-20, 32, 40, 6); g.fillStyle = '#f4b860'; g.beginPath(); g.moveTo(-26, -6); g.lineTo(26, -6); g.lineTo(14, -34); g.lineTo(-14, -34); g.closePath(); g.fill(); }
+        else { g.fillStyle = '#d8573a'; g.beginPath(); g.moveTo(-38, 18); g.lineTo(-30, -6); g.quadraticCurveTo(-6, -14, 4, 0); g.lineTo(38, 8); g.quadraticCurveTo(40, 22, 30, 24); g.lineTo(-36, 24); g.closePath(); g.fill(); g.fillStyle = '#fff'; g.fillRect(-38, 20, 76, 5); }
+        g.restore();
+      }
+      [['Stoneware mug', '$24.00', '#f6efe6'], ['Daypack 20L', '$68.00', '#e8eff5'], ['Brass desk lamp', '$89.00', '#f5efe2'], ['Trail runner', '$112.00', '#f6e9e4']].forEach(function (p, i) {
+        var x = 31 + i * 146, y = 591;
+        g.fillStyle = '#fff'; g.strokeStyle = '#e7e3dc'; g.lineWidth = 1; g.beginPath(); g.roundRect(x, y, 140, 213, 10); g.fill(); g.stroke();
+        g.fillStyle = p[2]; g.beginPath(); g.roundRect(x + 6, y + 6, 128, 120, 8); g.fill(); art(i, x, y);
+        t(p[0], x + 10, y + 146, '700 11px', INK); t(p[1], x + 10, y + 164, '600 11px', MUTE);
+        g.fillStyle = '#f4b860'; for (var k = 0; k < 5; k++) { g.beginPath(); g.arc(x + 14 + k * 9, y + 194, 3, 0, 7); g.fill(); }
+      });
+      /* newsletter + footer */
+      g.fillStyle = WARM; g.beginPath(); g.roundRect(24, 836, 592, 120, 12); g.fill();
+      t('Get 10% off your first order', 48, 882, '800 18px', INK); t('One email a week. No spam.', 48, 904, '500 11px', MUTE);
+      g.fillStyle = '#fff'; g.beginPath(); g.roundRect(360, 866, 160, 34, 17); g.fill(); g.fillStyle = INK; g.beginPath(); g.roundRect(526, 866, 70, 34, 17); g.fill(); t('Join', 561, 887, '700 11px', '#fff', 'center');
+      g.fillStyle = INK; g.fillRect(0, 990, 640, PH - 990);
+      ['Shop', 'Help', 'About', 'Contact'].forEach(function (n, i) { t(n, 40 + i * 120, 1030, '700 11px', '#e8eef5'); t('Link · Link · Link', 40 + i * 120, 1052, '500 9px', '#8a96a8'); });
+      g.textAlign = 'left';
     })(page.getContext('2d'));
     function pageWin(g, sc, h, dy) { g.drawImage(page, 0, sc * PS, 640 * PS, h * PS, 0, dy || 0, 640, h); }
 
@@ -1301,14 +1353,14 @@
       /* the store's own header stays put (sticky), cart badge on its cart icon */
       pageWin(g, 0, 67);
       if (s > 3.3) {
-        var bp = Math.min(1, (s - 3.3) / 0.25), bs = 8 * (bp < 1 ? 0.6 + bp * 0.7 : 1);
-        g.fillStyle = '#e8572a'; g.beginPath(); g.arc(610, 34, bs, 0, 7); g.fill();
-        g.fillStyle = '#fff'; g.font = '700 11px ' + FONT; g.textAlign = 'center'; g.fillText('1', 610, 38); g.textAlign = 'left';
+        var bp = Math.min(1, (s - 3.3) / 0.25), bs = 7 * (bp < 1 ? 0.6 + bp * 0.7 : 1);
+        g.fillStyle = '#e8572a'; g.beginPath(); g.arc(616, 33, bs, 0, 7); g.fill();
+        g.fillStyle = '#fff'; g.font = '700 10px ' + FONT; g.textAlign = 'center'; g.fillText('1', 616, 37); g.textAlign = 'left';
       }
       /* the product lights up once the cursor reaches it */
       if (s > 1.9) {
         var hl = Math.min(1, (s - 1.9) / 0.3);
-        g.strokeStyle = 'rgba(0,150,220,' + hl + ')'; g.lineWidth = 4;
+        g.strokeStyle = 'rgba(14,143,126,' + hl + ')'; g.lineWidth = 4;
         g.beginPath(); g.roundRect(cx - 2, cy - 2, 144, 218, 8); g.stroke();
       }
       /* "Add to cart": appears, gets pressed at 2.9s, turns into "Added" */
@@ -1342,7 +1394,7 @@
           g.strokeStyle = '#fff'; g.lineWidth = 8; g.lineCap = 'round'; g.lineJoin = 'round';
           g.beginPath(); g.moveTo(304, 166); g.lineTo(315, 178); g.lineTo(337, 152); g.stroke();
           g.fillStyle = '#142032'; g.font = '800 32px ' + FONT; g.textAlign = 'center'; g.fillText('Paid ✓', 320, 240);
-          g.fillStyle = '#5a6a80'; g.font = '600 17px ' + FONT; g.fillText('Order #1043 · $1,677.63', 320, 272);
+          g.fillStyle = '#5a6a80'; g.font = '600 17px ' + FONT; g.fillText('Order #1043 · $68.00', 320, 272);
         }
         g.textAlign = 'left'; g.lineCap = 'butt'; g.globalAlpha = 1;
       }

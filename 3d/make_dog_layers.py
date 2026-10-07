@@ -39,6 +39,9 @@ FEET = [(24, 150), (170, 262), (384, 456)]   # paw columns on the book
 h, w = src.shape[:2]
 yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
 a = src[:, :, 3]
+# 1 px alpha erode: the photo's bright background left a thin light halo
+# on the left edge of the coat (audit 2026-10-07)
+a = np.minimum.reduce([a, np.roll(a, 1, 0), np.roll(a, -1, 0), np.roll(a, 1, 1), np.roll(a, -1, 1)])
 
 in_x = smooth(246, 258, xx)                       # tail lives right of x~252
 edge = 166 + 26 * smooth(390, 410, xx)            # plume underside, droops at the right
