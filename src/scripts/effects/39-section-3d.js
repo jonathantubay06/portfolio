@@ -167,7 +167,11 @@
         'vec3 rimC = mix(vec3(0.3, 0.82, 1.0), vec3(1.0, 0.64, 0.32), smoothstep(-0.2, 0.5, normal.x - 0.5 * normal.y));\n' +
         'outgoingLight -= totalEmissiveRadiance * (1.0 - vColor.r);\n' +
         'outgoingLight += rimC * rimF * (0.3 + 0.7 * diffuseColor.rgb) * 0.9;\n' +
-        '#include <opaque_fragment>');
+        '#include <opaque_fragment>\n' +
+        /* the canvas is premultiplied: a cut edge's partial alpha (alpha
+           test / alpha-to-coverage) with straight colour read as a bright
+           dotted line along every layer seam and a light fringe */
+        'gl_FragColor.rgb *= gl_FragColor.a;');
     };
     m.customProgramCacheKey = function () { return 'dogcard1'; };
   }
@@ -235,7 +239,7 @@
     dog.position.set(0, 0, 0); dog.rotation.set(0, 0.12, 0);
     dog.traverse(function (o) {
       if (o.name === 'dog_shadow') o.visible = false;   /* this view draws its own */
-      if (o.isMesh && o.material && /^dog_(tail_|paw_[lr]_)?cutout$/.test(o.material.name)) {
+      if (o.isMesh && o.material && /^dog_((tail|head|ear_[lr]|paw_[lr])_)?cutout$/.test(o.material.name)) {
         var dm = o.material = o.material.clone();
         dm.transparent = false; dm.alphaTest = 0.4; dm.depthWrite = true; dm.side = T.DoubleSide;
         dm.metalness = 0; dm.roughness = 1; dm.emissive = new T.Color(1, 1, 1); dm.emissiveMap = dm.map; dm.emissiveIntensity = 0.27; cardFx(dm);
@@ -354,9 +358,13 @@
       /* glance at the form while someone types */
       var busy = performance.now() - typing < 1500 ? 1 : 0;
       look += (busy - look) * 0.06;
+      /* head layer (neck pivot): lifts as she arrives, glances at the
+         form while someone types, a playful tilt now and then, a bob with
+         each breath; small angles so the card never shows its edge */
+      var tl = t % 7.3, tilt = tl < 1.6 ? Math.sin(tl / 1.6 * Math.PI) : 0;
       if (parts.head) {
-        parts.head.rotation.z = parts.head.userData.r0.z + upE * 0.38;
-        parts.head.rotation.y = parts.head.userData.r0.y + look * 0.3 + Math.sin(t * 0.7) * 0.05 * upE;
+        parts.head.rotation.z = parts.head.userData.r0.z - upE * 0.04 + tilt * tilt * 0.09 * upE + Math.sin(t * 2.1) * 0.012 * upE;
+        parts.head.rotation.y = parts.head.userData.r0.y + look * 0.14 + Math.sin(t * 0.7) * 0.04 * upE;
       }
       var hp = up >= 1 ? hop(t) : { h: 0, sx: 1, sy: 1, u: -1, on: false };
       if (up >= 1) pawPose(parts, t, hp, hopAt - t);
@@ -373,8 +381,10 @@
       else sh.scale.set(1, 1, 1);
       /* a glance at the form while someone types (the card leans a touch) */
       dog.rotation.y = 0.12 + look * 0.12 + Math.sin(t * 0.7) * 0.03 * upE;
-      var et = t % 6.1, ew = et < 0.45 ? Math.sin(et / 0.45 * Math.PI) * 0.3 : 0;
-      if (parts.ear_l) parts.ear_l.rotation.x = parts.ear_l.userData.r0.x + ew;
+      /* ears: a flick every ~6 s and a flop on each hop */
+      var et = t % 6.1, ew = (et < 0.45 ? Math.sin(et / 0.45 * Math.PI) * 0.08 : 0) + (hp.on ? Math.sin(Math.max(0, hp.u) * Math.PI * 2) * 0.16 : 0) + tilt * 0.06;
+      if (parts.ear_l) parts.ear_l.rotation.z = parts.ear_l.userData.r0.z - ew;
+      if (parts.ear_r) parts.ear_r.rotation.z = parts.ear_r.userData.r0.z + ew;
     };
     addView(v);
     v.canvas.classList.add('is-live');

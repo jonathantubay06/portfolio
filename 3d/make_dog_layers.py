@@ -1,91 +1,139 @@
-"""Split tex/dumpling-cutout.png into body, tail-plume and two front-paw layers.
+"""Cut the four dogs from their approved Pixar-style stills and split each
+into animation layers: body, head (pivot at the neck), ears (children of
+the head), tail and two front paws.
 
-tex/dumpling-cutout.png (315x427) is the approved Pixar-style still of
-Dumpling (Personal Works/Dumpling and sibs/Social media/pixar-characters/
-dumpling-fullbody_flux2-klein-4b-pixar_1024x1024.jpg: standing, 3/4 to
-the left, tail plume up on the right), cut with rembg (isnet + alpha
-matting), cropped to (209, 76, 883, 991) and scaled 0.467 so she stands
-~0.2 world units tall (smaller than Tofu and Mochi). Regenerate it with
-  uv run --python 3.11 --with "rembg[cpu]" --with pillow --with numpy --with scipy python 3d/make_dog_layers.py --cut <jpg>
-(2026-10-08: the photo cut-out read as pasted onto the cartoon desk).
+Sources (Personal Works/Dumpling and sibs/Social media/pixar-characters/):
+<dog>-fullbody_flux2-klein-4b-pixar_1024x1024.jpg, full-body FLUX.2 Klein 4B
+stills on a plain grey backdrop (2026-10-08; the photo cut-outs read as
+pasted onto the cartoon desk, and the first 576x1024 stills cropped paws
+and tails). --cut redoes the rembg step (isnet + alpha matting) into
+tex/<dog>-cutout.png:
+  uv run --python 3.11 --with "rembg[cpu]" --with pillow --with numpy --with scipy python 3d/make_dog_layers.py --cut
+Then the split alone (no rembg):
+  uv run --with pillow --with numpy --with scipy python 3d/make_dog_layers.py
 
-Tail: the plume over the rump is cut along the back line; the body keeps
-a feathered band under it so the seam hides in fur when the tail wags.
-Paws: each front leg below the chest is its own layer, pivot at the
-elbow; the body keeps a feathered overlap band under each layer's top
-edge, so a small pat round the pivot never opens a gap. The far hind
-leg and the near hind leg stay on the body.
-cutout_fx grades the coat (lightly: the still is already studio lit) and
-trims the card to the lowest paw; it also writes dumpling-shadow.png.
-Pivots / crop boxes are in cut-out pixels and mirrored in build_scene.py.
-Run: uv run --with pillow --with numpy --with scipy python 3d/make_dog_layers.py
+Layers are polygons in cut-out px. A layer takes the alpha inside its
+polygon (feathered); its parent loses that region except the `keep`
+polygon, a band the parent keeps under the layer's joint edge, so a
+small turn round the pivot never opens a gap (the parent's copy of the
+band hides behind the layer). Layer order = paint order, children last.
+cutout_fx grades the coat lightly (the stills are already studio lit)
+and writes <dog>-shadow.png (contact pads under each paw + ambient pool).
+Pivots and boxes are written to tex/dogs.json for build_scene.py.
 """
+import json
 import os
 import sys
 import numpy as np
-from PIL import Image
-from cutout_fx import trim, grade, shadow, smooth
+from PIL import Image, ImageDraw
+from scipy import ndimage
+from cutout_fx import trim, grade, shadow
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 TEX = os.path.join(HERE, 'tex')
-CROP, SCALE = (209, 76, 883, 991), 0.467
+SRC = r'C:\Users\tubay\Downloads\DevWorks\Personal Works\Dumpling and sibs\Social media\pixar-characters'
 
-if '--cut' in sys.argv:
+# crop box in the 1024 still, scale, then layers:
+#   name: (parent, pivot, polygon, keep-polygon)
+# feet: paw column ranges on the floor (contact shadow pads)
+DOGS = json.load(open(os.path.join(HERE, 'dog_layers.json')))
+
+
+def poly_mask(shape, pts, feather):
+    im = Image.new('L', (shape[1], shape[0]), 0)
+    ImageDraw.Draw(im).polygon([tuple(p) for p in pts], fill=255)
+    m = np.asarray(im, np.float32) / 255
+    return ndimage.gaussian_filter(m, feather) if feather else m
+
+
+def cut(name, cfg):
     from rembg import remove, new_session
-    im = Image.open(sys.argv[sys.argv.index('--cut') + 1]).convert('RGB')
-    cut = remove(im, session=new_session('isnet-general-use'), alpha_matting=True,
-                 alpha_matting_foreground_threshold=240, alpha_matting_background_threshold=20,
-                 alpha_matting_erode_size=8).crop(CROP)
-    cut.resize((round(cut.width * SCALE), round(cut.height * SCALE)), Image.LANCZOS).save(os.path.join(TEX, 'dumpling-cutout.png'), optimize=True)
-
-TAIL_PIVOT, TAIL_BOX = (222, 182), (196, 108, 315, 258)   # l, t, r, b
-PAW_L_PIVOT, PAW_L_BOX = (80, 322), (30, 306, 124, 427)
-PAW_R_PIVOT, PAW_R_BOX = (142, 318), (96, 300, 192, 427)
-PAW_SPLIT = 112                  # x between the two forelegs
-PAW_TOP = 318                    # paw layers start fading in here
-
-raw = np.array(Image.open(os.path.join(TEX, 'dumpling-cutout.png')).convert('RGBA')).astype(np.float32)
-# the grey backdrop shows through between the far forearm and the hind leg
-# and rembg kept it opaque: drop low-chroma light pixels in that gap only
-rgb_ = raw[..., :3]; gy_, gx_ = np.mgrid[0:raw.shape[0], 0:raw.shape[1]]
-gap = (gx_ >= 180) & (gx_ <= 202) & (gy_ >= 262) & (gy_ <= 320)
-grey = (rgb_.max(-1) - rgb_.min(-1) < 40) & (rgb_.mean(-1) > 120)
-from scipy import ndimage
-raw[..., 3] *= 1 - ndimage.gaussian_filter((gap & grey).astype(np.float32), 0.8).clip(0, 1) * 1.6
-raw[..., 3] = raw[..., 3].clip(0, 255)
-src = grade(trim(raw),
-            rim_warm=0.35, rim_cool=0.3, sat=0.96, ground=0.14)
-FEET = [(42, 112), (112, 182), (182, 206), (212, 262)]   # paw columns on the book
-h, w = src.shape[:2]
-yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
-a = src[:, :, 3]
-# 1 px alpha erode: no light halo from the grey studio backdrop
-a = np.minimum.reduce([a, np.roll(a, 1, 0), np.roll(a, -1, 0), np.roll(a, 1, 1), np.roll(a, -1, 1)])
-
-# back line under the plume (rump top), cut-out px
-back = np.interp(xx, [200, 214, 232, 246, 252, 258, 264, 320], [150, 168, 196, 228, 250, 266, 300, 330])
-in_x = smooth(212, 218, xx)                   # right of the ear
-tail_w = in_x * (1 - smooth(back - 9, back - 1, yy))
-body_w = 1 - in_x * (1 - smooth(back - 16, back - 6, yy))   # body fades only under solid tail
-
-fore = 1 - smooth(175, 183, xx)                               # forelegs: left of the far hind leg
-side_l = 1 - smooth(PAW_SPLIT + 2, PAW_SPLIT + 10, xx)
-side_r = smooth(PAW_SPLIT - 10, PAW_SPLIT - 2, xx) * fore
-paw_in = smooth(PAW_TOP, PAW_TOP + 10, yy)
-paw_l_w, paw_r_w = paw_in * side_l, paw_in * side_r
-body_w = body_w * (1 - fore * smooth(PAW_TOP + 22, PAW_TOP + 36, yy))
+    im = Image.open(os.path.join(SRC, name + '-fullbody_flux2-klein-4b-pixar_1024x1024.jpg')).convert('RGB')
+    o = remove(im, session=new_session('isnet-general-use'), alpha_matting=True,
+               alpha_matting_foreground_threshold=240, alpha_matting_background_threshold=20,
+               alpha_matting_erode_size=8).crop(tuple(cfg['crop']))
+    s = cfg['scale']
+    o.resize((round(o.width * s), round(o.height * s)), Image.LANCZOS).save(os.path.join(TEX, name + '-cutout.png'), optimize=True)
 
 
-def save(name, wgt, box=None):
-    o = src.copy(); o[:, :, 3] = a * wgt
-    if box:
-        l, t, r, b = box; o = o[t:b, l:r]
-    Image.fromarray(o.round().astype(np.uint8)).save(os.path.join(TEX, name), optimize=True)
-    return o.shape[1], o.shape[0]
+def degrey(img, boxes):
+    """the grey backdrop showing through gaps between legs that rembg kept"""
+    rgb = img[..., :3]; yy, xx = np.mgrid[0:img.shape[0], 0:img.shape[1]]
+    for l, t, r, b in boxes:
+        m = (xx >= l) & (xx <= r) & (yy >= t) & (yy <= b) & (rgb.max(-1) - rgb.min(-1) < 40) & (rgb.mean(-1) > 120)
+        img[..., 3] *= 1 - np.clip(ndimage.gaussian_filter(m.astype(np.float32), 0.8) * 1.6, 0, 1)
+    return img
 
 
-shadow(src, FEET).save(os.path.join(TEX, 'dumpling-shadow.png'), optimize=True)
-print('size', (w, h), 'body', save('dumpling-body.png', body_w),
-      'tail', save('dumpling-tail.png', tail_w, TAIL_BOX),
-      'paw_l', save('dumpling-paw-l.png', paw_l_w, PAW_L_BOX),
-      'paw_r', save('dumpling-paw-r.png', paw_r_w, PAW_R_BOX))
+def decontam(img, bg=(196, 197, 203)):
+    """un-mix the grey backdrop from the soft edge (matting keeps the
+    blended colour), so fringes take the coat colour, not grey"""
+    a = img[..., 3:] / 255
+    out = (img[..., :3] - (1 - a) * np.array(bg, np.float32)) / np.maximum(a, 0.25)
+    soft = (a < 0.98)
+    img[..., :3] = np.where(soft, np.clip(out, 0, 255), img[..., :3])
+    return img
+
+
+def split(name, cfg):
+    raw = np.array(Image.open(os.path.join(TEX, name + '-cutout.png')).convert('RGBA')).astype(np.float32)
+    raw = degrey(raw, cfg.get('degrey', []))
+    if cfg.get('gamma'):                      # wispy plume: rembg left it half see-through
+        poly, g = cfg['gamma']
+        m = poly_mask(raw.shape[:2], poly, 4)
+        raw[..., 3] = raw[..., 3] * (1 - m) + 255 * (raw[..., 3] / 255) ** g * m
+        # and its matting colour came out orange: pull it back to the
+        # pale cream of the still (less saturation, a touch lighter)
+        lum = raw[..., :3] @ np.array([0.2126, 0.7152, 0.0722], np.float32)
+        fix = lum[..., None] + (raw[..., :3] - lum[..., None]) * 0.55
+        raw[..., :3] = raw[..., :3] * (1 - m[..., None]) + np.clip(fix * 1.06, 0, 255) * m[..., None]
+    src = grade(trim(raw), **cfg.get('grade', dict(rim_warm=0.35, rim_cool=0.3, sat=0.96, ground=0.14)))
+    h, w = src.shape[:2]
+    a = src[..., 3]
+    # 1 px alpha erode: no light halo from the grey backdrop
+    a = np.minimum.reduce([a, np.roll(a, 1, 0), np.roll(a, -1, 0), np.roll(a, 1, 1), np.roll(a, -1, 1)])
+    a[:, :1] = a[:, -1:] = 0
+    F = cfg.get('feather', 1.6)
+    layers = cfg['layers']
+    own = {'body': np.ones((h, w), np.float32)}
+    for ln, L in layers.items():
+        if 'cut' in L:                         # head: everything above the neck cut
+            c = L['cut']; b = L.get('band', 20)
+            L['poly'] = c + [[c[-1][0], -5], [c[0][0], -5]]
+            L['keep'] = [[x, y + 6] for x, y in c] + [[x, y - (b if isinstance(b, int) else b[i])] for i, (x, y) in reversed(list(enumerate(c)))]
+        own[ln] = poly_mask((h, w), L['poly'], F)
+    # each parent loses its children's region outside the keep band
+    for ln, L in layers.items():
+        lose = own[ln] * (1 - poly_mask((h, w), L['keep'], F) if L.get('keep') else 1)
+        own[L['parent']] = own[L['parent']] * (1 - lose)
+    # hard inner cuts: a layer always sits over its parent's copy (the keep
+    # band), so a feathered seam only adds half-alpha pixels along it
+    for k in own: own[k] = (own[k] > 0.5).astype(np.float32)
+    meta = {'size': [w, h], 'layers': {}}
+    shadow(src, cfg['feet']).save(os.path.join(TEX, name + '-shadow.png'), optimize=True)
+    for ln, wgt in own.items():
+        al = a * wgt
+        ys, xs = np.where(al > 2)
+        l, t, r, b = (0, 0, w, h) if ln == 'body' else (max(0, xs.min() - 2), max(0, ys.min() - 2), min(w, xs.max() + 3), min(h, ys.max() + 3))
+        # alpha floor of 2 wherever the dog is solid: lossy WebP zeroes the
+        # colour under alpha 0, and the feathered cut edges then filter in
+        # a dark line (the seams at the neck / paws); 2/255 never passes
+        # the page's alpha test, it only keeps the coat colour there
+        o = src.copy(); o[..., 3] = np.maximum(al, 2 * (a > 100))
+        Image.fromarray(o[t:b, l:r].round().clip(0, 255).astype(np.uint8)).save(os.path.join(TEX, f'{name}-{ln}.png'), optimize=True)
+        if ln != 'body':
+            L = layers[ln]
+            meta['layers'][ln] = dict(parent=L['parent'], pivot=L['pivot'], box=[int(l), int(t), int(r), int(b)], dy=L.get('dy', -0.001))
+    return meta
+
+
+if __name__ == '__main__':
+    only = [a for a in sys.argv[1:] if a in DOGS] or list(DOGS)
+    out = {}
+    p = os.path.join(TEX, 'dogs.json')
+    if os.path.exists(p): out = json.load(open(p))
+    for n in only:
+        if '--cut' in sys.argv: cut(n, DOGS[n])
+        out[n] = split(n, DOGS[n])
+        print(n, out[n]['size'], {k: v['box'] for k, v in out[n]['layers'].items()})
+    json.dump(out, open(p, 'w'), indent=1)

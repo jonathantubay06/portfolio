@@ -1,12 +1,6 @@
-"""Shared clean-up for the photo cut-out dogs (make_dog_layers.py,
-make_pup_layers.py), so they read as dogs standing in the scene rather
-than pasted photos.
+"""Shared clean-up for the cut-out dogs (make_dog_layers.py), so they
+read as dogs standing in the scene rather than pasted pictures.
 
-carve():  replaces flat edges (where the photo frame or a neighbour cut
-          the dog off) with a drawn contour: a smooth curve through
-          hand-picked points, a fur-strand jitter on the edge, and a
-          slight darkening just inside it so the edge turns away like
-          fur instead of ending like paper.
 grade():  matches each cut-out to the scene light: a touch less
           saturation/contrast, navy lifted into the shadows, warm
           highlights, a thin warm rim on the right (the desk's warm
@@ -30,43 +24,6 @@ DEPTH_PER_LIFT = 1.8          # 1 / tan(~29deg), the page camera's elevation
 def smooth(e0, e1, x):
     t = np.clip((x - e0) / (e1 - e0), 0, 1)
     return t * t * (3 - 2 * t)
-
-
-def _curve(pts, n):
-    """values along 0..n-1 from (pos, val) points (monotone pos), smoothed"""
-    pts = sorted(pts)
-    p = np.array([q[0] for q in pts], np.float32); v = np.array([q[1] for q in pts], np.float32)
-    out = np.interp(np.arange(n), p, v)
-    return ndimage.gaussian_filter1d(out, 3), p[0], p[-1]
-
-
-def carve(img, curves, seed=1, fur=1.3):
-    """curves: [(side, [(pos, edge), ...][, (lo, hi)]), ...]; side L/R: pos = row,
-    edge = col (pixels left of / right of the edge go); T/B: pos = col, edge = row.
-    (lo, hi) limits the carve to that col (L/R) or row (T/B) span."""
-    rgb, a = img[:, :, :3].copy(), img[:, :, 3].copy()
-    h, w = a.shape
-    yy, xx = np.mgrid[0:h, 0:w].astype(np.float32)
-    rng = np.random.default_rng(seed)
-    shade = np.ones((h, w), np.float32)
-    for cv in curves:
-        side, pts = cv[0], cv[1]
-        vert = side in 'LR'
-        n = h if vert else w
-        e, p0, p1 = _curve(pts, n)
-        # fur: fine strands (per-row jitter) on a slow wobble
-        jit = ndimage.gaussian_filter1d(rng.normal(0, 1, n), 1.1) * fur * 1.5 + np.sin(np.arange(n) * 0.21 + rng.uniform(0, 6)) * fur * 0.6
-        pos = yy if vert else xx
-        crd = xx if vert else yy
-        E = (e + jit)[pos.astype(int)]
-        d = (crd - E) if side in 'LT' else (E - crd)              # >0 inside the dog
-        on = smooth(p0 - 1, p0 + 6, pos) * (1 - smooth(p1 - 6, p1 + 1, pos))
-        if len(cv) > 2:
-            lo, hi = cv[2]; on = on * smooth(lo - 2, lo, crd) * (1 - smooth(hi, hi + 2, crd))
-        keep = smooth(-1.6 - fur * 0.4, 1.2, d)
-        a = a * (1 - on + on * keep)
-        shade = shade * (1 - on * 0.2 * (1 - smooth(0, 9, d)))
-    return np.dstack([rgb * shade[..., None], a])
 
 
 def trim(img, thr=0.5 * 255):
@@ -141,41 +98,3 @@ def shadow(img, feet, out_w=256):
     from PIL import Image
     im = Image.fromarray(out.astype(np.uint8), 'RGBA')
     return im.resize((out_w, max(8, round(out_w * th / tw))), Image.LANCZOS)
-
-
-def extend(img, pts, seed=3, fur=1.4, lo=0):
-    """grow the right-hand silhouette out to a drawn edge (pts: (row, col)),
-    filling with the coat mirrored from just inside the old edge, so a
-    side the photo cut off becomes a rounded haunch of real fur."""
-    out = img.copy(); h, w = img.shape[:2]
-    e, p0, p1 = _curve(pts, h)
-    rng = np.random.default_rng(seed)
-    jit = ndimage.gaussian_filter1d(rng.normal(0, 1, h), 1.1) * fur * 1.5
-    for y in range(int(p0), int(p1) + 1):
-        row = np.where(img[y, lo:, 3] > 128)[0]
-        if not len(row):
-            continue
-        c = lo + row.max(); E = e[y] + jit[y]
-        for x in range(c - 2, min(w, int(E) + 3)):
-            k = x - c; src = int(np.clip(c - 4 - abs(k), 0, w - 1))
-            a = smooth(-1.6, 1.2, E - x) * 255
-            if a > out[y, x, 3]:
-                sh = 1 - 0.22 * (1 - smooth(0, 9, E - x))
-                out[y, x, :3] = img[y, src, :3] * sh; out[y, x, 3] = a
-    return out
-
-
-def ghost_leg(img, box, dx, dy=0, dark=0.82, flip=False):
-    """a far leg: copy of the near leg in box (l, t, r, b) shifted by dx, dy,
-    a little darker, drawn behind the existing silhouette"""
-    l, t, r, b = box
-    leg = img[t:b, l:r].copy(); leg[..., :3] *= dark
-    if flip:                                               # mirror (e.g. one haunch from the other)
-        leg = leg[:, ::-1]
-    out = img.copy()
-    dst = out[t + dy:b + dy, l + dx:r + dx]
-    a1 = leg[..., 3:] / 255; a0 = dst[..., 3:] / 255
-    rgb = dst[..., :3] * a0 + leg[..., :3] * a1 * (1 - a0)
-    al = a0 + a1 * (1 - a0)
-    dst[..., :3] = rgb / np.maximum(al, 1e-4); dst[..., 3:] = al * 255
-    return out

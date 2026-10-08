@@ -109,14 +109,18 @@
   /* the pups: node name in scene.glb -> hover label (names swap here and
      in 3d/build_scene.py). Small personalities: wag = tail rhythm
      (rad/s), amp = wag size (rad), hop = [min, extra] s between hops,
-     jump = hop height, pat = paw-pat tempo, br = breath rate. Mochi
-     (eldest) is calm, Pochi (youngest) bounces. */
+     jump = hop height, pat = paw-pat tempo, br = breath rate, look =
+     how far the head follows the cursor, lag = how fast (1/s), idle =
+     [min, extra] s between idle actions (sniff, head tilt, weight
+     shift). Mochi (eldest) is calm, Tofu easy-going, Pochi (youngest)
+     bounces; Dumpling (DOG) is the playful one. */
   var MOCHI = 'Mochi', TOFU = 'Tofu', POCHI = 'Pochi';
   var PUPS = {
-    mochi: { label: MOCHI + ', head of security', wag: 4.6, amp: 0.09, hop: [11, 6], jump: 0.03, pat: 0.55, br: 1.5 },
-    tofu: { label: TOFU + ', snack inspector', wag: 6.8, amp: 0.13, hop: [7, 5], jump: 0.04, pat: 0.8, br: 1.9 },
-    pochi: { label: POCHI + ', QA tester', wag: 7.5, amp: 0.16, hop: [5, 4], jump: 0.018, pat: 1.25, br: 2.5 }
+    mochi: { label: MOCHI + ', head of security', wag: 4.6, amp: 0.09, hop: [11, 6], jump: 0.03, pat: 0.55, br: 1.5, look: 0.6, lag: 1.6, idle: [9, 6] },
+    tofu: { label: TOFU + ', snack inspector', wag: 6.8, amp: 0.13, hop: [7, 5], jump: 0.04, pat: 0.8, br: 1.9, look: 0.8, lag: 3, idle: [6, 5] },
+    pochi: { label: POCHI + ', QA tester', wag: 7.5, amp: 0.16, hop: [5, 4], jump: 0.035, pat: 1.25, br: 2.5, look: 1, lag: 6, idle: [3.5, 3] }
   };
+  var DOG = { wag: 7.5, amp: 0.15, pat: 1, br: 2.1, look: 1, lag: 5, idle: [4, 4] };
   Object.keys(PUPS).forEach(function (k) { OWN[k] = { label: PUPS[k].label }; });
   OWN.cal = { label: 'Done list' }; OWN.parcels = { label: 'Packed & weighed' };
 
@@ -232,6 +236,43 @@
       if (P.paw_l) { P.paw_l.rotation.z = P.paw_l.userData.r0.z - pl * 0.09 - land * 0.06 + up * 0.08; P.paw_l.position.y = P.paw_l.userData.p0.y + pl * 0.007; }
       if (P.paw_r) { P.paw_r.rotation.z = P.paw_r.userData.r0.z + pr * 0.09 + land * 0.06 - up * 0.06; P.paw_r.position.y = P.paw_r.userData.p0.y + pr * 0.007; }
     }
+    /* head (neck pivot), ears and idle actions, shared by all four dogs.
+       Cards face +Z: rotation.z turns in the card plane (nose up = -z,
+       the dogs face left), rotation.y a small turn (kept small so the
+       bulged card never shows its edge). look: -1..1 cursor side of the
+       dog, lu: cursor above (-) / below (+) her; ck: CTA envelope */
+    function headPose(P, C, t, dt, hp, br, look, lu, ck, cdir) {
+      if (t > P.idleAt) { P.idle = (Math.random() * 3) | 0; P.idleT = t; P.idleAt = t + C.idle[0] + Math.random() * C.idle[1]; }
+      var it = t - (P.idleT || -9), ie = it < 1.8 ? Math.sin(it / 1.8 * Math.PI) : 0, ik = ie * ie;
+      var k = Math.min(1, dt * C.lag);
+      P.lk = (P.lk || 0) + ((look * (1 - ck) + cdir * ck) - (P.lk || 0)) * k;
+      P.lu = (P.lu || 0) + ((lu * (1 - ck) - ck) - (P.lu || 0)) * k;
+      var ty = P.lk * 0.16 * C.look, tz = P.lu * 0.05 * C.look;
+      if (P.idle === 0) tz += ik * 0.07 + Math.sin(it * 19) * 0.012 * ie;     /* sniff: nose dips, quick snuffles */
+      if (P.idle === 1) tz += ik * (P.lk > 0 ? -0.09 : 0.09);                 /* head tilt: the quizzical cock */
+      tz += Math.sin(t * C.br) * 0.012 - hp.h * 0.05;                          /* breath bob; nose up mid-hop */
+      if (P.head) {
+        var h0 = P.head.userData;
+        P.head.rotation.y = h0.r0.y + ty;
+        P.head.rotation.z = h0.r0.z + tz;
+        P.head.position.y = h0.p0.y + br * 0.0018 - (P.idle === 0 ? ik * 0.003 : 0);
+      }
+      /* ears flop: lag behind the head on a hop (up on the drop, down on the rise) */
+      var fl = hp.on ? Math.sin(Math.max(0, hp.u) * Math.PI * 2) * 0.16 : 0;
+      fl += Math.sin(t * C.br * 1.3) * 0.02 + (P.idle === 1 ? ik * 0.08 : 0);
+      if (P.ear_l) P.ear_l.rotation.z = P.ear_l.userData.r0.z - fl;
+      if (P.ear_r) P.ear_r.rotation.z = P.ear_r.userData.r0.z + fl;
+      /* weight shift: the body settles and leans for a moment */
+      return P.idle === 2 ? ik : 0;
+    }
+    var gx = innerWidth / 2, gy = innerHeight / 2, crc = null;
+    addEventListener('pointermove', function (e) { gx = e.clientX; gy = e.clientY; }, { passive: true });
+    function lookAt(o) {
+      /* -1..1: where the cursor is relative to this dog on screen */
+      o.getWorldPosition(v2); v2.project(cam);
+      var x = crc.left + (v2.x + 1) / 2 * crc.width, y = crc.top + (1 - v2.y) / 2 * crc.height;
+      return [Math.max(-1, Math.min(1, (gx - x) / (innerWidth * 0.3))), Math.max(-1, Math.min(1, (gy - y) / (innerHeight * 0.35)))];
+    }
     var pups = [], cal = null, weigh = null, steam = null;
     /* shared with 40-desk-extras.js: ticks run each frame before render,
        dolly 0..1 pulls the camera in toward the desk */
@@ -269,7 +310,7 @@
            4x MSAA target) for a smooth, halo-free fur edge, both faces,
            and a soft self-glow so the coats are not greyed by the cool
            key (the light match itself is baked by 3d/cutout_fx.py) */
-        if (o.isMesh && o.material && /^(dog|mochi|tofu|pochi)_(tail_|paw_[lr]_)?cutout$/.test(o.material.name)) {
+        if (o.isMesh && o.material && /^(dog|mochi|tofu|pochi)_((tail|head|ear_[lr]|paw_[lr])_)?cutout$/.test(o.material.name)) {
           var dm = o.material = o.material.clone();
           dm.transparent = false; dm.alphaTest = 0.4; dm.alphaToCoverage = true; dm.depthWrite = true; dm.side = THREE.DoubleSide;
           dm.metalness = 0; dm.roughness = 1; dm.emissive = new THREE.Color(1, 1, 1); dm.emissiveMap = dm.map; dm.emissiveIntensity = 0.27; cardFx(dm);
@@ -300,12 +341,12 @@
       printer = labelPrinter(g.scene);
       pups.forEach(function (p) {
         p.root.userData.r0 = p.root.rotation.clone();
-        ['body', 'tail', 'paws', 'paw_l', 'paw_r', 'shadow'].forEach(function (k) {
+        ['body', 'head', 'ear_l', 'ear_r', 'tail', 'paws', 'paw_l', 'paw_r', 'shadow'].forEach(function (k) {
           var o = g.scene.getObjectByName(p.root.name + '_' + k);
           if (o) { o.userData.p0 = o.position.clone(); o.userData.r0 = o.rotation.clone(); o.userData.s0 = o.scale.clone(); if (k === 'shadow') o.userData.s0.multiplyScalar(1.3); }
           p[k] = o;
         });
-        p.ph = Math.random() * 6; p.wag = 0;
+        p.ph = Math.random() * 6; p.wag = 0; p.idleAt = 3 + Math.random() * p.cfg.idle[0];
         /* staggered first hops: Pochi soon, Mochi much later */
         p.hopAt = 2 + p.cfg.hop[0] * 0.5 + Math.random() * p.cfg.hop[1];
       });
@@ -1059,9 +1100,13 @@
         }
       }
       var ck = t - ctaT, cta = ck < 0 ? 0 : ck < 0.3 ? ease(ck / 0.3) : ck < 2 ? 1 : ease(1 - (ck - 2) / 0.6);
+      crc = canvas.getBoundingClientRect();
       if (dog.body) {
         var hp = dogHop(t), br = Math.sin(t * 2.1) * 0.5 + 0.5, bs = dog.body.userData.s0;
-        dog.body.scale.set(bs.x * (1 + br * 0.014) * hp.sx, bs.y * (1 + br * 0.035) * hp.sy, bs.z);
+        if (dog.idleAt === undefined) dog.idleAt = 4;
+        var la = lookAt(dog.root), sh = headPose(dog, DOG, t, dt, hp, br, la[0], la[1], cta, ctaDir);
+        dog.body.scale.set(bs.x * (1 + br * 0.014) * hp.sx * (1 + sh * 0.03), bs.y * (1 + br * 0.035) * hp.sy * (1 - sh * 0.04), bs.z);
+        dog.body.rotation.z = dog.body.userData.r0.z + sh * 0.03;
         dog.body.position.y = dog.body.userData.p0.y + Math.sin(t * 1.05) * 0.003 + hp.h * 0.04 * (1 + 0.5 * cta);
         if (dog.shadow) {
           var ss = dog.shadow.userData.s0, sk = 1 - hp.h * 0.4;
@@ -1084,7 +1129,6 @@
         var off = Math.atan2(Math.sin(yaw - base), Math.cos(yaw - base));
         /* total turn capped at ~18deg: the bulged card never shows its flat edge */
         dog.root.rotation.y = base + Math.max(-0.32, Math.min(0.32, Math.max(-0.18, Math.min(0.18, off * 0.5)) + ctaDir * 0.22 * cta));
-        if (dog.head) { dog.head.rotation.y = dog.head.userData.r0.y + ctaDir * 0.3 * cta; dog.head.rotation.z = dog.head.userData.r0.z + 0.1 * cta; }
       }
       /* the pups (photo cut-outs): breathing, the odd hop, paw pats and
          a tail wag, each on its own clock and temperament; the card
@@ -1093,7 +1137,10 @@
         var P = pups[i], C = P.cfg, pt = t + P.ph;
         if (P.body) {
           var php = pupHop(P, t), pbr = Math.sin(pt * C.br) * 0.5 + 0.5, pbs = P.body.userData.s0;
-          P.body.scale.set(pbs.x * (1 + pbr * 0.012) * php.sx, pbs.y * (1 + pbr * 0.03) * php.sy, pbs.z);
+          var pc0 = t - ctaT - 0.25 - i * 0.18, pck = pc0 < 0 ? 0 : pc0 < 0.3 ? ease(pc0 / 0.3) : pc0 < 1.8 ? 1 : ease(1 - (pc0 - 1.8) / 0.6);
+          var pla = lookAt(P.root), psh = headPose(P, C, t, dt, php, pbr, pla[0], pla[1], pck, ctaDir);
+          P.body.scale.set(pbs.x * (1 + pbr * 0.012) * php.sx * (1 + psh * 0.03), pbs.y * (1 + pbr * 0.03) * php.sy * (1 - psh * 0.04), pbs.z);
+          P.body.rotation.z = P.body.userData.r0.z + psh * 0.03;
           P.body.position.y = P.body.userData.p0.y + php.h * C.jump * (1 + 0.5 * cta);
           if (P.shadow) {
             var pss = P.shadow.userData.s0, psk = 1 - php.h * 0.4;
@@ -1141,7 +1188,11 @@
         'vec3 rimC = mix(vec3(0.3, 0.82, 1.0), vec3(1.0, 0.64, 0.32), smoothstep(-0.2, 0.5, normal.x - 0.5 * normal.y));\n' +
         'outgoingLight -= totalEmissiveRadiance * (1.0 - vColor.r);\n' +
         'outgoingLight += rimC * rimF * (0.3 + 0.7 * diffuseColor.rgb) * 0.9;\n' +
-        '#include <opaque_fragment>');
+        '#include <opaque_fragment>\n' +
+        /* the canvas is premultiplied: a cut edge's partial alpha (alpha
+           test / alpha-to-coverage) with straight colour read as a bright
+           dotted line along every layer seam and a light fringe */
+        'gl_FragColor.rgb *= gl_FragColor.a;');
     };
     m.customProgramCacheKey = function () { return 'dogcard1'; };
   }

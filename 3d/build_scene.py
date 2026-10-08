@@ -363,32 +363,15 @@ for i, (wx, wy) in enumerate([(0.05, 0.06), (-0.05, 0.06), (0.05, -0.06), (-0.05
 bot.location = (-0.2, -0.47, 0.002)
 
 
-# ── round 5: Dumpling ──────────────────────────────────────────────
-# (the earlier procedural fur dog - fur_mat/blob/nub/arc - lives in git
-# history before 2026-10-07; the dogs are photo cut-outs for now)
+# ── round 5: the dogs ──────────────────────────────────────────────
+# (the procedural fur dog and the photo cut-outs live in git history)
 
 
-# Dumpling herself: a cut-out billboard of her approved Pixar-style still
-# (tex/dumpling-cutout.png, standing 3/4 to the left, tail plume up; the
-# real photo read pasted onto the cartoon desk, 2026-10-08) on the book stack. A vertical
-# plane facing -Y (the page camera), bottom edge on the book; the page
-# breathes dog_body (scale) and yaw-follows `dog` a little. dog_shadow is
-# a soft blob under her feet. `dog` stays the root (the Contact section
-# clones it).
 def png_size(png):
     im = bpy.data.images.load(os.path.join(TEX, png), check_existing=True)
     return tuple(im.size)
 
 
-# body sizes follow real weight (body length ~ cube root of mass, judged
-# on head width / eye spacing in each photo): Dumpling 7 kg = 1, Pochi
-# 8 kg ~1.05, Tofu 11-12 kg ~1.18, Mochi 15 kg ~1.29. The family was
-# scaled down as a group (Dumpling 0.72 of her first card) so the pups
-# still fit their corner.
-CUT_PX = png_size('dumpling-body.png')   # make_dog_layers.py trims to the lowest paw
-CUT_K = 0.34 / 512 * 0.72                # world units per cut-out px
-CUT_H = CUT_K * CUT_PX[1]
-CUT_W = CUT_K * CUT_PX[0]
 SH_X, SH_F, SH_B = 0.7, 0.3, 0.9         # = cutout_fx.py: shadow texture extent in card widths
 
 
@@ -485,7 +468,7 @@ def sample(hf, u, v):
 
 def card_depth(png, w, u, v, bulge, sag):
     """how far (world) a card point stands toward the camera"""
-    return bulge * w * sample(alpha_height(png, '-paw-' in png), u, v) + sag * w * (1 - (2 * u - 1) ** 2)
+    return bulge * w * sample(alpha_height(png, '-paw' in png), u, v) + sag * w * (1 - (2 * u - 1) ** 2)
 
 
 def hug(body_png, BW, BH, ox, oz, png, w, bulge=0.1):
@@ -516,6 +499,20 @@ def card(name, w, h, cx, cz, png, m, bulge=0.12, sag=0.04, zbase=0.0, n=26, dfn=
             ao.append(0.55 + 0.45 * g)
     fs = [(j * (nx + 1) + i, j * (nx + 1) + i + 1, (j + 1) * (nx + 1) + i + 1, (j + 1) * (nx + 1) + i) for j in range(ny) for i in range(nx)]
     me = bpy.data.meshes.new(name); me.from_pydata(vs, [], fs); me.update()
+    # normals from the depth function itself, not the grid: a layer card's
+    # border vertices would otherwise get one-sided normals and light (and
+    # rim) differently from the body under them - a bright line at every
+    # neck / leg cut (2026-10-09)
+    def D(x, z):
+        return dfn(x, z, 0, 0) if dfn else card_depth(png, w, (x - cx) / w + 0.5, (z - cz) / h + 0.5, bulge, sag)
+    ex, ez = w / 60, h / 60
+    nrm = []
+    for (x, y_, z) in vs:
+        dx = (D(x + ex, z) - D(x - ex, z)) / (2 * ex); dz = (D(x, z + ez) - D(x, z - ez)) / (2 * ez)
+        l = (dx * dx + 1 + dz * dz) ** 0.5
+        nrm.append((-dx / l, -1 / l, -dz / l))
+    for poly in me.polygons: poly.use_smooth = True
+    me.normals_split_custom_set_from_vertices(nrm)
     uvl = me.uv_layers.new(name='UVMap')
     for poly in me.polygons:
         for li in poly.loop_indices:
@@ -529,49 +526,60 @@ def card(name, w, h, cx, cz, png, m, bulge=0.12, sag=0.04, zbase=0.0, n=26, dfn=
     return o
 
 
-# body and tail plume are separate layers (3d/make_dog_layers.py splits
-# tex/dumpling-cutout.png); the page wags the `dog_tail` empty round the
-# plane normal at the tail base.
-M_CUT = cut_mat('dog_cutout', 'dumpling-body.png')
-M_TAIL = cut_mat('dog_tail_cutout', 'dumpling-tail.png')
-M_PAW_L = cut_mat('dog_paw_l_cutout', 'dumpling-paw-l.png')
-M_PAW_R = cut_mat('dog_paw_r_cutout', 'dumpling-paw-r.png')
-dog = empty('dog')
-body_e = empty('dog_body', (0, 0, 0), dog)
-alpha_height('dumpling-body.png', extra=(('dumpling-paw-l.png', 30, 306), ('dumpling-paw-r.png', 96, 300)))
-under(body_e, card('dog_body_mesh', CUT_W, CUT_H, 0, CUT_H / 2, 'dumpling-body.png', M_CUT, n=28))
-# depth of the body card at a source px (paws stand in front of it, the tail behind)
-_bd = lambda x, y: card_depth('dumpling-body.png', CUT_W, x / CUT_PX[0], 1 - y / CUT_PX[1], 0.12, 0.04)
-_px = lambda x, y: ((x / CUT_PX[0] - 0.5) * CUT_W, (1 - y / CUT_PX[1]) * CUT_H)   # source pixel -> plane x, z
+# ── the dogs (2026-10-09): Pixar-style stills, layered ───────────────
+# 3d/make_dog_layers.py cuts each dog from her full-body Pixar still and
+# writes tex/<dog>-{body,head,ear_l,ear_r,tail,paw_l,paw_r}.png plus
+# tex/dogs.json (pivots, crop boxes, parents). Per dog, empties only (the
+# page animates these; meshopt bakes mesh-node transforms):
+# <p> (root, yaw) -> <p>_body (breath/hop, pivot at the feet) -> body card,
+#   <p>_head (neck pivot: tilt/look/bob) -> head card, <p>_ear_l/_r (flop),
+#   <p>_tail (wag about the card normal), <p>_paws -> <p>_paw_l/_r (pats);
+# <p>_shadow is the contact shadow. Dumpling's prefix stays 'dog' (the
+# Contact section clones `dog`). Every layer card hugs the body's dome
+# (one smooth surface through all layers), the tail sits a step behind.
+import json
+DOGS = json.load(open(os.path.join(TEX, 'dogs.json')))
+# world units per cut-out px; make_dog_layers scales each still so the
+# heights read Mochi > Tofu > Pochi > Dumpling (0.30 / 0.26 / 0.23 / 0.20)
+CUT_K = 0.34 / 512 * 0.72
 
 
-def layer(name, parent, pivot, box, m, dy, png, bulge, hugs=False):
-    """A cut-out layer on its own empty (pivot in source px, crop box l,t,r,b)."""
-    pv, l, t, r, b = _px(*pivot), *box
-    b = min(b, CUT_PX[1])                             # the card is trimmed to the lowest paw
-    c = _px((l + r) / 2, (t + b) / 2)
-    e = empty(name, (pv[0], dy, pv[1]), parent)       # dy: depth layer (- = toward the camera)
-    w = CUT_W * (r - l) / CUT_PX[0]
-    under(e, card(name + '_mesh', w, CUT_H * (b - t) / CUT_PX[1],
-                  c[0] - pv[0], c[1] - pv[1], png, m, bulge=bulge, sag=0.02, zbase=-pv[1], n=12,
-                  dfn=hug('dumpling-body.png', CUT_W, CUT_H, pv[0], pv[1], png, w, bulge) if hugs else None))
-    return e
+def build_dog(key, pre):
+    D = DOGS[key]; pw, ph = D['size']; W, H = CUT_K * pw, CUT_K * ph
+    body_png = f'{key}-body.png'
+    px = lambda x, y: ((x / pw - 0.5) * W, (1 - y / ph) * H)
+    root = empty(pre)
+    be = empty(pre + '_body', (0, 0, 0), root)
+    lay = D['layers']
+    alpha_height(body_png, extra=tuple((f'{key}-{ln}.png', L['box'][0], L['box'][1]) for ln, L in lay.items() if ln != 'tail'))
+    under(be, card(pre + '_body_mesh', W, H, 0, H / 2, body_png, cut_mat(pre + '_cutout', body_png), n=30))
+    bd = lambda x, y: card_depth(body_png, W, x / pw, 1 - y / ph, 0.12, 0.04)
+    made = {'body': be}
+    pv = lambda p: px(*p)
+    if 'paw_l' in lay:
+        mid = ((lay['paw_l']['pivot'][0] + lay['paw_r']['pivot'][0]) / 2, lay['paw_l']['pivot'][1])
+        m = px(*mid); made['paws'] = empty(pre + '_paws', (m[0], -0.002 - bd(*mid), m[1]), be)
+    for ln in ('tail', 'head', 'ear_l', 'ear_r', 'paw_l', 'paw_r'):
+        if ln not in lay: continue
+        L = lay[ln]; l, t, r, b = L['box']; png = f'{key}-{ln}.png'
+        a = pv(L['pivot']); sw, sh = (r - l) * W / pw, (b - t) * H / ph
+        c = px((l + r) / 2, (t + b) / 2)
+        hugs = ln != 'tail'
+        dy = L['dy'] if not hugs else L['dy'] - bd(*L['pivot'])
+        e = empty(f'{pre}_{ln}', (a[0], dy, a[1]), be)
+        under(e, card(f'{pre}_{ln}_mesh', sw, sh, c[0] - a[0], c[1] - a[1], png, cut_mat(f'{pre}_{ln}_cutout', png),
+                      bulge=0.1, sag=0.02, zbase=-a[1], n=14,
+                      dfn=hug(body_png, W, H, a[0], a[1], png, sw) if hugs else None))
+        par = made.get('paws') if ln.startswith('paw') else made.get(L['parent'])
+        if par is not None and par is not be:      # re-parent keeping the world spot
+            e.location = (e.location[0] - par.location[0], e.location[1] - par.location[1], e.location[2] - par.location[2])
+            e.parent = par
+        made[ln] = e
+    under(root, shadow_plane(pre + '_shadow', W, shadow_mat(pre + '_shadow', f'{key}-shadow.png')))
+    return root
 
 
-# make_dog_layers.py: TAIL_PIVOT/TAIL_BOX, PAW_*_PIVOT/PAW_*_BOX
-# the tail a step behind the body's silhouette plane (its base hides behind the rump)
-tail_e = layer('dog_tail', body_e, (218, 176), (196, 108, 315, 258), M_TAIL, 0.006, 'dumpling-tail.png', 0.1)
-# front paws: dog_paws (shared pivot at the chest, spreads/tilts both) ->
-# dog_paw_l / dog_paw_r (elbow pivots; the page pats them in turn)
-paws_e = empty('dog_paws', (_px(111, 320)[0], -0.002 - _bd(111, 320), _px(111, 320)[1]), body_e)
-for nm, pv, bx in (('dog_paw_l', (80, 322), (30, 306, 124, 427)), ('dog_paw_r', (142, 318), (96, 300, 192, 427))):
-    # paws stand proud of the chest (body depth at the elbow + a step)
-    e = layer(nm, body_e, pv, bx, M_PAW_L if nm.endswith('l') else M_PAW_R, -0.002 - _bd(*pv) - (0.001 if nm.endswith('l') else 0),
-              'dumpling-paw-%s.png' % nm[-1], 0.1, hugs=True)
-    # re-parent under dog_paws keeping the world spot
-    e.location = (e.location[0] - paws_e.location[0], e.location[1] - paws_e.location[1], e.location[2] - paws_e.location[2])
-    e.parent = paws_e
-under(dog, shadow_plane('dog_shadow', CUT_W, shadow_mat('dog_shadow', 'dumpling-shadow.png')))
+dog = build_dog('dumpling', 'dog')
 BOOK_TOP = 0.028 + 2 * 0.052 + 0.025
 dog.location = (0.6, 0.8, BOOK_TOP)
 # face the page camera (it sits ~11deg right of straight-on from here)
@@ -580,77 +588,17 @@ dog.rotation_euler = (0, 0, math.radians(11))
 
 
 
+
 # ── round 6: Dumpling's siblings, desk calendar, parcels on a scale ──
-# Three photo cut-out billboards on the free desk corner, front right,
-# built like Dumpling (3d/make_pup_layers.py splits tex/<pup>-cutout.png).
-# Names live in consts (swap here and in 36-hero-3d.js PUPS). Per pup:
-# <name> (root, yaw-follow) -> <name>_body (breath/hop, pivot at the feet)
-# -> body card, <name>_tail (wag about the card normal), <name>_paws ->
-# <name>_paw_l/_r (pats); <name>_shadow is a soft blob. The page only
-# moves those empties (meshopt bakes mesh-node transforms).
+# Mochi, Tofu, Pochi: same builder, on the free desk corner, front right.
+# Names live in consts (swap here and in 36-hero-3d.js PUPS).
 MOCHI, TOFU, POCHI = 'mochi', 'tofu', 'pochi'
-# world units per px (sizes by weight, see CUT_K), paw (box, pivot) x2,
-# tail: (crop box, pivot in tail px, pivot in cut px, dy) or None. None of
-# the hero photos shows a tail (a drawn one read fake), so each is cut from
-# another photo of that dog (3d/make_tail_cutouts.py), base tucked behind
-# the hip so the join hides in fur. Pochi lies down.
-PUP_CUTS = {
-    # Mochi's white curl rises behind his right hip and hooks out over it
-    MOCHI: (0.377 / 710, (((50, 600, 136, 710), (92, 604)), ((164, 600, 254, 710), (208, 604))),
-            ((0, 0, 169, 146), (60, 140), (254, 468), 0.006)),
-    # Tofu's plume lies out to his right, sweeping up, base behind his haunch
-    TOFU: (0.27 / 590, (((26, 470, 112, 590), (68, 474)), ((114, 470, 204, 590), (160, 474))),
-           ((0, 0, 183, 178), (0, 134), (198, 537), 0.006)),
-    # Pochi's tail is his raised one from a standing photo (pochi-tail-cutout.png), base tucked behind his rump
-    POCHI: (0.064 / 95, (((40, 212, 92, 262), (66, 216)), ((88, 212, 140, 262), (114, 216))),
-            ((0, 0, 108, 122), (74, 110), (300, 160), 0.006)),
-}
-
-
-def pup(name):
-    k, paws, tl = PUP_CUTS[name]
-    pw, ph = png_size(name + '-body.png')     # make_pup_layers.py trims to the lowest paw
-    W, H = k * pw, k * ph
-    px = lambda x, y: ((x / pw - 0.5) * W, (1 - y / ph) * H)
-    root = empty(name)
-    be = empty(name + '_body', (0, 0, 0), root)
-    alpha_height(name + '-body.png', extra=tuple((f'{name}-paw-{sd}.png', bx[0], bx[1]) for sd, (bx, _) in zip('lr', paws)))
-    under(be, card(name + '_body_mesh', W, H, 0, H / 2, name + '-body.png', cut_mat(name + '_cutout', name + '-body.png'), n=28))
-    bd = lambda x, y: card_depth(name + '-body.png', W, x / pw, 1 - y / ph, 0.12, 0.04)
-
-    def lcard(nm, parent, at, size, pv, m, dy, png, hugs=False):
-        """empty at cut px `at`; card of `size` px with its pivot px `pv`"""
-        a = px(*at); sw, sh = size[0] * W / pw, size[1] * H / ph
-        e = empty(nm, (a[0], dy, a[1]), parent)
-        cx, cz = (size[0] / 2 - pv[0]) * W / pw, (pv[1] - size[1] / 2) * H / ph
-        under(e, card(nm + '_mesh', sw, sh, cx, cz, png, m, bulge=0.1, sag=0.02, zbase=-a[1], n=12,
-                      dfn=hug(name + '-body.png', W, H, a[0], a[1], png, sw) if hugs else None))
-        return e
-
-    if tl:
-        (l, t, r, b), tpv, tat, tdy = tl
-        lcard(name + '_tail', be, tat, (r - l, b - t), tpv, cut_mat(name + '_tail_cutout', name + '-tail.png'), tdy, name + '-tail.png')
-    mid = ((paws[0][1][0] + paws[1][1][0]) / 2, paws[0][1][1])
-    m = px(*mid); pe = empty(name + '_paws', (m[0], -0.002 - bd(*mid), m[1]), be)
-    for side, (bx, pv) in zip('lr', paws):
-        l, t, r, b = bx; b = min(b, ph)
-        e = lcard(f'{name}_paw_{side}', be, pv, (r - l, b - t), (pv[0] - l, pv[1] - t),
-                  cut_mat(f'{name}_paw_{side}_cutout', f'{name}-paw-{side}.png'), -0.002 - bd(*pv) - (0.001 if side == 'l' else 0),
-                  f'{name}-paw-{side}.png', hugs=True)
-        e.location = (e.location[0] - pe.location[0], e.location[1] - pe.location[1], e.location[2] - pe.location[2])
-        e.parent = pe
-    sh = shadow_plane(name + '_shadow', W, shadow_mat(name + '_shadow', name + '-shadow.png'))
-    sh.parent = root
-    return root
-
-
-mochi, tofu, pochi = pup(MOCHI), pup(TOFU), pup(POCHI)
-# same corner as before; the cards face the page camera (it sits a few
-# degrees right of straight-on from here)
-# a step forward of the parcels so Mochi (now the biggest) does not hide
-# them, and pulled in toward the canvas centre (its edge feather)
-for o, loc, rz in ((mochi, (1.0, -0.57), 10), (tofu, (1.25, -0.6), 8), (pochi, (1.48, -0.55), 5)):
+mochi, tofu, pochi = build_dog('mochi', MOCHI), build_dog('tofu', TOFU), build_dog('pochi', POCHI)
+# the cards face the page camera (a few degrees right of straight-on);
+# Mochi a step forward of the parcels, Tofu's plume tucked behind Pochi
+for o, loc, rz in ((mochi, (0.9, -0.68), 10), (tofu, (1.18, -0.6), 8), (pochi, (1.44, -0.66), 5)):
     o.location = (*loc, 0.0); o.rotation_euler = (0, 0, math.radians(rz))
+
 
 
 # stand-up flip calendar, front right; the page draws the notes on
