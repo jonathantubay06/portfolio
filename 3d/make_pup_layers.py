@@ -13,8 +13,9 @@ Paws: each lower foreleg + paw is its own layer; the body keeps a
 feathered overlap band under the layer's top edge, so a small lift or
 tilt round the pivot (top of the layer) never opens a gap.
 Tails: none of the three photos shows a usable tail (Mochi and Tofu sit
-facing the camera, Pochi lies on his), and a drawn one read as fake, so
-there is no tail layer (the code still splits one off if 'tail' is set).
+facing the camera, Pochi lies on his) and a drawn one read as fake, so
+each tail is cut from another photo of that dog (make_tail_cutouts.py for
+Mochi and Tofu; pochi-tail-cutout.png) and graded here like the body.
 Pivots / crop boxes are in cut-out pixels and mirrored in build_scene.py
 (PUP_CUTS). Run: uv run --with pillow --with numpy --with scipy python 3d/make_pup_layers.py
 """
@@ -29,12 +30,12 @@ TEX = os.path.join(HERE, 'tex')
 # paw boxes (l, t, r, b) + pivot; tail: real box + pivot or None;
 # carve: flat edges redrawn (side, [(row|col, edge)]); feet: paw columns on the floor
 PUPS = {
-    'mochi': dict(paws=(((50, 600, 136, 710), (92, 604)), ((164, 600, 254, 710), (208, 604))), tail=None, fur=1.6,
+    'mochi': dict(paws=(((50, 600, 136, 710), (92, 604)), ((164, 600, 254, 710), (208, 604))), tail=dict(file='mochi-tail-cutout.png'), fur=1.6,
                   carve=[('L', [(405, 36), (420, 26), (440, 16), (465, 9), (495, 6), (525, 7), (548, 10), (565, 15), (580, 18), (592, 16), (602, 13)]),
                          ('R', [(52, 220), (62, 254), (75, 266), (90, 270), (105, 269), (120, 265), (132, 258), (142, 251), (150, 248)]),
                          ('R', [(236, 233), (270, 243), (310, 241), (350, 236), (390, 236), (430, 242), (470, 250), (510, 256), (545, 257), (575, 254), (600, 248), (620, 242), (634, 236), (642, 230)])],
                   feet=[(66, 136), (176, 246), (8, 60), (232, 258)]),
-    'tofu': dict(paws=(((26, 470, 112, 590), (68, 474)), ((114, 470, 204, 590), (160, 474))), tail=None, fur=1.4,
+    'tofu': dict(paws=(((26, 470, 112, 590), (68, 474)), ((114, 470, 204, 590), (160, 474))), tail=dict(file='tofu-tail-cutout.png'), fur=1.4,
                  carve=[('L', [(118, 31), (140, 31), (170, 33), (200, 34), (240, 31), (280, 28), (320, 27), (360, 27), (400, 26), (430, 22), (450, 16), (465, 11), (480, 8), (495, 9), (508, 13), (516, 20)]),
                         ('R', [(150, 238), (170, 229), (190, 220), (210, 211), (230, 199), (250, 192), (270, 188), (290, 187), (310, 190), (330, 195), (350, 201), (375, 204), (400, 206), (430, 206), (460, 205), (485, 204), (500, 202), (508, 197)])],
                  leg=((0, 400, 50, 520), 178, 0, 0.9, True),   # right haunch: the left one mirrored

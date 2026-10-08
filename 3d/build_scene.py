@@ -589,11 +589,17 @@ dog.rotation_euler = (0, 0, math.radians(11))
 # moves those empties (meshopt bakes mesh-node transforms).
 MOCHI, TOFU, POCHI = 'mochi', 'tofu', 'pochi'
 # world units per px (sizes by weight, see CUT_K), paw (box, pivot) x2,
-# tail: (crop box, pivot in tail px, pivot in cut px, dy) or None (none of
-# the photos shows a usable tail; a drawn one read fake). Pochi lies down.
+# tail: (crop box, pivot in tail px, pivot in cut px, dy) or None. None of
+# the hero photos shows a tail (a drawn one read fake), so each is cut from
+# another photo of that dog (3d/make_tail_cutouts.py), base tucked behind
+# the hip so the join hides in fur. Pochi lies down.
 PUP_CUTS = {
-    MOCHI: (0.377 / 710, (((50, 600, 136, 710), (92, 604)), ((164, 600, 254, 710), (208, 604))), None),
-    TOFU: (0.27 / 590, (((26, 470, 112, 590), (68, 474)), ((114, 470, 204, 590), (160, 474))), None),
+    # Mochi's white curl rises behind his right hip and hooks out over it
+    MOCHI: (0.377 / 710, (((50, 600, 136, 710), (92, 604)), ((164, 600, 254, 710), (208, 604))),
+            ((0, 0, 169, 146), (60, 140), (254, 468), 0.006)),
+    # Tofu's plume lies out to his right, sweeping up, base behind his haunch
+    TOFU: (0.27 / 590, (((26, 470, 112, 590), (68, 474)), ((114, 470, 204, 590), (160, 474))),
+           ((0, 0, 183, 178), (0, 134), (198, 537), 0.006)),
     # Pochi's tail is his raised one from a standing photo (pochi-tail-cutout.png), base tucked behind his rump
     POCHI: (0.064 / 95, (((40, 212, 92, 262), (66, 216)), ((88, 212, 140, 262), (114, 216))),
             ((0, 0, 108, 122), (74, 110), (300, 160), 0.006)),
