@@ -368,8 +368,9 @@ bot.location = (-0.2, -0.47, 0.002)
 # history before 2026-10-07; the dogs are photo cut-outs for now)
 
 
-# Dumpling herself: a photo cut-out billboard (tex/dumpling-cutout.png,
-# play-bow, facing left, tail up) standing on the book stack. A vertical
+# Dumpling herself: a cut-out billboard of her approved Pixar-style still
+# (tex/dumpling-cutout.png, standing 3/4 to the left, tail plume up; the
+# real photo read pasted onto the cartoon desk, 2026-10-08) on the book stack. A vertical
 # plane facing -Y (the page camera), bottom edge on the book; the page
 # breathes dog_body (scale) and yaw-follows `dog` a little. dog_shadow is
 # a soft blob under her feet. `dog` stays the root (the Contact section
@@ -537,7 +538,7 @@ M_PAW_L = cut_mat('dog_paw_l_cutout', 'dumpling-paw-l.png')
 M_PAW_R = cut_mat('dog_paw_r_cutout', 'dumpling-paw-r.png')
 dog = empty('dog')
 body_e = empty('dog_body', (0, 0, 0), dog)
-alpha_height('dumpling-body.png', extra=(('dumpling-paw-l.png', 0, 456), ('dumpling-paw-r.png', 150, 460)))
+alpha_height('dumpling-body.png', extra=(('dumpling-paw-l.png', 30, 306), ('dumpling-paw-r.png', 96, 300)))
 under(body_e, card('dog_body_mesh', CUT_W, CUT_H, 0, CUT_H / 2, 'dumpling-body.png', M_CUT, n=28))
 # depth of the body card at a source px (paws stand in front of it, the tail behind)
 _bd = lambda x, y: card_depth('dumpling-body.png', CUT_W, x / CUT_PX[0], 1 - y / CUT_PX[1], 0.12, 0.04)
@@ -557,13 +558,13 @@ def layer(name, parent, pivot, box, m, dy, png, bulge, hugs=False):
     return e
 
 
-# make_dog_layers.py: PIVOT/TAIL_BOX, PAW_*_PIVOT/PAW_*_BOX
+# make_dog_layers.py: TAIL_PIVOT/TAIL_BOX, PAW_*_PIVOT/PAW_*_BOX
 # the tail a step behind the body's silhouette plane (its base hides behind the rump)
-tail_e = layer('dog_tail', body_e, (336, 172), (250, 0, 466, 204), M_TAIL, 0.006, 'dumpling-tail.png', 0.1)
+tail_e = layer('dog_tail', body_e, (218, 176), (196, 108, 315, 258), M_TAIL, 0.006, 'dumpling-tail.png', 0.1)
 # front paws: dog_paws (shared pivot at the chest, spreads/tilts both) ->
 # dog_paw_l / dog_paw_r (elbow pivots; the page pats them in turn)
-paws_e = empty('dog_paws', (_px(180, 480)[0], -0.002 - _bd(180, 480), _px(180, 480)[1]), body_e)
-for nm, pv, bx in (('dog_paw_l', (100, 478), (0, 456, 176, 586)), ('dog_paw_r', (262, 482), (150, 460, 380, 586))):
+paws_e = empty('dog_paws', (_px(111, 320)[0], -0.002 - _bd(111, 320), _px(111, 320)[1]), body_e)
+for nm, pv, bx in (('dog_paw_l', (80, 322), (30, 306, 124, 427)), ('dog_paw_r', (142, 318), (96, 300, 192, 427))):
     # paws stand proud of the chest (body depth at the elbow + a step)
     e = layer(nm, body_e, pv, bx, M_PAW_L if nm.endswith('l') else M_PAW_R, -0.002 - _bd(*pv) - (0.001 if nm.endswith('l') else 0),
               'dumpling-paw-%s.png' % nm[-1], 0.1, hugs=True)
