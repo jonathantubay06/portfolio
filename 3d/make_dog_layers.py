@@ -51,9 +51,31 @@ def cut(name, cfg):
     im = Image.open(os.path.join(SRC, name + '-fullbody_flux2-klein-4b-pixar_1024x1024.jpg')).convert('RGB')
     o = remove(im, session=new_session('isnet-general-use'), alpha_matting=True,
                alpha_matting_foreground_threshold=240, alpha_matting_background_threshold=20,
-               alpha_matting_erode_size=8).crop(tuple(cfg['crop']))
+               alpha_matting_erode_size=8)
+    if cfg.get('chroma'):                     # wispy plume: rembg left it half see-through
+        o = chroma(im, o, cfg['chroma'])
+    o = o.crop(tuple(cfg['crop']))
     s = cfg['scale']
     o.resize((round(o.width * s), round(o.height * s)), Image.LANCZOS).save(os.path.join(TEX, name + '-cutout.png'), optimize=True)
+
+
+def chroma(im, o, poly):
+    """key a warm plume off the neutral grey backdrop: the backdrop has
+    R - B of about -5, the coat 29 and up, so warmth is a clean alpha.
+    Inside poly the alpha is the larger of rembg's and the key, and the
+    soft fringe has the grey un-mixed so it keeps the cream colour."""
+    rgb = np.asarray(im, np.float32)
+    o = np.array(o, np.float32)
+    m = poly_mask(rgb.shape[:2], poly, 3)
+    k = np.clip((rgb[..., 0] - rgb[..., 2] + 3) / 30, 0, 1)
+    k = ndimage.gaussian_filter(k, 0.7)
+    a = np.maximum(o[..., 3] / 255, k * m)
+    bg = np.array([180, 181, 185], np.float32)
+    col = np.clip((rgb - (1 - a[..., None]) * bg) / np.maximum(a[..., None], 0.3), 0, 255)
+    sel = (k * m > o[..., 3] / 255)[..., None]
+    o[..., :3] = np.where(sel, col, o[..., :3])
+    o[..., 3] = a * 255
+    return Image.fromarray(o.round().astype(np.uint8), 'RGBA')
 
 
 def degrey(img, boxes):
@@ -78,15 +100,6 @@ def decontam(img, bg=(196, 197, 203)):
 def split(name, cfg):
     raw = np.array(Image.open(os.path.join(TEX, name + '-cutout.png')).convert('RGBA')).astype(np.float32)
     raw = degrey(raw, cfg.get('degrey', []))
-    if cfg.get('gamma'):                      # wispy plume: rembg left it half see-through
-        poly, g = cfg['gamma']
-        m = poly_mask(raw.shape[:2], poly, 4)
-        raw[..., 3] = raw[..., 3] * (1 - m) + 255 * (raw[..., 3] / 255) ** g * m
-        # and its matting colour came out orange: pull it back to the
-        # pale cream of the still (less saturation, a touch lighter)
-        lum = raw[..., :3] @ np.array([0.2126, 0.7152, 0.0722], np.float32)
-        fix = lum[..., None] + (raw[..., :3] - lum[..., None]) * 0.55
-        raw[..., :3] = raw[..., :3] * (1 - m[..., None]) + np.clip(fix * 1.06, 0, 255) * m[..., None]
     src = grade(trim(raw), **cfg.get('grade', dict(rim_warm=0.35, rim_cool=0.3, sat=0.96, ground=0.14)))
     h, w = src.shape[:2]
     a = src[..., 3]

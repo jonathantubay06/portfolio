@@ -641,7 +641,7 @@ under(pk, box('scale_base', (0.15, 0.14, 0.018), (0, 0, 0.009), M_ALU, bevel=0.0
       plane('scale_lcd', 0.07, 0.014, (0, -0.0705, 0.009), (math.radians(90), 0, 0), M_LCD))
 parcel('parcel_top', (0.1, 0.09, 0.07), (0, 0, 0.024), 4)
 parcel('parcel_a', (0.13, 0.11, 0.085), (0.15, 0.03, 0), -10)
-pk.location = (0.86, -0.1, 0.0); pk.rotation_euler = (0, 0, math.radians(8))
+pk.location = (0.74, 0.04, 0.0); pk.rotation_euler = (0, 0, math.radians(8))
 
 
 # ── lights (exported as KHR punctual; the page adds its own too) ─────
