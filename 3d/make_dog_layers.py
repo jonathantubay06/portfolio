@@ -48,7 +48,7 @@ def poly_mask(shape, pts, feather):
 
 def cut(name, cfg):
     from rembg import remove, new_session
-    im = Image.open(os.path.join(SRC, name + '-fullbody_flux2-klein-4b-pixar_1024x1024.jpg')).convert('RGB')
+    im = Image.open(os.path.join(SRC, cfg.get('src', name + '-fullbody') + '_flux2-klein-4b-pixar_1024x1024.jpg')).convert('RGB')
     o = remove(im, session=new_session('isnet-general-use'), alpha_matting=True,
                alpha_matting_foreground_threshold=240, alpha_matting_background_threshold=20,
                alpha_matting_erode_size=8)
@@ -104,7 +104,7 @@ def at_res(cfg):
     if r == 1: return cfg
     sc = lambda v: [sc(x) for x in v] if isinstance(v, list) else v * r
     cfg = json.loads(json.dumps(cfg))
-    for k in ('degrey', 'feet'):
+    for k in ('degrey', 'feet', 'erase', 'nub'):
         if k in cfg: cfg[k] = sc(cfg[k])
     for L in cfg['layers'].values():
         for k in ('pivot', 'poly', 'keep', 'cut', 'band'):
@@ -116,6 +116,14 @@ def split(name, cfg):
     cfg = at_res(cfg)
     raw = np.array(Image.open(os.path.join(TEX, name + '-cutout.png')).convert('RGBA')).astype(np.float32)
     raw = degrey(raw, cfg.get('degrey', []))
+    for poly in cfg.get('erase', []):        # stray bits the still added (an extra tail tip, a long tail on a stub-tailed dog)
+        raw[..., 3] *= 1 - poly_mask(raw.shape[:2], poly, 3)
+    if cfg.get('nub'):                        # Pochi's stub tail: a small rounded bump of coat
+        cx, cy, rx, ry = cfg['nub']; yy, xx = np.mgrid[0:raw.shape[0], 0:raw.shape[1]]
+        e = ndimage.gaussian_filter((((xx - cx) / rx) ** 2 + ((yy - cy) / ry) ** 2 <= 1).astype(np.float32), 1.2)
+        coat = raw[int(cy + ry * 2.5), int(cx - rx), :3]
+        raw[..., :3] = raw[..., :3] * (1 - e[..., None]) + coat * e[..., None]
+        raw[..., 3] = np.maximum(raw[..., 3], 255 * e)
     src = grade(trim(raw), **cfg.get('grade', dict(rim_warm=0.35, rim_cool=0.3, sat=0.96, ground=0.14)))
     h, w = src.shape[:2]
     a = src[..., 3]

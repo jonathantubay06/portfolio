@@ -113,12 +113,15 @@
      how far the head follows the cursor, lag = how fast (1/s), idle =
      [min, extra] s between idle actions (sniff, head tilt, weight
      shift). Mochi (eldest) is calm, Tofu easy-going, Pochi (youngest)
-     bounces; Dumpling (DOG) is the playful one. */
+     bounces; Dumpling (DOG) is the playful one. sig = each pup's own
+     move, picked for about 2 in 5 idle actions: Mochi stands guard (nose
+     up, ears perked, one bark bob), Tofu wiggles her whole body, Pochi
+     tilts her head one way, then the other. */
   var MOCHI = 'Mochi', TOFU = 'Tofu', POCHI = 'Pochi';
   var PUPS = {
-    mochi: { label: MOCHI + ', head of security', wag: 4.6, amp: 0.09, hop: [11, 6], jump: 0.03, pat: 0.55, br: 1.5, look: 0.6, lag: 1.6, idle: [9, 6] },
-    tofu: { label: TOFU + ', snack inspector', wag: 6.8, amp: 0.13, hop: [7, 5], jump: 0.04, pat: 0.8, br: 1.9, look: 0.8, lag: 3, idle: [6, 5] },
-    pochi: { label: POCHI + ', QA tester', wag: 7.5, amp: 0.16, hop: [5, 4], jump: 0.035, pat: 1.25, br: 2.5, look: 1, lag: 6, idle: [3.5, 3] }
+    mochi: { label: MOCHI + ', head of security', wag: 4.6, amp: 0.09, hop: [11, 6], jump: 0.03, pat: 0.55, br: 1.5, look: 0.6, lag: 1.6, idle: [7, 5], sig: 'guard' },
+    tofu: { label: TOFU + ', snack inspector', wag: 6.8, amp: 0.13, hop: [7, 5], jump: 0.04, pat: 0.8, br: 1.9, look: 0.8, lag: 3, idle: [5, 4], sig: 'wiggle' },
+    pochi: { label: POCHI + ', QA tester', wag: 7.5, amp: 0.16, hop: [5, 4], jump: 0.035, pat: 1.25, br: 2.5, look: 1, lag: 6, idle: [3.5, 3], sig: 'tilts' }
   };
   var DOG = { wag: 7.5, amp: 0.15, pat: 1, br: 2.1, look: 1, lag: 5, idle: [4, 4] };
   Object.keys(PUPS).forEach(function (k) { OWN[k] = { label: PUPS[k].label }; });
@@ -242,12 +245,26 @@
        bulged card never shows its edge). look: -1..1 cursor side of the
        dog, lu: cursor above (-) / below (+) her; ck: CTA envelope */
     function headPose(P, C, t, dt, hp, br, look, lu, ck, cdir) {
-      if (t > P.idleAt) { P.idle = (Math.random() * 3) | 0; P.idleT = t; P.idleAt = t + C.idle[0] + Math.random() * C.idle[1]; }
-      var it = t - (P.idleT || -9), ie = it < 1.8 ? Math.sin(it / 1.8 * Math.PI) : 0, ik = ie * ie;
+      if (t > P.idleAt) {
+        P.idle = C.sig && Math.random() < 0.4 ? 3 : (Math.random() * 3) | 0;
+        P.idleT = t; P.idleAt = t + C.idle[0] + Math.random() * C.idle[1] + (P.idle === 3 ? 1 : 0);
+      }
+      var it = t - (P.idleT || -9), id = P.idle === 3 ? 2.6 : 1.8,
+        ie = it < id ? Math.sin(it / id * Math.PI) : 0, ik = ie * ie;
+      /* the signature move's envelope, also read by the body/tail code */
+      P.sig = P.idle === 3 ? ik : 0; P.sigT = it;
       var k = Math.min(1, dt * C.lag);
       P.lk = (P.lk || 0) + ((look * (1 - ck) + cdir * ck) - (P.lk || 0)) * k;
       P.lu = (P.lu || 0) + ((lu * (1 - ck) - ck) - (P.lu || 0)) * k;
-      var ty = P.lk * 0.16 * C.look, tz = P.lu * 0.05 * C.look;
+      var ty = P.lk * 0.16 * C.look, tz = P.lu * 0.05 * C.look, perk = 0;
+      if (P.idle === 3 && C.sig === 'guard') {                                 /* on guard: nose up, eyes front, ears perk, one bark bob */
+        ty *= 1 - ik; tz -= ik * 0.08; perk = ik * 0.12;
+        if (it > 1.1 && it < 1.45) tz += Math.sin((it - 1.1) / 0.35 * Math.PI) * 0.05;
+      }
+      if (P.idle === 3 && C.sig === 'tilts') {                                 /* one way, then the other */
+        var hw = id / 2, side = it < hw ? 1 : -1, hk = Math.sin((it % hw) / hw * Math.PI);
+        tz += side * hk * hk * 0.11;
+      }
       if (P.idle === 0) tz += ik * 0.07 + Math.sin(it * 19) * 0.012 * ie;     /* sniff: nose dips, quick snuffles */
       if (P.idle === 1) tz += ik * (P.lk > 0 ? -0.09 : 0.09);                 /* head tilt: the quizzical cock */
       tz += Math.sin(t * C.br) * 0.012 - hp.h * 0.05;                          /* breath bob; nose up mid-hop */
@@ -259,7 +276,7 @@
       }
       /* ears flop: lag behind the head on a hop (up on the drop, down on the rise) */
       var fl = hp.on ? Math.sin(Math.max(0, hp.u) * Math.PI * 2) * 0.16 : 0;
-      fl += Math.sin(t * C.br * 1.3) * 0.02 + (P.idle === 1 ? ik * 0.08 : 0);
+      fl += Math.sin(t * C.br * 1.3) * 0.02 + (P.idle === 1 ? ik * 0.08 : 0) - perk;
       if (P.ear_l) P.ear_l.rotation.z = P.ear_l.userData.r0.z - fl;
       if (P.ear_r) P.ear_r.rotation.z = P.ear_r.userData.r0.z + fl;
       /* weight shift: the body settles and leans for a moment */
@@ -1140,7 +1157,9 @@
           var pc0 = t - ctaT - 0.25 - i * 0.18, pck = pc0 < 0 ? 0 : pc0 < 0.3 ? ease(pc0 / 0.3) : pc0 < 1.8 ? 1 : ease(1 - (pc0 - 1.8) / 0.6);
           var pla = lookAt(P.root), psh = headPose(P, C, t, dt, php, pbr, pla[0], pla[1], pck, ctaDir);
           P.body.scale.set(pbs.x * (1 + pbr * 0.012) * php.sx * (1 + psh * 0.03), pbs.y * (1 + pbr * 0.03) * php.sy * (1 - psh * 0.04), pbs.z);
-          P.body.rotation.z = P.body.userData.r0.z + psh * 0.03;
+          /* Tofu's wiggle: the whole body sways fast while the tail goes wild */
+          var wig = C.sig === 'wiggle' ? (P.sig || 0) : 0;
+          P.body.rotation.z = P.body.userData.r0.z + psh * 0.03 + wig * Math.sin(P.sigT * 15) * 0.045;
           P.body.position.y = P.body.userData.p0.y + php.h * C.jump * (1 + 0.5 * cta);
           if (P.shadow) {
             var pss = P.shadow.userData.s0, psk = 1 - php.h * 0.4;
@@ -1149,8 +1168,9 @@
           }
           pawPose(P, pt, php, P.hopAt - t, C.pat);
           if (P.tail) {
-            P.wag += dt * (php.on ? C.wag * 1.8 : C.wag) * (0.75 + 0.25 * Math.sin(pt * 0.31));
-            P.tail.rotation.z = P.tail.userData.r0.z + Math.sin(P.wag) * C.amp * (php.on ? 1.4 : 1);
+            var gd = C.sig === 'guard' ? (P.sig || 0) : 0;             /* on guard the tail slows and stays up */
+            P.wag += dt * (php.on ? C.wag * 1.8 : C.wag) * (0.75 + 0.25 * Math.sin(pt * 0.31)) * (1 + wig * 1.6) * (1 - gd * 0.7);
+            P.tail.rotation.z = P.tail.userData.r0.z + Math.sin(P.wag) * C.amp * (php.on ? 1.4 : 1) * (1 + wig * 0.7);
           }
         }
         if (P.root.parent) {
