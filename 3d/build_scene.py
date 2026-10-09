@@ -545,7 +545,7 @@ CUT_K = 0.34 / 512 * 0.72
 
 
 def build_dog(key, pre):
-    D = DOGS[key]; pw, ph = D['size']; W, H = CUT_K * pw, CUT_K * ph
+    D = DOGS[key]; pw, ph = D['size']; k = CUT_K / D.get('res', 1); W, H = k * pw, k * ph
     body_png = f'{key}-body.png'
     px = lambda x, y: ((x / pw - 0.5) * W, (1 - y / ph) * H)
     root = empty(pre)
@@ -596,8 +596,8 @@ MOCHI, TOFU, POCHI = 'mochi', 'tofu', 'pochi'
 mochi, tofu, pochi = build_dog('mochi', MOCHI), build_dog('tofu', TOFU), build_dog('pochi', POCHI)
 # the cards face the page camera (a few degrees right of straight-on);
 # Mochi a step forward of the parcels, Tofu's plume tucked behind Pochi
-for o, loc, rz in ((mochi, (0.9, -0.68), 10), (tofu, (1.18, -0.6), 8), (pochi, (1.44, -0.66), 5)):
-    o.location = (*loc, 0.0); o.rotation_euler = (0, 0, math.radians(rz))
+for o, loc, rz in ((mochi, (0.87, -0.68), 10), (tofu, (1.19, -0.6), 8), (pochi, (1.49, -0.66), 5)):
+    o.location = (*loc, 0.0); o.rotation_euler = (0, 0, math.radians(rz)); o.scale = (1.15,) * 3
 
 
 
@@ -677,7 +677,7 @@ bpy.ops.export_scene.gltf(filepath=RAW, export_format='GLB',
 print('exported raw', os.path.getsize(RAW) // 1024, 'KB')
 import subprocess
 cmd = (f'npx -y @gltf-transform/cli@4 optimize "{RAW}" "{GLB}" --compress meshopt --texture-compress webp '
-       '--texture-size 512 --flatten false --join false --instance false --palette false --simplify false')
+       '--texture-size 1024 --flatten false --join false --instance false --palette false --simplify false')
 if subprocess.run(cmd, shell=True).returncode == 0:
     print('compressed', os.path.getsize(GLB) // 1024, 'KB')
 else:

@@ -55,7 +55,7 @@ def cut(name, cfg):
     if cfg.get('chroma'):                     # wispy plume: rembg left it half see-through
         o = chroma(im, o, cfg['chroma'])
     o = o.crop(tuple(cfg['crop']))
-    s = cfg['scale']
+    s = cfg['scale'] * cfg.get('res', 1)
     o.resize((round(o.width * s), round(o.height * s)), Image.LANCZOS).save(os.path.join(TEX, name + '-cutout.png'), optimize=True)
 
 
@@ -97,7 +97,23 @@ def decontam(img, bg=(196, 197, 203)):
     return img
 
 
+def at_res(cfg):
+    """the polygons, pivots and boxes are authored at res 1; a dog cut at
+    res r (sharper texture, same size on the desk) scales them by r"""
+    r = cfg.get('res', 1)
+    if r == 1: return cfg
+    sc = lambda v: [sc(x) for x in v] if isinstance(v, list) else v * r
+    cfg = json.loads(json.dumps(cfg))
+    for k in ('degrey', 'feet'):
+        if k in cfg: cfg[k] = sc(cfg[k])
+    for L in cfg['layers'].values():
+        for k in ('pivot', 'poly', 'keep', 'cut', 'band'):
+            if k in L: L[k] = sc(L[k])
+    return cfg
+
+
 def split(name, cfg):
+    cfg = at_res(cfg)
     raw = np.array(Image.open(os.path.join(TEX, name + '-cutout.png')).convert('RGBA')).astype(np.float32)
     raw = degrey(raw, cfg.get('degrey', []))
     src = grade(trim(raw), **cfg.get('grade', dict(rim_warm=0.35, rim_cool=0.3, sat=0.96, ground=0.14)))
@@ -122,7 +138,7 @@ def split(name, cfg):
     # hard inner cuts: a layer always sits over its parent's copy (the keep
     # band), so a feathered seam only adds half-alpha pixels along it
     for k in own: own[k] = (own[k] > 0.5).astype(np.float32)
-    meta = {'size': [w, h], 'layers': {}}
+    meta = {'size': [w, h], 'res': cfg.get('res', 1), 'layers': {}}
     shadow(src, cfg['feet']).save(os.path.join(TEX, name + '-shadow.png'), optimize=True)
     for ln, wgt in own.items():
         al = a * wgt
