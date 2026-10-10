@@ -47,6 +47,24 @@ function handleSubmit(e) {
     return; // stop here — don't submit until fields are fixed
   }
 
+  /* reCAPTCHA (Netlify injects the widget at deploy time). Google writes its
+     answer into g-recaptcha-response; empty means the box was not ticked.
+     When the widget is absent (local preview, script blocked) we do not block,
+     so a visitor is never locked out by a failed third-party script. */
+  const captcha = form.querySelector('[name="g-recaptcha-response"]');
+  if (captcha && !captcha.value) {
+    announceForm('Please tick the "I\'m not a robot" box before sending.');
+    const box = form.querySelector('.form-recaptcha');
+    if (box) box.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    shakeForm(form);
+    return;
+  }
+
+  /* Spam gate: only real page script writes this, a bot posting straight to
+     Netlify leaves it empty. Value is seconds spent on the page. */
+  const gate = form.querySelector('[name="human-check"]');
+  if (gate) gate.value = 'human-' + Math.round(performance.now() / 1000);
+
   /* Disable button during submit to prevent double-sending */
   btn.disabled    = true;
   btn.textContent = 'Sending...';

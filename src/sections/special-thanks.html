@@ -88,10 +88,15 @@
      the previous inline "Message Sent" button label reset itself after
      3.5 seconds, so a visitor who looked away saw an empty form and no
      evidence anything had happened. -->
-        <form class="c-form" name="contact" method="POST" action="/thanks/" novalidate data-netlify="true" data-netlify-honeypot="bot-field">
+        <form class="c-form" name="contact" method="POST" action="/thanks/" novalidate data-netlify="true" data-netlify-honeypot="bot-field" data-netlify-recaptcha="true">
           <!-- Netlify hidden fields -->
           <input type="hidden" name="form-name" value="contact"/>
           <p style="display:none"><input name="bot-field"/></p>
+          <!-- Spam gate: a real browser fills this at submit time with how many
+               seconds the visitor spent on the page ("human-12"). A bot posting
+               straight to Netlify never runs the page script, so the field
+               arrives empty and the submission is easy to spot and delete. -->
+          <input type="hidden" name="human-check" value=""/>
 
           <div class="fg"><label for="f-name">Your Name</label><input id="f-name" name="name" type="text" placeholder="Jane Smith" required autocomplete="name"/></div>
           <div class="fg"><label for="f-email">Email Address</label><input id="f-email" name="email" type="email" placeholder="jane@company.com" required autocomplete="email"/></div>
@@ -146,6 +151,10 @@
                result. Visually hidden: sighted users get the inline field
                errors and the button label instead. -->
           <div class="sr-only" id="form-status" role="status" aria-live="polite" aria-atomic="true"></div>
+
+          <!-- Netlify swaps this div for the Google reCAPTCHA checkbox at deploy
+               time and checks the answer on its servers. -->
+          <div data-netlify-recaptcha="true" class="form-recaptcha"></div>
 
           <div class="form-submit-row">
             <button type="submit" class="btn btn-p" style="width:fit-content">Launch Project →</button>
