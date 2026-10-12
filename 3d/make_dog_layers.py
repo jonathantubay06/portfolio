@@ -3,7 +3,7 @@ into animation layers: body, head (pivot at the neck), ears (children of
 the head), tail and two front paws.
 
 Sources (Personal Works/Dumpling and sibs/Social media/pixar-characters/):
-<dog>-fullbody_flux2-klein-4b-pixar_1024x1024.jpg, full-body FLUX.2 Klein 4B
+<Dog>-Pixar-Look.jpg, full-body FLUX.2 Klein 4B
 stills on a plain grey backdrop (2026-10-08; the photo cut-outs read as
 pasted onto the cartoon desk, and the first 576x1024 stills cropped paws
 and tails). --cut redoes the rembg step (isnet + alpha matting) into
@@ -48,7 +48,7 @@ def poly_mask(shape, pts, feather):
 
 def cut(name, cfg):
     from rembg import remove, new_session
-    im = Image.open(os.path.join(SRC, cfg.get('src', name + '-fullbody') + '_flux2-klein-4b-pixar_1024x1024.jpg')).convert('RGB')
+    im = Image.open(os.path.join(SRC, name.capitalize() + '-Pixar-Look.jpg')).convert('RGB')
     o = remove(im, session=new_session('isnet-general-use'), alpha_matting=True,
                alpha_matting_foreground_threshold=240, alpha_matting_background_threshold=20,
                alpha_matting_erode_size=8)
