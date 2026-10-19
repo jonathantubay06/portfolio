@@ -57,16 +57,13 @@
     "19-section-object-motion.js",
     "21-testimonial-rail.js",
     "22-timeline-details.js",
-    "23-process-proof.js"
+    "23-process-proof.js",
+    "24-testi-fan.js"
   ],
   "effects": [
     "00-preamble.js",
-    "01-1-text-scramble.js",
-    "02-2-magnetic-buttons.js",
     "05-5-world-clock-cycle.js",
     "06-7-timeline-line-draw.js",
-    "07-8-section-label-typewriter.js",
-    "08-9-button-click-ripple.js",
     "09-10-active-nav-highlight.js",
     "11-12-available-pill.js",
     "12-13-copy-email-button.js",
@@ -77,8 +74,6 @@
     "22-15-side-dot-navigation.js",
     "23-16-keyboard-shortcuts.js",
     "24-17-copy-phone-button.js",
-    "25-18-section-label-entry-flash.js",
-    "26-hud-lock-on-cursor.js",
     "27-service-icon-tilt.js",
     "28-soft-tilt.js",
     "29-tech-marquee-3d.js",

@@ -83,3 +83,66 @@
 /* where a dog sits by the heading, it takes the place of the big outlined
    section numeral instead of fighting it for the same corner */
 @media(min-width:901px){#services h2::before,#work h2::before,#experience h2::before{display:none}}
+
+/* ── Chapters: the section labels read as one ops story ── */
+.sec-chapter{letter-spacing:.18em}
+
+/* ── SentryX case studies: problem, role, result ── */
+.case-prr{display:grid;gap:.7rem;margin:0 0 1.2rem;padding:1rem 0 0;border-top:1px solid var(--border)}
+.case-prr div{display:grid;grid-template-columns:5.5rem 1fr;gap:.8rem;align-items:baseline}
+.case-prr dt{font-family:var(--font-head);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan)}
+.case-prr dd{margin:0;font-size:.93rem;line-height:1.55;color:var(--muted2)}
+.proj-case .proj-desc{margin-bottom:.9rem}
+[data-theme="light"] .case-prr dd{color:#3d4f63}
+@media(max-width:600px){.case-prr div{grid-template-columns:1fr;gap:.15rem}}
+
+/* ── Reviews: fanned deck ── */
+.fan-stack{position:relative;margin-top:2rem}
+.fan-cards{position:relative;height:25rem;max-width:34rem;margin:0 auto;perspective:1200px}
+.fan-card.tq{
+  position:absolute;inset:0;width:auto;margin:0;
+  display:flex;flex-direction:column;
+  transform:translateX(calc(var(--d) * 58%)) rotate(calc(var(--d) * 5deg)) scale(calc(1 - min(1, max(var(--d), -1 * var(--d))) * .08));
+  transform-origin:50% 120%;
+  opacity:1;filter:brightness(calc(1 - min(2, max(var(--d), -1 * var(--d))) * .22));
+  transition:transform .55s cubic-bezier(.16,1,.3,1),filter .4s ease,opacity .4s ease;
+  cursor:pointer;box-shadow:0 18px 40px rgba(0,0,0,.4);
+}
+.fan-card.is-front{cursor:default}
+.fan-card.is-far{opacity:0;pointer-events:none}
+.fan-card .tq-quote{-webkit-line-clamp:unset;line-clamp:unset;display:block;overflow:auto;max-height:13rem;flex:1}
+.fan-card .tq-more{display:none}
+.fan-nav{display:flex;align-items:center;justify-content:center;gap:1.2rem;margin-top:1.4rem}
+.fan-arrow{
+  display:grid;place-items:center;width:2.6rem;height:2.6rem;border-radius:50%;cursor:pointer;
+  background:var(--surface);color:var(--cyan);border:1px solid var(--border2);
+  transition:background .2s ease,color .2s ease,transform .2s cubic-bezier(.16,1,.3,1);
+}
+.fan-arrow:hover{background:var(--cyan);color:#04121f}
+.fan-arrow:active{transform:scale(.94)}
+.fan-arrow:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+.fan-count{font-family:var(--font-head);font-size:.78rem;color:var(--muted2);min-width:4ch;text-align:center}
+@media(max-width:700px){
+  .fan-cards{height:27rem}
+  .fan-card.tq{transform:translateX(calc(var(--d) * 8%)) rotate(calc(var(--d) * 3deg)) scale(calc(1 - min(1, max(var(--d), -1 * var(--d))) * .06))}
+}
+@media(prefers-reduced-motion:reduce){.fan-card.tq{transition:none}}
+
+/* client names scroll under the reviews */
+.client-marquee{display:flex;overflow:hidden;margin-top:2.4rem;gap:0;
+  mask-image:linear-gradient(90deg,transparent,#000 10%,#000 90%,transparent)}
+.cm-track{display:flex;flex-shrink:0;gap:.8rem;padding:0 .4rem;margin:0;list-style:none;animation:cmScroll 40s linear infinite}
+.cm-track li{white-space:nowrap;padding:.6rem 1.2rem;border:1px solid var(--border);border-radius:999px;
+  font-family:var(--font-head);font-size:.74rem;letter-spacing:.06em;color:var(--muted2);background:rgba(8,18,36,.55)}
+[data-theme="light"] .cm-track li{background:rgba(255,255,255,.6);color:#3d4f63}
+@keyframes cmScroll{to{transform:translateX(-100%)}}
+@media(prefers-reduced-motion:reduce){.cm-track{animation:none}.client-marquee{flex-wrap:wrap}.cm-track[aria-hidden]{display:none}}
+/* the deck owns its transform: the section's idle drift would override it,
+   and each card needs a solid face so the ones behind do not show through */
+.sm-vis .fan-card.tq,.fan-card.tq{animation:none}
+.fan-card.tq{background:linear-gradient(160deg,#10223b,#0b1a2e);border-color:rgba(0,212,255,.22)}
+.fan-card.tq:not(.is-front) > *{opacity:.3;transition:opacity .4s ease}
+.fan-card.tq.is-front{border-color:rgba(0,212,255,.4);box-shadow:0 24px 60px rgba(0,0,0,.55)}
+[data-theme="light"] .fan-card.tq{background:#fff;border-color:rgba(10,99,184,.18)}
+.fan-card .tq-author{flex-wrap:wrap;row-gap:.8rem}
+@media(max-width:700px){.fan-card .tq-proj{flex-basis:100%;margin-left:0}}
