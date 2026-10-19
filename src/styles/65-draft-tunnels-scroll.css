@@ -3,25 +3,25 @@
    Owner: Jojo (personal). The rabbit-hole fall of sophie-dv.netlify.app,
    rebuilt in this site's world. --p (0..1) comes from 25-chapter-tunnels.js.
 
+   One fixed world: the background (live wallpaper, circuit grid, glows)
+   never scrolls. The tunnel has no backdrop of its own; it is a pinned,
+   see-through layer of rings and the chapter title over that same fixed
+   background, and the section content fades and drifts in and out around
+   it (see "content flow" below). So scrolling reads as one page whose
+   content changes, not a stack of separate sections.
+
    Timeline of one tunnel (p):
-     0    – .55  the shaft rushes past with the chapter title
-     .55  – .85  the camera dives into the dark centre
-     .78  – 1    the scene fades out; the next chapter is already in place
-   The tunnel overlaps the next section by one screen (margin-bottom:-100vh)
-   and sits above it, so when the scene fades the content is right there:
-   no empty screen, no "new section" seam.
+     0    – .6   the rings rush past with the chapter title
+     .55  – 1    the camera dives through the centre and the rings clear
 ═══════════════════════════════════════ */
-.tunnel{--p:0;position:relative;z-index:5;height:240vh;margin-bottom:-100vh;pointer-events:none}
+/* the tunnel overlaps both neighbours, so the last chapter is still lifting
+   away as the rings arrive and the next one is already rising as they clear:
+   no empty screen on either side */
+.tunnel{--p:0;position:relative;z-index:5;height:210vh;margin:-55vh 0 -75vh;pointer-events:none}
 .tn-pin{
   position:sticky;top:0;height:100vh;overflow:hidden;
   display:grid;place-items:center;perspective:520px;
-  background:radial-gradient(circle at 50% 50%,#000 0,#030a16 34%,#081a33 100%);
-  opacity:clamp(0,calc((1 - var(--p)) * 4.5),1);
-}
-/* the dive ends on the page colour, so the fade lands on the same world */
-.tn-pin::after{
-  content:'';position:absolute;inset:0;z-index:4;background:rgb(15,29,51);
-  opacity:clamp(0,calc((var(--p) - .62) * 4),1);
+  opacity:clamp(0,min(calc(var(--p) * 8),calc((1 - var(--p)) * 5)),1);
 }
 .tn-rings{
   position:absolute;inset:0;transform-style:preserve-3d;
@@ -45,16 +45,35 @@
   text-align:center;font-family:var(--font-head);font-weight:900;text-transform:uppercase;
   font-size:clamp(2rem,6vw,4.6rem);letter-spacing:.04em;line-height:1.05;color:#fff;
   text-shadow:0 4px 24px rgba(0,0,0,.85);
-  opacity:clamp(0,min(calc(var(--p) * 8 - .6),calc((.55 - var(--p)) * 8)),1);
+  opacity:clamp(0,min(calc(var(--p) * 7 - .5),calc((.62 - var(--p)) * 7)),1);
 }
 .tn-text span{display:block;margin-bottom:.6rem;font-size:.28em;letter-spacing:.3em;color:var(--cyan)}
 
 /* phones, small tablets, reduced motion: one still frame, in normal flow */
 @media(max-width:900px),(prefers-reduced-motion:reduce){
-  .tunnel{--p:.2;height:60vh;margin-bottom:0}
-  .tn-pin{position:relative;height:60vh;opacity:1}
-  .tn-pin::after{opacity:0}
+  .tunnel{--p:.2;height:46vh;margin:0}
+  .tn-pin{position:relative;height:46vh;opacity:1}
   .tn-text{opacity:1;top:auto;bottom:8%;transform:none}
+}
+
+/* ── content flow: every block in a chapter drifts up and in as it enters
+   and lifts away as it leaves, over the fixed background. Scroll-driven
+   CSS (view timelines), so it costs no script; browsers without it, small
+   screens and reduced motion just scroll normally. ── */
+@supports (animation-timeline:view()){
+  @media(min-width:901px) and (prefers-reduced-motion:no-preference){
+    .sec > *,.testi-inner > *{
+      animation:flowIn linear both,flowOut linear both;
+      animation-timeline:view(),view();
+      animation-range:entry 0% entry 90%,exit 35% exit 100%;
+    }
+    @keyframes flowIn{from{opacity:0;translate:0 48px;scale:.98;filter:blur(6px)}}
+    @keyframes flowOut{to{opacity:0;translate:0 -36px;scale:.985;filter:blur(4px)}}
+    /* translate/scale, not transform: the reveal's .r.on{transform:none!important}
+       and the card tilt scripts keep owning transform. The timeline replaces
+       the one-shot reveal, so its transition is switched off. */
+    .sec > .r,.testi-inner > .r{transition:none}
+  }
 }
 
 /* ── one continuous page: no dividers, no separate band behind the reviews ── */
