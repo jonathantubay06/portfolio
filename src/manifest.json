@@ -32,7 +32,8 @@
     "60-section-motion.css",
     "61-content-pass.css",
     "62-desk-3d.css",
-    "63-audit-fixes-2026-10-07.css"
+    "63-audit-fixes-2026-10-07.css",
+    "64-draft-how-work-dogs.css"
   ],
   "main": [
     "00-preamble.js",
@@ -55,7 +56,8 @@
     "18-hero-render-pointer-parallax.js",
     "19-section-object-motion.js",
     "21-testimonial-rail.js",
-    "22-timeline-details.js"
+    "22-timeline-details.js",
+    "23-process-proof.js"
   ],
   "effects": [
     "00-preamble.js",
