@@ -104,3 +104,24 @@ html.smooth-wheel{scroll-behavior:auto}
   html :is([style*="cursor: pointer"],[style*="cursor: pointer"] *){cursor:url('cursors/pointer.svg') 5 3,pointer!important}
   html :is([style*="cursor: zoom-out"],[style*="cursor: zoom-out"] *){cursor:zoom-out!important}
 }
+
+/* ── WORLD (igloo.inc idea): the desk is the page's fixed 3D world ──
+   36-hero-3d.js moves its canvas to a full-viewport layer behind the page
+   (html.world-on once it renders) and flies the camera between chapter
+   shots. The scrim dims it while a chapter is being read (--world-dim from
+   25-chapter-tunnels.js) and lifts during camera travel. Negative z-index
+   paints the layer above the root background but below all content, so
+   body, hero and the CSS backdrops step aside for it. */
+.world-3d{position:fixed;inset:0;width:100vw;height:100vh;z-index:-1;pointer-events:none;opacity:0;transition:opacity 1.2s ease}
+html.world-on .world-3d{opacity:1}
+.world-scrim{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:0;
+  background:radial-gradient(ellipse 80% 70% at 50% 45%,rgba(8,18,36,.82),rgba(8,18,36,.93))}
+html.world-on .world-scrim{opacity:var(--world-dim,0);transition:opacity .2s linear}
+html.world-on{background:#081221}
+/* !important: several theme and audit partials set body and hero
+   backgrounds with their own !important (59-dark-lift's hero rule is
+   (0,3,1), hence the repeated class); the world layer must win */
+html.world-on body,html.world-on.world-on.world-on .hero{background:transparent!important}
+html.world-on main::before,html.world-on main::after,html.world-on .hero::before{display:none}
+/* the camera travel is the transition now; the rings would fight it */
+html.world-on .tn-rings{display:none}

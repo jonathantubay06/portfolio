@@ -144,8 +144,21 @@
 
   function start(THREE, GLTFLoader, MeshoptDecoder, EffectComposer, RenderPass, UnrealBloomPass, OutputPass) {
     var canvas = document.createElement('canvas');
-    canvas.className = 'hero-3d';
-    scene.appendChild(canvas);
+    /* WORLD (draft 2026-10-20, igloo.inc idea): when the page has chapter
+       tunnels, the desk is not a hero picture but the page's fixed world.
+       The canvas becomes a full-viewport layer behind everything, and the
+       scroll flies the camera from shot to shot (one per chapter) instead
+       of fading the desk out. Without tunnels it is the hero canvas as before. */
+    var WORLD = !!document.querySelector('.tunnel');
+    if (WORLD) {
+      canvas.className = 'world-3d';
+      document.body.insertBefore(canvas, document.body.firstChild);
+      var scrim = document.createElement('div'); scrim.className = 'world-scrim';
+      canvas.after(scrim);
+    } else {
+      canvas.className = 'hero-3d';
+      scene.appendChild(canvas);
+    }
 
     var renderer;
     try {
@@ -184,9 +197,11 @@
     composer.addPass(new OutputPass());
     var bloomOn = true;
 
+    var vw = 1, vh = 1;   /* canvas size, cached for the per-frame view offset */
     function size() {
       var w = canvas.clientWidth, h = canvas.clientHeight;
       if (!w || !h) return;
+      vw = w; vh = h;
       renderer.setSize(w, h, false);
       composer.setSize(w, h);
       cam.aspect = w / h; cam.updateProjectionMatrix();
@@ -197,6 +212,70 @@
     /* scratch objects, reused every frame (no per-frame allocation) */
     var v1 = new THREE.Vector3(), v2 = new THREE.Vector3(), v3 = new THREE.Vector3();
     var camRight = new THREE.Vector3().subVectors(target, camBase).cross(new THREE.Vector3(0, 1, 0)).normalize();
+
+    /* ── WORLD: chapter shots and the atmosphere around the desk ──
+       Shots: p camera position, l look-at point, o how far right of centre
+       the subject sits (fraction of the viewport). Order matches the
+       tunnels: hero, 01 Services, 02 Work, 03 Reviews, 04 Experience. */
+    var shots = null, shotS = 0, shotPos = new THREE.Vector3(), shotLook = new THREE.Vector3();
+    var shell = null, shell2 = null, field = null, focus = null;
+    function buildWorld(root3) {
+      var away = new THREE.Vector3().subVectors(camBase, target).normalize();
+      function at(name, dist, lift, o, side) {
+        var obj = root3.getObjectByName(name);
+        if (!obj) return null;
+        var c = new THREE.Vector3(); new THREE.Box3().setFromObject(obj).getCenter(c);
+        var p = c.clone().addScaledVector(away, dist).addScaledVector(camRight, side || 0); p.y += lift;
+        return { p: p, l: c, o: o };
+      }
+      var hero = { p: camBase.clone(), l: target.clone(), o: 0.22 };
+      var lap = { p: new THREE.Vector3(0, 0.3, 0.95).multiplyScalar(2.3).add(zc), l: zc.clone(), o: 0.2 };
+      shots = [
+        hero,
+        at('holo_chart', 2.4, 0.25, 0.2, -0.5) || hero,
+        lap,
+        at('holo_order', 2.0, 0.15, 0.2, 0.4) || lap,
+        at('rack', 3.0, 0.35, 0.2, 0.3) || hero
+      ];
+      /* fog: the far wire shell and particles fade into the page navy */
+      world.fog = new THREE.FogExp2(0x0a1628, 0.05);
+      /* the igloo-style wire network: two slow, counter-turning geodesic
+         shells around the desk, plus a faint floor grid far below */
+      var lm = new THREE.LineBasicMaterial({ color: 0x00d4ff, transparent: true, opacity: 0.16, depthWrite: false });
+      shell = new THREE.LineSegments(new THREE.WireframeGeometry(new THREE.IcosahedronGeometry(9, 2)), lm);
+      shell2 = new THREE.LineSegments(new THREE.WireframeGeometry(new THREE.IcosahedronGeometry(5.6, 1)), lm.clone());
+      shell2.material.opacity = 0.09;
+      shell.position.copy(target); shell2.position.copy(target);
+      var grid = new THREE.GridHelper(40, 80, 0x00d4ff, 0x0a6fa0);
+      grid.material.transparent = true; grid.material.opacity = 0.12; grid.material.depthWrite = false;
+      grid.position.set(target.x, target.y - 1.6, target.z);
+      world.add(shell, shell2, grid);
+      /* a deep particle field, not just the motes by the desk */
+      var N = 700, fp = new Float32Array(N * 3);
+      for (var i = 0; i < N; i++) {
+        var r = 3 + Math.random() * 9, a = Math.random() * Math.PI * 2, b = Math.acos(2 * Math.random() - 1);
+        fp[i * 3] = r * Math.sin(b) * Math.cos(a);
+        fp[i * 3 + 1] = r * Math.cos(b) * 0.6;
+        fp[i * 3 + 2] = r * Math.sin(b) * Math.sin(a);
+      }
+      var fg = new THREE.BufferGeometry(); fg.setAttribute('position', new THREE.BufferAttribute(fp, 3));
+      field = new THREE.Points(fg, new THREE.PointsMaterial({ color: 0x7fe3ff, size: 0.035, transparent: true, opacity: 0.55, depthWrite: false }));
+      field.position.copy(target);
+      world.add(field);
+      /* a soft key light that follows the camera's subject */
+      focus = new THREE.PointLight(0x66e0ff, 0, 2.6); world.add(focus);
+    }
+    function worldTick(t, s, sf) {
+      if (shell) { shell.rotation.y = t * 0.018; shell.rotation.x = Math.sin(t * 0.05) * 0.08; }
+      if (shell2) shell2.rotation.y = -t * 0.03;
+      if (field) field.rotation.y = t * 0.008;
+      if (focus) {
+        focus.position.copy(shotLook); focus.position.y += 0.45; focus.position.z += 0.5;
+        /* brightest once the camera has arrived, dark in the hero shot */
+        var arrive = sf > 0.85 || sf < 0.02 ? 1 : 0.4;
+        focus.intensity += ((s > 0.05 ? 2.2 * arrive : 0) - focus.intensity) * 0.06;
+      }
+    }
 
     var motes = null, screens = null, lastDraw = -1, lastT = 0, skyT = 0;
     var cubes = [], wires = [], holos = [], floats = [], leds = [], halves = [], picks = [];
@@ -355,6 +434,7 @@
          leans back 14deg, so its normal is (0, sin14, cos14). */
       g.scene.getObjectByName('laptop_screen').getWorldPosition(zc);
       zcam.set(0, 0.242, 0.97).multiplyScalar(3.8).add(zc);
+      if (WORLD) buildWorld(g.scene);
       printer = labelPrinter(g.scene);
       pups.forEach(function (p) {
         p.root.userData.r0 = p.root.rotation.clone();
@@ -411,6 +491,7 @@
         window.__hero3d = H;
         dispatchEvent(new Event('hero3d:ready'));
         if (!paused) scene.classList.add('has-3d');
+        if (WORLD && !paused) document.documentElement.classList.add('world-on');
         /* after the fade-in, the scroll fade drives opacity directly */
         setTimeout(function () { canvas.style.transition = 'none'; }, 1000);
         loop();
@@ -915,7 +996,7 @@
 
     /* only render while the hero is visible and the tab is in front */
     var visible = true, raf = 0, clock = new THREE.Clock(), paused = false, dead = false, lost = false;
-    new IntersectionObserver(function (e) { visible = e[0].isIntersecting; if (visible) loop(); }).observe(stage);
+    new IntersectionObserver(function (e) { visible = e[0].isIntersecting; if (visible) loop(); }).observe(WORLD ? canvas : stage);
     document.addEventListener('visibilitychange', function () { if (!document.hidden) loop(); });
 
     /* the driver or the OS can drop the context; three restores it, the
@@ -936,6 +1017,7 @@
     function release() {
       if (raf) { cancelAnimationFrame(raf); raf = 0; }
       scene.classList.remove('has-3d'); tip.classList.remove('on');
+      document.documentElement.classList.remove('world-on');
       canvas.style.opacity = '0'; fade = -1;
       world.traverse(function (o) {
         if (o.geometry) o.geometry.dispose();
@@ -950,7 +1032,9 @@
       resume: function () {
         if (!paused || dead) return;
         paused = false; govPrev = 0; gov.t0 = 0; gov.s.length = 0; gov.bad = 0;
-        size(); scene.classList.add('has-3d'); loop();
+        size(); scene.classList.add('has-3d');
+        if (WORLD) { canvas.style.opacity = ''; document.documentElement.classList.add('world-on'); }
+        loop();
       }
     };
 
@@ -1013,6 +1097,25 @@
 
       /* camera: pointer lean, then pulled back along its view line by scroll,
          then eased toward the face-on view of the laptop screen */
+      if (WORLD && shots) {
+        /* world: glide between chapter shots. __worldShot (0..n) is written
+           by 25-chapter-tunnels.js from the tunnels' scroll progress; easing
+           it here adds the weight, smoothstep shapes each leg */
+        var goal = Math.min(shots.length - 1, window.__worldShot || 0);
+        if (Math.abs(goal - shotS) > 0.001) lastInput = now;
+        shotS += (goal - shotS) * k05;
+        var si = Math.min(shots.length - 2, Math.floor(shotS)), sf = ease(shotS - si);
+        var SA = shots[si], SB = shots[si + 1];
+        shotPos.lerpVectors(SA.p, SB.p, sf); shotLook.lerpVectors(SA.l, SB.l, sf);
+        var so = SA.o + (SB.o - SA.o) * sf;
+        v1.subVectors(shotPos, shotLook);
+        v1.x += px * 0.45 * lean; v1.y -= py * 0.25 * lean;
+        cam.position.copy(shotLook).add(v1).lerp(zcam, z);
+        cam.lookAt(look.copy(shotLook).lerp(zc, z));
+        cam.setViewOffset(vw, vh, -so * (1 - z) * vw, 0, vw, vh);
+        rig.rotation.x = 0;
+        worldTick(t, shotS, sf);
+      } else {
       v1.set(camBase.x + px * 0.9 * lean, camBase.y - py * 0.5 * lean, camBase.z - px * 0.6 * lean).sub(target).multiplyScalar((1 + sp * 0.45 * lean) * (1 - H.dolly * 0.16));
       cam.position.copy(target).add(v1).lerp(zcam, z);
       look.copy(target); look.y -= H.dolly * 0.1;
@@ -1020,6 +1123,7 @@
       rig.rotation.x = sp * 0.15 * lean;
       var f = 1 - sp;
       if (Math.abs(f - fade) > 0.004) { fade = f; canvas.style.opacity = f.toFixed(3); }
+      }
 
       /* parallax: near floats shift more than far ones */
       for (i = 0; i < floats.length; i++) {
