@@ -5,13 +5,13 @@
   const el = document.getElementById('typingRole');
   if (!el) return; // guard — safe exit if element doesn't exist
 
-  const roles = ['eCommerce Builder', 'Automation Specialist', 'Ops Tech Lead', 'Shopify Developer', 'Workflow Automator'];
+  const roles = ['Technical Lead', 'Full-Stack Developer', 'eCommerce Builder', 'Automation Specialist', 'Shopify Developer'];
   let roleIdx = 0, charIdx = 0, deleting = false;
 
   // Phones: the cycling text changed the line width every frame and clipped
   // long roles, so show one static line that can wrap. Reduced motion too.
   if (window.matchMedia('(prefers-reduced-motion: reduce), (max-width: 600px)').matches) {
-    el.textContent = 'eCommerce Builder · Automation Specialist';
+    el.textContent = 'Technical Lead · Full-Stack Developer';
     el.parentElement.classList.add('is-static');
     return;
   }

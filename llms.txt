@@ -1,6 +1,6 @@
 # Jonathan Tubay
 
-> Shopify and WordPress developer and automation specialist based in Manila, Philippines. 12+ years of experience. Technology Lead at SentryX, and available for freelance projects worldwide.
+> Shopify and WordPress developer and automation specialist based in Manila, Philippines. 13+ years of experience. Full-stack developer and technical lead; Technology Lead at SentryX, and available for freelance projects worldwide.
 
 ## Services
 - Shopify development: custom themes, app integrations, catalog, payments and checkout setup, post-launch support
@@ -30,7 +30,7 @@
 
 ## Proof
 - 11 client and LinkedIn reviews on the site
-- 10+ sites and tools shipped: 5 live sites I build and look after, plus 5 monitoring tools and AI agents
+- 10 sites and tools shipped: 5 live sites I build and look after, plus 5 monitoring tools and AI agents
 
 ## Links
 - [Portfolio](https://jonathantubay.com/)

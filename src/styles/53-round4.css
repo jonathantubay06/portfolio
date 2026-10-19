@@ -83,12 +83,6 @@
   .stat-item:nth-child(4) .stat-num{animation-delay:.91s}
   @keyframes statFlip{from{transform:rotateX(-100deg)}60%{transform:rotateX(14deg)}}
 }
-/* A split-flap seam across each figure. */
-.stat-item{position:relative}
-.stat-item::after{
-  content:'';position:absolute;left:14%;right:14%;top:calc(1.1rem + .62em);height:1px;
-  background:linear-gradient(90deg,transparent,rgba(0,0,0,.55),transparent);pointer-events:none;
-}
 
 /* ── 3. section headers ──────────────────────────────────────────────
    Every section used the same label + two-tone heading. A large
