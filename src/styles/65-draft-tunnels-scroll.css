@@ -1,0 +1,50 @@
+/* ═══════════════════════════════════════
+   DRAFT 2026-10-20: chapter tunnels + smooth scroll
+   Owner: Jojo (personal). Pinned scroll scene before each chapter, like the
+   rabbit-hole fall on sophie-dv.netlify.app, rebuilt in this site's world:
+   a dog falling down a circuit shaft. --p (0..1) comes from
+   25-chapter-tunnels.js. Phones and reduced motion get one still frame.
+═══════════════════════════════════════ */
+.tunnel{--p:.42;position:relative;height:190vh;background:#030a16;z-index:1}
+.tn-pin{
+  position:sticky;top:0;height:100vh;overflow:hidden;
+  display:grid;place-items:center;perspective:520px;
+  background:radial-gradient(circle at 50% 50%,#000 0,#030a16 38%,#06142a 100%);
+}
+.tn-rings{position:absolute;inset:0;transform-style:preserve-3d;pointer-events:none}
+/* ring i sits --d units deep; scrolling pulls every ring toward the viewer */
+.tn-rings i{
+  --d:calc(var(--i) - var(--p) * 9);
+  --w:min(78vw,1100px);
+  position:absolute;left:50%;top:50%;width:var(--w);height:calc(var(--w) * .62);
+  margin:calc(var(--w) * -.31) 0 0 calc(var(--w) * -.5);
+  border:2px solid rgba(0,212,255,.75);border-radius:18px;
+  box-shadow:0 0 22px rgba(0,212,255,.35),inset 0 0 22px rgba(0,212,255,.18);
+  background:radial-gradient(circle,rgba(0,212,255,.9) 0 2px,transparent 3px) 0 0/25% 100% repeat-x;
+  transform:translateZ(calc(var(--d) * -260px));
+  opacity:clamp(0,calc(var(--d) * 3),1);
+}
+.tn-rings i:nth-child(even){border-color:rgba(0,120,255,.55);border-radius:10px}
+.tn-dog{
+  position:relative;z-index:2;width:clamp(150px,18vw,260px);height:auto;
+  transform:translateY(calc((var(--p) - .5) * 18vh)) scale(calc(.18 + var(--p) * 1.5)) rotate(calc(var(--p) * 24deg - 12deg));
+  opacity:clamp(0,calc((1 - var(--p)) * 5),1);
+  filter:drop-shadow(0 20px 30px rgba(0,0,0,.6));
+}
+.tn-text{
+  position:absolute;z-index:3;left:0;right:0;top:50%;margin:0;transform:translateY(-50%);
+  text-align:center;font-family:var(--font-head);font-weight:900;text-transform:uppercase;
+  font-size:clamp(2rem,6vw,4.6rem);letter-spacing:.04em;line-height:1.05;color:#fff;
+  text-shadow:0 4px 24px rgba(0,0,0,.8);
+  opacity:clamp(0,min(calc(var(--p) * 5 - 1),calc((1 - var(--p)) * 5 - 1)),1);
+}
+.tn-text span{display:block;margin-bottom:.6rem;font-size:.28em;letter-spacing:.3em;color:var(--cyan)}
+@media(max-width:900px),(prefers-reduced-motion:reduce){
+  .tunnel{height:62vh}
+  .tn-pin{position:relative;height:62vh}
+  .tn-dog{opacity:1}
+  .tn-text{opacity:1;top:auto;bottom:10%;transform:none}
+}
+
+/* smooth scroll owns the wheel; the browser's own smoothing would fight it */
+html.smooth-wheel{scroll-behavior:auto}

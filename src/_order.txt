@@ -2,9 +2,13 @@ nav
 main-landmark
 hero
 tech-stack-marquee
+tunnel-01
 services
+tunnel-02
 portfolio
+tunnel-03
 testimonials
+tunnel-04
 experience
 faq
 special-thanks

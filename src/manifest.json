@@ -33,7 +33,8 @@
     "61-content-pass.css",
     "62-desk-3d.css",
     "63-audit-fixes-2026-10-07.css",
-    "64-draft-how-work-dogs.css"
+    "64-draft-how-work-dogs.css",
+    "65-draft-tunnels-scroll.css"
   ],
   "main": [
     "00-preamble.js",
@@ -58,7 +59,9 @@
     "21-testimonial-rail.js",
     "22-timeline-details.js",
     "23-process-proof.js",
-    "24-testi-fan.js"
+    "24-testi-fan.js",
+    "25-chapter-tunnels.js",
+    "26-smooth-wheel.js"
   ],
   "effects": [
     "00-preamble.js",
