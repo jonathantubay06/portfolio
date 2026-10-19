@@ -3,7 +3,8 @@
    Each .tunnel is a tall block with a sticky full-screen scene inside.
    While it scrolls past, --p runs 0 to 1 and the CSS moves the rings,
    the dog and the chapter title with it. One rAF per scroll, only for
-   tunnels on screen; reads are batched before writes.
+   tunnels on screen; reads are batched before writes. .tn-live also
+   lets the dog's limb animations run only while its tunnel is visible.
    Phones, coarse pointers and reduced motion get the static scene
    (CSS handles that; this script just stays idle there).
 ═══════════════════════════════════════ */
@@ -16,6 +17,7 @@
   var io = new IntersectionObserver(function (es) {
     es.forEach(function (e) {
       var k = live.indexOf(e.target);
+      e.target.classList.toggle('tn-live', e.isIntersecting);
       if (e.isIntersecting && k < 0) live.push(e.target);
       if (!e.isIntersecting && k > -1) live.splice(k, 1);
     });

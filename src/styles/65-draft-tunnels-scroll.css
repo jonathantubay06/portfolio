@@ -1,21 +1,36 @@
 /* ═══════════════════════════════════════
    DRAFT 2026-10-20: chapter tunnels + smooth scroll
-   Owner: Jojo (personal). Pinned scroll scene before each chapter, like the
-   rabbit-hole fall on sophie-dv.netlify.app, rebuilt in this site's world:
-   a dog falling down a circuit shaft. --p (0..1) comes from
-   25-chapter-tunnels.js. Phones and reduced motion get one still frame.
+   Owner: Jojo (personal). The rabbit-hole fall of sophie-dv.netlify.app,
+   rebuilt in this site's world. --p (0..1) comes from 25-chapter-tunnels.js.
+
+   Timeline of one tunnel (p):
+     0    – .55  the dog tumbles away down the shaft, ears up, legs paddling
+     .1   – .5   chapter title over the fall
+     .55  – .85  the camera dives into the dark centre
+     .78  – 1    the scene fades out; the next chapter is already in place
+   The tunnel overlaps the next section by one screen (margin-bottom:-100vh)
+   and sits above it, so when the scene fades the content is right there:
+   no empty screen, no "new section" seam.
 ═══════════════════════════════════════ */
-.tunnel{--p:.42;position:relative;height:190vh;background:#030a16;z-index:1}
+.tunnel{--p:0;position:relative;z-index:5;height:240vh;margin-bottom:-100vh;pointer-events:none}
 .tn-pin{
   position:sticky;top:0;height:100vh;overflow:hidden;
   display:grid;place-items:center;perspective:520px;
-  background:radial-gradient(circle at 50% 50%,#000 0,#030a16 38%,#06142a 100%);
+  background:radial-gradient(circle at 50% 50%,#000 0,#030a16 34%,#081a33 100%);
+  opacity:clamp(0,calc((1 - var(--p)) * 4.5),1);
 }
-.tn-rings{position:absolute;inset:0;transform-style:preserve-3d;pointer-events:none}
-/* ring i sits --d units deep; scrolling pulls every ring toward the viewer */
+/* the dive ends on the page colour, so the fade lands on the same world */
+.tn-pin::after{
+  content:'';position:absolute;inset:0;z-index:4;background:rgb(15,29,51);
+  opacity:clamp(0,calc((var(--p) - .62) * 4),1);
+}
+.tn-rings{
+  position:absolute;inset:0;transform-style:preserve-3d;
+  transform:scale(calc(1 + max(0, var(--p) - .55) * 9));
+}
 .tn-rings i{
-  --d:calc(var(--i) - var(--p) * 9);
-  --w:min(78vw,1100px);
+  --d:calc(var(--i) - var(--p) * 6);
+  --w:min(80vw,1120px);
   position:absolute;left:50%;top:50%;width:var(--w);height:calc(var(--w) * .62);
   margin:calc(var(--w) * -.31) 0 0 calc(var(--w) * -.5);
   border:2px solid rgba(0,212,255,.75);border-radius:18px;
@@ -25,26 +40,59 @@
   opacity:clamp(0,calc(var(--d) * 3),1);
 }
 .tn-rings i:nth-child(even){border-color:rgba(0,120,255,.55);border-radius:10px}
-.tn-dog{
-  position:relative;z-index:2;width:clamp(150px,18vw,260px);height:auto;
-  transform:translateY(calc((var(--p) - .5) * 18vh)) scale(calc(.18 + var(--p) * 1.5)) rotate(calc(var(--p) * 24deg - 12deg));
-  opacity:clamp(0,calc((1 - var(--p)) * 5),1);
-  filter:drop-shadow(0 20px 30px rgba(0,0,0,.6));
+
+/* ── the fall: big and close at the top, tumbling away into the centre ── */
+.tn-fall{
+  position:relative;z-index:2;width:clamp(220px,24vw,340px);
+  --q:clamp(0,calc(var(--p) / .55),1);
+  transform:
+    translateY(calc((1 - var(--q)) * -34vh))
+    scale(calc(1.25 - var(--q) * 1.18))
+    rotate(calc(var(--q) * 160deg - 25deg));
+  opacity:clamp(0,calc((.6 - var(--p)) * 12),1);
+  filter:drop-shadow(0 24px 30px rgba(0,0,0,.6));
 }
+.puppet{position:relative;display:block;width:100%}
+.puppet img{display:block;width:100%;height:auto;pointer-events:none;user-select:none}
+.pp{position:absolute;display:block}
+.pp > img{width:100%;height:100%}
+/* wind: ears stream up, legs paddle, tail whips, head wobbles */
+@media(prefers-reduced-motion:no-preference){
+  .pp-ear-l{animation:ppEarL .22s ease-in-out infinite alternate}
+  .pp-ear-r{animation:ppEarR .22s ease-in-out infinite alternate;animation-delay:-.11s}
+  .pp-paw-l{animation:ppPaw .3s ease-in-out infinite alternate}
+  .pp-paw-r{animation:ppPaw .3s ease-in-out infinite alternate-reverse}
+  .pp-tail{animation:ppTail .18s ease-in-out infinite alternate}
+  .pp-head{animation:ppHead .6s ease-in-out infinite alternate}
+  @keyframes ppEarL{from{transform:rotate(-38deg)}to{transform:rotate(-8deg)}}
+  @keyframes ppEarR{from{transform:rotate(38deg)}to{transform:rotate(8deg)}}
+  @keyframes ppPaw{from{transform:rotate(-26deg)}to{transform:rotate(22deg)}}
+  @keyframes ppTail{from{transform:rotate(-30deg)}to{transform:rotate(26deg)}}
+  @keyframes ppHead{from{transform:rotate(-7deg) translateY(-2%)}to{transform:rotate(6deg) translateY(1%)}}
+}
+.tunnel:not(.tn-live) .pp{animation-play-state:paused}
+
 .tn-text{
   position:absolute;z-index:3;left:0;right:0;top:50%;margin:0;transform:translateY(-50%);
   text-align:center;font-family:var(--font-head);font-weight:900;text-transform:uppercase;
   font-size:clamp(2rem,6vw,4.6rem);letter-spacing:.04em;line-height:1.05;color:#fff;
-  text-shadow:0 4px 24px rgba(0,0,0,.8);
-  opacity:clamp(0,min(calc(var(--p) * 5 - 1),calc((1 - var(--p)) * 5 - 1)),1);
+  text-shadow:0 4px 24px rgba(0,0,0,.85);
+  opacity:clamp(0,min(calc(var(--p) * 8 - .6),calc((.55 - var(--p)) * 8)),1);
 }
 .tn-text span{display:block;margin-bottom:.6rem;font-size:.28em;letter-spacing:.3em;color:var(--cyan)}
+
+/* phones, small tablets, reduced motion: one still frame, in normal flow */
 @media(max-width:900px),(prefers-reduced-motion:reduce){
-  .tunnel{height:62vh}
-  .tn-pin{position:relative;height:62vh}
-  .tn-dog{opacity:1}
-  .tn-text{opacity:1;top:auto;bottom:10%;transform:none}
+  .tunnel{--p:.2;height:60vh;margin-bottom:0}
+  .tn-pin{position:relative;height:60vh;opacity:1}
+  .tn-pin::after{opacity:0}
+  .tn-fall{width:clamp(160px,44vw,240px);opacity:1}
+  .tn-text{opacity:1;top:auto;bottom:8%;transform:none}
 }
+
+/* ── one continuous page: no dividers, no separate band behind the reviews ── */
+.divider{display:none}
+#testimonials.testi-bg{background:none}
 
 /* smooth scroll owns the wheel; the browser's own smoothing would fight it */
 html.smooth-wheel{scroll-behavior:auto}

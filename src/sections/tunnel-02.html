@@ -1,10 +1,12 @@
-<!-- Chapter tunnel 02 (DRAFT 2026-10-20): a pinned scroll scene, a dog
-     falling through a circuit tunnel into the next chapter. Pure CSS 3D
-     driven by --p from 25-chapter-tunnels.js; no extra WebGL. -->
+<!-- Chapter tunnel 02 (DRAFT 2026-10-20). A pinned scroll scene: Tofu falls
+     away down a circuit shaft, the camera dives after, the screen goes to the
+     page colour and fades, and the next chapter is already in place underneath
+     (the tunnel overlaps it by one screen). The dog is a jointed puppet built
+     from the hero's layer cut-outs. CSS 3D driven by --p, no extra WebGL. -->
 <div class="tunnel" aria-hidden="true">
   <div class="tn-pin">
     <div class="tn-rings"><i style="--i:0"></i><i style="--i:1"></i><i style="--i:2"></i><i style="--i:3"></i><i style="--i:4"></i><i style="--i:5"></i><i style="--i:6"></i><i style="--i:7"></i><i style="--i:8"></i><i style="--i:9"></i><i style="--i:10"></i><i style="--i:11"></i><i style="--i:12"></i><i style="--i:13"></i></div>
-    <img class="tn-dog" src="img/mascot/tofu.webp" alt="" width="300" height="400" loading="lazy" decoding="async">
+    <div class="tn-fall tn-tofu"><span class="puppet" style="aspect-ratio:1066/1103"><img class="pp-body" src="img/mascot/tofu/body.webp" alt="" loading="lazy" decoding="async"><span class="pp pp-head" style="left:1.970%;top:1.360%;width:37.054%;height:25.657%;transform-origin:55.949% 94.346%"><img src="img/mascot/tofu/head.webp" alt="" loading="lazy" decoding="async"><span class="pp pp-ear-r" style="left:74.937%;top:4.947%;width:32.152%;height:51.943%;transform-origin:29.134% 19.728%"><img src="img/mascot/tofu/ear_r.webp" alt="" loading="lazy" decoding="async"></span></span><span class="pp pp-tail" style="left:75.985%;top:52.947%;width:21.857%;height:24.841%;transform-origin:3.433% 18.978%"><img src="img/mascot/tofu/tail.webp" alt="" loading="lazy" decoding="async"></span><span class="pp pp-paw-l" style="left:12.383%;top:67.090%;width:16.041%;height:32.004%;transform-origin:57.310% 3.966%"><img src="img/mascot/tofu/paw_l.webp" alt="" loading="lazy" decoding="async"></span><span class="pp pp-paw-r" style="left:27.486%;top:67.090%;width:16.698%;height:32.910%;transform-origin:53.371% 3.857%"><img src="img/mascot/tofu/paw_r.webp" alt="" loading="lazy" decoding="async"></span></span></div>
     <p class="tn-text"><span>Chapter 02</span>Deployments</p>
   </div>
 </div>
