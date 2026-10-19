@@ -82,3 +82,25 @@
 
 /* smooth scroll owns the wheel; the browser's own smoothing would fight it */
 html.smooth-wheel{scroll-behavior:auto}
+
+/* ── Cursor: one visible arrow everywhere, a cyan one on anything clickable ──
+   The old arrow.svg was a 20-50% opacity outline drawn for the HUD cursor
+   to sit on top of; with that script off it was nearly invisible, and the
+   45 per-element cursor rules (cursor:pointer, cursor:default...) let the
+   system arrow and hand show through. !important here is deliberate: it is
+   the single cursor policy for the whole page, overriding those scattered
+   rules in one place. Text fields keep the I-beam; touch keeps native. */
+@media(hover:hover) and (pointer:fine){
+  html,html *{cursor:url('cursors/arrow.svg') 5 3,default!important}
+  html :is(a[href],button:not([disabled]),[role="button"],summary,label[for],select,
+    .btn,.proj-card,[data-modal],.hw-proof,.fan-card:not(.is-front),.qp-btn,.ad-opt,.tl-more,.sdot),
+  html :is(a[href],button:not([disabled]),[role="button"],summary,.btn,.proj-card,[data-modal]) *{
+    cursor:url('cursors/pointer.svg') 5 3,pointer!important}
+  html :is(input:not([type="button"]):not([type="submit"]):not([type="checkbox"]):not([type="radio"]),textarea,[contenteditable="true"]){
+    cursor:text!important}
+  html :is(button[disabled],[aria-disabled="true"]){cursor:url('cursors/arrow.svg') 5 3,not-allowed!important}
+  /* the hero 3D sets its stage's cursor inline while you hover a clickable
+     object (pointer) or are zoomed in (zoom-out); follow it, canvas included */
+  html :is([style*="cursor: pointer"],[style*="cursor: pointer"] *){cursor:url('cursors/pointer.svg') 5 3,pointer!important}
+  html :is([style*="cursor: zoom-out"],[style*="cursor: zoom-out"] *){cursor:zoom-out!important}
+}

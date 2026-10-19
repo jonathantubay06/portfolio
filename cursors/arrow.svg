@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
-  <!-- Glow layer: soft cyan, low opacity -->
-  <path d="M6 4L26 9l-8 3-3 8L6 4z" fill="none" stroke="#00d4ff" stroke-width="3" stroke-linejoin="round" opacity="0.2"/>
-  <!-- Core: site text color, subtle -->
-  <path d="M6 4L26 9l-8 3-3 8L6 4z" fill="none" stroke="#e8f4ff" stroke-width="0.6" stroke-linejoin="round" opacity="0.5"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28">
+  <!-- Default arrow: dark navy body, white rim, cyan glow edge. Readable on
+       the dark site, the light theme and over screenshots alike. -->
+  <path d="M5 3l16.5 10.6-7.2 1.6-3.6 6.9z" fill="none" stroke="#00d4ff" stroke-width="4.2" stroke-linejoin="round" opacity=".35"/>
+  <path d="M5 3l16.5 10.6-7.2 1.6-3.6 6.9z" fill="#0a1628" stroke="#ffffff" stroke-width="1.6" stroke-linejoin="round"/>
 </svg>
