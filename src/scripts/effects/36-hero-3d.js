@@ -521,7 +521,7 @@
       var cabL = new THREE.PointLight(0xffe7c4, 0, 2.6); cabL.position.set(cbX, cbY0 + cbH - 0.3, backZ + cbD + 0.35); grp.add(cabL);
 
       /* ── vinyl figures ── */
-      var S = 1.3;
+      var S = 1.3;   /* chibi: big head, short body (after the chibi hero prints) */
       function part(geo, col, x, y, z, o) {
         var m = new THREE.Mesh(geo, M(Object.assign({ color: col, roughness: 0.38, metalness: 0.04 }, o || {})));
         m.position.set(x, y, z); grp.add(m); return m;
@@ -539,10 +539,10 @@
         /* boots and legs */
         [-1, 1].forEach(function (s) {
           part(CAP(0.019, 0.03), f.boots || f.legs, x + s * 0.022 * u, y0 + 0.02 * u, z + 0.006 * u);
-          part(CAP(0.017 * big, 0.045), f.legs, x + s * 0.022 * u, y0 + 0.06 * u, z);
+          part(CAP(0.017 * big, 0.03), f.legs, x + s * 0.022 * u, y0 + 0.052 * u, z);
         });
         /* torso, belt */
-        var tY = y0 + 0.125 * u;
+        var tY = y0 + 0.11 * u;
         var torso = part(CAP(0.042 * big, 0.04), f.body, x, tY, z); torso.scale.set(1, 1, 0.78);
         if (f.belt) part(CYL(0.044 * big, 0.044 * big, 0.012), f.belt, x, tY - 0.035 * u, z, { metalness: 0.5, roughness: 0.3 }).scale.set(1, 1, 0.8);
         /* arms out a little, round hands */
@@ -551,36 +551,48 @@
           arm.rotation.z = s * 0.22;
           part(SPH(0.016 * big), f.hands || f.arms || f.body, x + s * 0.066 * big * u, tY - 0.04 * u, z);
         });
-        /* the big vinyl head */
-        var hY = tY + 0.105 * u;
-        part(SPH(0.066, 1.06, 1, 1), f.head, x, hY, z);
+        /* chibi head: about as tall as the whole body */
+        var hY = tY + 0.118 * u;
+        var head = part(SPH(0.082, 1.06, 0.98, 1), f.head, x, hY, z, f.headMap ? { map: f.headMap, color: 0xffffff } : null);
+        head.rotation.y = -Math.PI / 2;   /* puts the texture's centre line on the face */
         if (f.face) f.face(x, hY, z, u);
         if (f.extra) f.extra(x, y0, z, u, tY, hY);
       }
       var LENS = function (col, rim) {
         return function (x, y, z, u) {
           [-1, 1].forEach(function (s) {
-            if (rim) part(SPH(0.024, 1.25, 0.95, 0.35), rim, x + s * 0.026 * u, y + 0.006 * u, z + 0.053 * u, { roughness: 0.3, metalness: 0.6 });
-            var l = part(SPH(0.02, 1.25, 0.95, 0.35), col, x + s * 0.026 * u, y + 0.006 * u, z + 0.057 * u, { roughness: 0.15 });
-            l.rotation.z = s * -0.35;
+            if (rim) { var rm = part(SPH(0.032, 1.2, 1.05, 0.3), rim, x + s * 0.033 * u, y + 0.008 * u, z + 0.068 * u, { roughness: 0.3, metalness: 0.4 }); rm.rotation.z = s * -0.45; }
+            var l = part(SPH(0.027, 1.2, 1.05, 0.3), col, x + s * 0.033 * u, y + 0.008 * u, z + 0.073 * u, { roughness: 0.15 });
+            l.rotation.z = s * -0.45;
           });
         };
       };
       var DOTS = function (x, y, z, u) {
-        [-1, 1].forEach(function (s) { part(SPH(0.009, 1, 1.25, 0.6), 0x111111, x + s * 0.022 * u, y + 0.004 * u, z + 0.061 * u, { roughness: 0.2 }); });
+        [-1, 1].forEach(function (s) {
+          part(SPH(0.013, 1, 1.2, 0.5), 0x111111, x + s * 0.028 * u, y + 0.004 * u, z + 0.076 * u, { roughness: 0.15 });
+          part(SPH(0.004, 1, 1, 0.5), 0xffffff, x + s * 0.028 * u + 0.004 * u, y + 0.012 * u, z + 0.083 * u, { roughness: 0.1 });   /* catch light */
+        });
       };
+      var webTex = (function () {
+        var c = document.createElement('canvas'); c.width = 512; c.height = 256;
+        var g = c.getContext('2d'); g.fillStyle = '#c8141e'; g.fillRect(0, 0, 512, 256);
+        g.strokeStyle = 'rgba(20,10,10,.85)'; g.lineWidth = 2;
+        for (var i = 0; i <= 24; i++) { g.beginPath(); g.moveTo(i * 512 / 24, 0); g.lineTo(i * 512 / 24, 256); g.stroke(); }
+        for (var j = 1; j < 9; j++) { g.beginPath(); for (var k = 0; k <= 24; k++) { var xx = k * 512 / 24, yy = j * 256 / 9 + (k % 2 ? 5 : -5); k ? g.lineTo(xx, yy) : g.moveTo(xx, yy); } g.stroke(); }
+        var t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t;
+      })();
       var FIGS = [
         { body: 0xb3121b, legs: 0xb3121b, arms: 0xb3121b, hands: 0xd4a017, boots: 0xd4a017, head: 0xb3121b, belt: 0xd4a017,
           face: function (x, y, z, u) {   /* armour: gold faceplate, glowing slits */
-            part(SPH(0.052, 1, 1.05, 0.5), 0xd4a017, x, y - 0.006 * u, z + 0.032 * u, { metalness: 0.75, roughness: 0.28 });
-            [-1, 1].forEach(function (s) { part(RBX(0.022, 0.006, 0.006), 0xbff3ff, x + s * 0.019 * u, y + 0.01 * u, z + 0.06 * u, { emissive: 0x7fe3ff, emissiveIntensity: 2.4 }); });
+            part(SPH(0.065, 1, 1.05, 0.5), 0xd4a017, x, y - 0.008 * u, z + 0.058 * u, { metalness: 0.75, roughness: 0.28 });
+            [-1, 1].forEach(function (s) { part(RBX(0.022, 0.006, 0.006), 0xbff3ff, x + s * 0.024 * u, y + 0.012 * u, z + 0.091 * u, { emissive: 0x7fe3ff, emissiveIntensity: 2.4 }); });
           },
           extra: function (x, y0, z, u, tY) { part(CYL(0.012, 0.012, 0.006).rotateX(Math.PI / 2), 0xbff3ff, x, tY + 0.012 * u, z + 0.034 * u, { emissive: 0x7fe3ff, emissiveIntensity: 2.6 }); } },
-        { body: 0xc8141e, legs: 0x1d3fb8, arms: 0x1d3fb8, hands: 0xc8141e, boots: 0xc8141e, head: 0xc8141e, face: LENS(0xf8fafc, 0x111111),
+        { body: 0xc8141e, legs: 0x1d3fb8, arms: 0x1d3fb8, hands: 0xc8141e, boots: 0xc8141e, head: 0xc8141e, headMap: webTex, face: LENS(0xf8fafc, 0x111111),
           extra: function (x, y0, z, u, tY) { part(SPH(0.012, 1.4, 1, 0.4), 0x111111, x, tY + 0.012 * u, z + 0.033 * u); } },
         { body: 0x1e3a8a, legs: 0x1e3a8a, arms: 0x1e3a8a, hands: 0x9b1c1c, boots: 0x9b1c1c, head: 0x1e3a8a, belt: 0x6b3f1d,
           face: function (x, y, z, u) {
-            part(SPH(0.045, 1.05, 0.6, 0.6), 0xf1c27d, x, y - 0.03 * u, z + 0.03 * u);   /* chin below the helmet */
+            part(SPH(0.056, 1.05, 0.6, 0.6), 0xf1c27d, x, y - 0.037 * u, z + 0.05 * u);   /* chin below the helmet */
             DOTS(x, y, z, u);
           },
           extra: function (x, y0, z, u, tY) {
@@ -590,15 +602,15 @@
             });
           } },
         { body: 0x2f8f3a, legs: 0x5b2a86, arms: 0x2f8f3a, hands: 0x2f8f3a, boots: 0x2f8f3a, head: 0x2f8f3a, big: 1.28, face: DOTS,
-          extra: function (x, y0, z, u, tY, hY) { part(SPH(0.068, 1.08, 0.5, 1.02), 0x111111, x, hY + 0.035 * u, z - 0.004 * u, { roughness: 0.7 }); } },
+          extra: function (x, y0, z, u, tY, hY) { part(SPH(0.085, 1.08, 0.5, 1.02), 0x111111, x, hY + 0.044 * u, z - 0.005 * u, { roughness: 0.7 }); } },
         { body: 0x15151a, legs: 0x15151a, arms: 0x15151a, hands: 0x15151a, boots: 0x15151a, head: 0x15151a, face: LENS(0xf1f5f9, 0xc0c4cc),
           extra: function (x, y0, z, u, tY, hY) {
             part(new THREE.TorusGeometry(0.03 * u, 0.004 * u, 8, 24, Math.PI), 0xd1d5db, x, tY + 0.03 * u, z + 0.028 * u, { metalness: 0.9, roughness: 0.2 }).rotation.z = Math.PI;
-            [-1, 1].forEach(function (s) { part(new THREE.ConeGeometry(0.012 * u, 0.026 * u, 10), 0x15151a, x + s * 0.042 * u, hY + 0.06 * u, z); });
+            [-1, 1].forEach(function (s) { part(new THREE.ConeGeometry(0.012 * u, 0.026 * u, 10), 0x15151a, x + s * 0.052 * u, hY + 0.075 * u, z); });
           } },
         { body: 0x8b939e, legs: 0x2d3440, arms: 0x2d3440, hands: 0x2d3440, boots: 0x6b4423, head: 0xf1c27d, face: DOTS,
           extra: function (x, y0, z, u, tY, hY) {   /* blond hair, chest discs, cape and hammer */
-            part(SPH(0.069, 1.07, 0.75, 1.03), 0xe8c26a, x, hY + 0.02 * u, z - 0.01 * u, { roughness: 0.6 });
+            part(SPH(0.086, 1.07, 0.75, 1.03), 0xe8c26a, x, hY + 0.025 * u, z - 0.012 * u, { roughness: 0.6 });
             [-1, 0, 1].forEach(function (i) { part(CYL(0.008, 0.008, 0.004).rotateX(Math.PI / 2), 0xe5e7eb, x + i * 0.018 * u, tY + 0.015 * u, z + 0.034 * u, { metalness: 0.9, roughness: 0.2 }); });
             var cape = part(RBX(0.11, 0.15, 0.006), 0xa3141c, x, tY - 0.02 * u, z - 0.04 * u, { roughness: 0.6 }); cape.rotation.x = 0.12;
             part(CYL(0.006, 0.006, 0.07), 0x5b3a1e, x + 0.07 * u, tY - 0.07 * u, z + 0.006 * u);
