@@ -643,7 +643,7 @@
         { glb: 'ironman', h: 0.52, ry: Math.PI },   /* "Iron Man Mark 6" by Mittergen */
         { glb: 'chibi', h: 0.46, anim: true },       /* "Chibi Spider-Man Animated" by Ysn.Aitaddi */
         { glb: 'cap', h: 0.46 },                     /* chibi Captain America by klrxyz */
-        { glb: 'hulk', h: 0.5 },                     /* "Hulk Mini" by henriquebbarcellos */
+        { glb: 'hulk', h: 0.5, ry: -Math.PI / 2 },   /* "Hulk Mini" by henriquebbarcellos (the scan faces +x) */
         { glb: 'venom', h: 0.44 },                   /* "Kawaii Venom-Inspired Chibi" by mizoohdn */
         { glb: 'deadpool', h: 0.48 }                 /* "Deadpool-like chibi character" by tinkerlane_studio */
       ];
@@ -722,6 +722,7 @@
         var cw = cell - 0.12, ch = 0.44, cd = 0.36, xc = leftX + 0.025 + cd / 2 + 0.02;
         box(cd + 0.03, 0.012, cw + 0.03, xc, y - 0.006, zc, shelfGlassM);   /* floating acrylic ledge */
         var cube = new THREE.Mesh(new THREE.BoxGeometry(cd, ch, cw), caseM); cube.position.set(xc, y + ch / 2, zc); grp.add(cube);
+        cube.renderOrder = 3;   /* glass after the shoes, or the distance sort put the bottom row in front of its case */
         var lit = new THREE.Mesh(new THREE.PlaneGeometry(cd - 0.08, cw - 0.08), stripM);   /* lit panel under the lid */
         lit.rotation.x = Math.PI / 2; lit.position.set(xc, y + ch - 0.014, zc); grp.add(lit);
         glowCard(cw - 0.04, ch - 0.04, leftX + 0.03, y + ch / 2, zc, Math.PI / 2, 0.2);
@@ -841,14 +842,20 @@
       var winL = new THREE.PointLight(0x8fb8ff, 0, 11); winL.position.set(cx, (wy0 + wy1) / 2, backZ + 1.2); world.add(winL);
       var dayNow = 0;
       world.add(grp);
-      var shown = -1, mixT = 0;
+      var shown = -1, mixT = 0, fadeK = 0, fadeGoal = 0, fadeT = 0;
       return {
         tick: function () {
           /* the room fades in as the hero scrolls away; hidden in the hero */
           /* eased, and solid surfaces keep writing depth while they fade:
              without it the walls went see-through and the bed showed
              through the desk (an x-ray look, not a fade) */
-          var h = Math.min(1, (window.__worldHeroOut || 0) / 0.7), a = h * h * (3 - 2 * h);
+          /* time-based, not scrubbed by scroll: once the hero is a little
+             way out the room fades in over 0.6s (and back out), so it never
+             rests half see-through behind the hero */
+          var ho = window.__worldHeroOut || 0, tNow = performance.now(), fdt = Math.min(0.1, (tNow - (fadeT || tNow)) / 1000); fadeT = tNow;
+          if (ho > 0.15) fadeGoal = 1; else if (ho < 0.06) fadeGoal = 0;
+          fadeK += Math.max(-fdt / 0.6, Math.min(fdt / 0.6, fadeGoal - fadeK));
+          var a = fadeK * fadeK * (3 - 2 * fadeK);
           if (prime === 1 && a <= 0.01) {
             prime = 2; grp.visible = true;
             for (var q = 0; q < mats.length; q++) { mats[q].colorWrite = false; mats[q].depthWrite = false; }
@@ -858,7 +865,7 @@
           var now = performance.now(), dt = Math.min(0.1, (now - (mixT || now)) / 1000); mixT = now;
           if (a > 0.01 && !ready) {
             if (!warming) { warming = true; compileThen(grp, function () { ready = true; shown = -1; }); }
-            a = 0;
+            a = 0; fadeK = 0;
           }
           if (a > 0.01) for (var j = 0; j < mixers.length; j++) mixers[j].update(dt);
           if (Math.abs(a - shown) < 0.01) return;
