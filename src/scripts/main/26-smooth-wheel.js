@@ -10,7 +10,7 @@
 ═══════════════════════════════════════ */
 (function () {
   var gate = matchMedia('(min-width:901px) and (pointer:fine) and (prefers-reduced-motion:no-preference)');
-  if (!gate.matches) return;
+  if (!gate.matches || document.documentElement.classList.contains('quick')) return;
   var root = document.documentElement;
   root.classList.add('smooth-wheel');
   var target = scrollY, pos = scrollY, raf = 0;

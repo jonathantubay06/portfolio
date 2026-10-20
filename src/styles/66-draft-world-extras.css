@@ -1,0 +1,81 @@
+/* ═══════════════════════════════════════
+   DRAFT 2026-10-20 (draft/world-extras, port 3002): quick view, action
+   dock, chapter menu, desk-as-menu tip, project dive, Manila HUD.
+   Owner: Jojo (personal). Scripts: 41-world-extras.js, 36-hero-3d.js.
+═══════════════════════════════════════ */
+
+/* ── Quick view switch (header) ── */
+.quick-toggle{margin-left:.5rem;padding:.32rem .75rem;border-radius:99px;
+  font:600 .68rem/1 var(--font-body,inherit);letter-spacing:.08em;text-transform:uppercase;
+  color:var(--cyan);background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.3);
+  transition:background .2s,border-color .2s}
+.quick-toggle:hover{background:rgba(0,212,255,.14);border-color:rgba(0,212,255,.6)}
+.quick-toggle .qt-off{display:none}
+html.quick .quick-toggle .qt-on{display:none}
+html.quick .quick-toggle .qt-off{display:inline}
+/* phones and tablets are already the plain page */
+@media(max-width:1023px),(pointer:coarse){.quick-toggle{display:none}}
+
+/* ── Quick view: the plain, fast page ──
+   No chapter flights, no scroll-driven drift, no decorative motion; every
+   reveal and transition finishes at once (the same switch-off pattern as
+   prefers-reduced-motion). The 3D, wallpaper and smooth scroll never start
+   (their scripts check html.quick). */
+html.quick .tunnel{display:none}
+html.quick *,html.quick *::before,html.quick *::after{
+  animation-duration:.001ms!important;animation-delay:0s!important;animation-iteration-count:1!important;
+  transition-duration:.001ms!important;transition-delay:0s!important;scroll-behavior:auto!important}
+html.quick :is(.sec > *,.testi-inner > *){animation:none!important;opacity:1;translate:none;scale:none;clip-path:none}
+
+/* ── Action dock: Work · Reviews · Book a call ── */
+.world-dock{position:fixed;left:50%;bottom:18px;z-index:150;display:flex;gap:4px;padding:5px;
+  border-radius:99px;background:rgba(6,14,28,.78);border:1px solid rgba(0,212,255,.22);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+  box-shadow:0 10px 30px rgba(0,0,0,.45);
+  transform:translate(-50%,140%);opacity:0;pointer-events:none;
+  transition:transform .45s cubic-bezier(.2,.8,.2,1),opacity .3s}
+.world-dock.on{transform:translate(-50%,0);opacity:1;pointer-events:auto}
+.world-dock a{padding:.55rem 1rem;border-radius:99px;font:600 .74rem/1 var(--font-body,inherit);
+  letter-spacing:.06em;text-transform:uppercase;color:#cfe9ff;text-decoration:none;transition:background .2s,color .2s}
+.world-dock a:hover{background:rgba(0,212,255,.12);color:#fff}
+.world-dock .wd-cta{background:linear-gradient(90deg,#0e7aff,var(--cyan));color:#04101f}
+.world-dock .wd-cta:hover{background:linear-gradient(90deg,#3a95ff,#5be3ff);color:#04101f}
+[data-theme="light"] .world-dock{background:rgba(255,255,255,.85);border-color:rgba(0,100,180,.2)}
+[data-theme="light"] .world-dock a{color:#14304f}
+/* the dock replaces the corner "Available · Let's talk" pill on desktop */
+@media(min-width:1024px){html.has-dock #avail-pill{display:none}}
+
+/* ── Chapter menu on the side dots ── */
+#side-dots.chapter-menu .sdot::after{content:none}
+.sd-tip{position:absolute;right:calc(100% + 14px);top:50%;transform:translate(6px,-50%);
+  display:block;white-space:nowrap;pointer-events:none;
+  opacity:0;transition:opacity .2s,transform .25s}
+.sd-tip b{font:600 .66rem/1.2 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.12em;text-transform:uppercase;color:#e8f7ff;
+  padding:.2rem .5rem;border-radius:4px;background:rgba(6,14,28,.88);border:1px solid rgba(0,212,255,.2)}
+.sd-tip em{display:none}
+/* the still sits to the left of the label list, so the list stays readable */
+.sd-tip img{display:none;position:absolute;right:calc(100% + 10px);top:50%;transform:translateY(-50%);
+  width:170px;height:auto;border-radius:8px;border:1px solid rgba(0,212,255,.3);box-shadow:0 10px 26px rgba(0,0,0,.5)}
+/* hovering any dot lists every chapter; the hovered one shows its still */
+#side-dots:has(.sdot:hover) .sd-tip{opacity:1;transform:translate(0,-50%)}
+.sdot:hover .sd-tip{z-index:2}
+.sdot:hover .sd-tip img{display:block}
+.sdot:hover .sd-tip b{color:#04101f;background:var(--cyan);border-color:var(--cyan)}
+.sdot.active .sd-tip{scale:.75;transform-origin:right center}
+.sdot.active .sd-tip b{border-color:rgba(0,212,255,.6)}
+
+/* ── Desk as menu: the 3D tip follows the pointer on the whole page ── */
+.hero-3d-tip.world-tip{position:fixed;z-index:160}
+html.world-hot,html.world-hot body{cursor:url('cursors/pointer.svg') 5 3,pointer}
+
+/* ── Project dive: the page steps aside while the camera flies into
+   the laptop, then the project details open over it ── */
+html.world-dive main{opacity:0;transition:opacity .35s ease}
+html.world-dive .world-scrim{opacity:0!important}
+html.world-dive .world-3d{filter:none!important}
+html.world-dive :is(.world-hud,.world-dock,#side-dots){opacity:0;transition:opacity .3s}
+
+/* ── Manila phase in the HUD ── */
+.world-hud .wh-ph{font-style:normal;color:#ffd38a}
+html[data-manila="day"] .world-hud .wh-ph{color:#ffe7a3}
+html[data-manila="night"] .world-hud .wh-ph{color:#9fd8ff}

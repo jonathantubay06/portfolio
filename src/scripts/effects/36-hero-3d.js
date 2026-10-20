@@ -129,6 +129,7 @@
 
   function boot() {
     if (!ok.matches) { booted = false; return; }       /* left the gate while waiting: re-arms on change */
+    if (document.documentElement.classList.contains('quick')) { skip('quick view'); return; }
     if (!window.__gpu3d()) { skip('software or slow WebGL'); return; }
     Promise.all([
       import(V + '/+esm'),
@@ -154,6 +155,11 @@
        hero canvas as before */
     var WORLD = !!document.querySelector('.tunnel') && document.documentElement.getAttribute('data-theme') !== 'light';
     if (WORLD) {
+      /* the desk is the page's menu: props fly the camera to their chapter */
+      OWN.rack = { label: 'Experience', href: '#experience', hl: true };
+      OWN.holo_order = { label: 'Client reviews', href: '#testimonials' };
+      OWN.cal = { label: 'Book a call', href: '#contact', hl: true };
+      OWN.cube_cart = { label: 'Selected work', href: '#work' };
       canvas.className = 'world-3d';
       document.body.insertBefore(canvas, document.body.firstChild);
       var scrim = document.createElement('div'); scrim.className = 'world-scrim';
@@ -285,7 +291,41 @@
       /* a soft key light that follows the camera's subject */
       focus = new THREE.PointLight(0x66e0ff, 0, 2.6); world.add(focus);
     }
+    /* Manila day and night: the world's light follows the real time in
+       Manila (?hour=13 in the URL previews any hour). Checked once a
+       minute; day 0..1, dusk 0..1 around sunrise and sunset. */
+    var dayK = 0, lightAt = -1, NIGHT_FOG = new THREE.Color(0x0a1628), DAY_FOG = new THREE.Color(0x1a3c66);
+    var HEMI0 = hemi.color.clone(), HEMI_DAY = new THREE.Color(0xd8ecff);
+    function manilaHour() {
+      var q = /[?&]hour=(\d+(?:\.\d+)?)/.exec(location.search);
+      if (q) return +q[1] % 24;
+      try {
+        var p = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Manila', hour: 'numeric', minute: 'numeric', hour12: false }).formatToParts(new Date());
+        var h = 0, m = 0;
+        p.forEach(function (x) { if (x.type === 'hour') h = +x.value; if (x.type === 'minute') m = +x.value; });
+        return (h % 24) + m / 60;
+      } catch (e) { return 21; }
+    }
+    function sstep(a, b, x) { x = Math.min(1, Math.max(0, (x - a) / (b - a))); return x * x * (3 - 2 * x); }
+    function dayLight(t) {
+      if (t - lightAt < 60 && lightAt >= 0) return;
+      lightAt = t;
+      var h = manilaHour();
+      var day = sstep(5.5, 8, h) * (1 - sstep(17, 19.5, h));
+      var dusk = Math.max(1 - Math.abs(h - 18.2) / 1.3, 1 - Math.abs(h - 6.2) / 1.1, 0);
+      renderer.toneMappingExposure = 0.75 + 0.4 * day;
+      /* intensities are set per frame with the mood (below); this only
+         stores how much daylight to add */
+      dayK = day; hemi.color.copy(HEMI0).lerp(HEMI_DAY, day);
+      key.color.setHex(day > 0.5 ? 0xfff1d6 : 0xcfe6ff);
+      warm.intensity = 4 + 4 * dusk;
+      if (world.fog) world.fog.color.copy(NIGHT_FOG).lerp(DAY_FOG, day);
+      var phase = day > 0.6 ? 'Day' : dusk > 0.3 ? (h < 12 ? 'Dawn' : 'Dusk') : 'Night';
+      document.documentElement.setAttribute('data-manila', phase.toLowerCase());
+      window.__manilaPhase = phase;
+    }
     function worldTick(t, s, sf) {
+      dayLight(t);
       if (shell) { shell.rotation.y = t * 0.018; shell.rotation.x = Math.sin(t * 0.05) * 0.08; }
       if (shell2) shell2.rotation.y = -t * 0.03;
       /* in the hero the live wallpaper's plasma is the backdrop; the wire
@@ -947,10 +987,34 @@
       }
       return null;
     }
-    stage.addEventListener('pointermove', function (e) {
+    /* WORLD: the tip follows the pointer anywhere on the page, and the
+       world answers hover and clicks wherever nothing on the page sits on
+       top of it (empty space in the hero, the chapter flights) */
+    if (WORLD) { tip.classList.add('world-tip'); beep.classList.add('world-tip'); document.body.appendChild(tip); document.body.appendChild(beep); }
+    function openSpace(e) {
+      var el = e.target;
+      if (stage.contains(el)) return false;
+      if ((window.__worldDim || 0) > 0.35) return false;
+      return el === document.documentElement || el === document.body || el.tagName === 'MAIN' ||
+        !!(el.closest && el.closest('.tunnel')) || el.matches('.sec, .hero, .hero-inner, .testi-bg, .world-fx');
+    }
+    if (WORLD) {
+      document.addEventListener('pointermove', function (e) {
+        if (stage.contains(e.target)) return;
+        if (!openSpace(e)) { if (hover) { tint(hover, 0); hover = null; } tip.classList.remove('on'); document.documentElement.classList.remove('world-hot'); return; }
+        pointerOver(e);
+      }, { passive: true });
+      document.addEventListener('click', function (e) {
+        if (!openSpace(e)) return;
+        var c = owner(e);
+        if (c) pickClick(c);
+      });
+    }
+    stage.addEventListener('pointermove', pointerOver, { passive: true });
+    function pointerOver(e) {
       /* the canvas overhangs the scene box (56-hero-motion.css), so
          pick against the canvas and place the tip against the scene */
-      var cr = canvas.getBoundingClientRect(), r = scene.getBoundingClientRect();
+      var cr = canvas.getBoundingClientRect(), r = WORLD ? { left: 0, top: 0 } : scene.getBoundingClientRect();
       tx = ((e.clientX - cr.left) / cr.width - 0.5) * 2;
       ty = ((e.clientY - cr.top) / cr.height - 0.5) * 2;
       tip.style.left = (e.clientX - r.left) + 'px'; tip.style.top = (e.clientY - r.top) + 'px';
@@ -963,9 +1027,10 @@
       hover = c;
       var go = c && (c.userData.own.href || c.userData.own.act || c.userData.own.modal);
       stage.style.cursor = go ? 'pointer' : '';
+      if (WORLD) document.documentElement.classList.toggle('world-hot', !!go);
       if (c) { tip.textContent = c.userData.own.label + (c.userData.own.href || c.userData.own.modal ? ' →' : ''); tip.classList.add('on'); }
       else tip.classList.remove('on');
-    }, { passive: true });
+    }
     stage.addEventListener('pointerleave', function () { tx = ty = 0; tint(hover, 0); hover = null; tip.classList.remove('on'); stage.style.cursor = ''; });
     /* hover tint for clickable props (own.hl): a cool emissive wash on
        their own (cloned) materials. Live-screen materials are skipped,
@@ -993,14 +1058,17 @@
       if (zoomT) { zoomOut(); return; }
       hover = owner(e);
       if (!hover) return;
-      var own = hover.userData.own;
+      pickClick(hover);
+    });
+    function pickClick(o) {
+      var own = o.userData.own;
       if (own.act === 'gear') { gearBoost = 14; if (sparks) sparks.fire(); return; }
       if (own.act === 'laptop') { zoomIn(); return; }
       if (own.modal) { var mb = document.querySelector('.btn-modal-open[data-modal="' + own.modal + '"]'); if (mb) mb.click(); return; }
       if (own.href && own.href.charAt(0) !== '#') { location.href = own.href; return; }
       var el = own.href && document.querySelector(own.href);
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
+    }
     /* the robot is small and moving, so a double-click near it counts too */
     stage.addEventListener('dblclick', function (e) {
       if (!bot) return;
@@ -1018,8 +1086,26 @@
     function zoomOut() { if (!zoomT) return; zoomT = 0; stage.style.cursor = ''; }
     addEventListener('keydown', function (e) { if (e.key === 'Escape') zoomOut(); });
     stage.addEventListener('wheel', zoomOut, { passive: true });
-    document.addEventListener('click', function (e) { if (!stage.contains(e.target)) zoomOut(); });
-    addEventListener('scroll', function () { if (zoomT && Math.abs(scrollY - zoomSy) > 40) zoomOut(); }, { passive: true });
+    document.addEventListener('click', function (e) { if (!stage.contains(e.target) && !diving) zoomOut(); });
+    addEventListener('scroll', function () { if (zoomT && !diving && Math.abs(scrollY - zoomSy) > 40) zoomOut(); }, { passive: true });
+    /* WORLD: opening a project flies the camera into the laptop with that
+       project on its screen (41-world-extras.js drives it; the modal opens
+       over the dive and the laptop keeps the shot until it closes) */
+    var diving = false;
+    if (WORLD) {
+      window.__worldDive = function (src) {
+        diving = true;
+        var img = new Image(); img.decoding = 'async';
+        img.onload = function () { if (diving && screens) screens.photo(img); };
+        img.src = src;
+        zoomT = 1; zoomSy = scrollY; hover = null; tip.classList.remove('on');
+      };
+      window.__worldDiveEnd = function () {
+        if (!diving) return;
+        diving = false; zoomT = 0;
+        if (screens) screens.photo(null);
+      };
+    }
 
     /* only render while the hero is visible and the tab is in front */
     var visible = true, raf = 0, clock = new THREE.Clock(), paused = false, dead = false, lost = false;
@@ -1185,7 +1271,7 @@
       }
       cyan.intensity = 6 + Math.sin(t * 2) * 2;
       lamp.intensity = (3 + Math.sin(t * 1.7) * 0.05 + Math.sin(t * 0.63) * 0.04) * (1.2 - mood * 0.5);
-      key.intensity = 1.2 + mood * 0.35; hemi.intensity = 0.35 + mood * 0.15;
+      key.intensity = 1.2 + mood * 0.35 + dayK * 1.6; hemi.intensity = 0.35 + mood * 0.15 + dayK * 1.1;
       bloom.strength = 0.2 - mood * 0.06;
       /* face-on, the white store page would bloom; ease it down a little */
       if (screens) screens.glow(Math.min(0.85, (1.08 - mood * 0.22) * (1 - z * 0.3)));
@@ -1487,7 +1573,10 @@
         rr(g, 180, 180, 150, 64, 8, '#1e2532');
         K.tex.needsUpdate = true;
       }
-      if (L && sale0 >= 0) { sale(L.g, t - sale0); L.tex.needsUpdate = true; }
+      if (L && photo) {
+        if (!photoDrawn) { L.g.fillStyle = '#fff'; L.g.fillRect(0, 0, 640, 400); L.g.drawImage(photo, 0, 0, 640, 400); L.tex.needsUpdate = true; photoDrawn = true; }
+      }
+      else if (L && sale0 >= 0) { sale(L.g, t - sale0); L.tex.needsUpdate = true; }
       else if (L) {
         var sc = ease((lt - 0.5) / 2.6) * 700 - ease((lt - 5) / 1.8) * 700;
         pageWin(L.g, sc, 400);
@@ -1570,7 +1659,7 @@
       }
     };
     /* the sale, s seconds in. Card 2 of the first row is the product. */
-    var sale0 = -1;
+    var sale0 = -1, photo = null, photoDrawn = false;
     function arrow(g, x, y, down) {
       g.save(); g.translate(x, y); if (down) g.scale(0.88, 0.88);
       g.fillStyle = '#fff'; g.strokeStyle = '#142032'; g.lineWidth = 2.5; g.lineJoin = 'round';
@@ -1631,6 +1720,7 @@
       }
     }
     draw.sale = function (t0) { sale0 = t0; };
+    draw.photo = function (img) { photo = img; photoDrawn = false; };
     draw.glow = function (k) { for (var i = 0; i < mats.length; i++) mats[i].emissiveIntensity = mats[i].userData.e0 * k; };
     return draw;
   }

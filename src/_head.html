@@ -18,7 +18,12 @@
   /* where the live 3D world will boot (dark theme, desktop), hold back the
      hero's still poster so the first paint is not a picture that then
      swaps for the 3D; 27-world-hud.js lifts this if the 3D is skipped */
-  if (t !== 'light' && matchMedia('(min-width:1024px) and (pointer:fine) and (prefers-reduced-motion:no-preference)').matches)
+  /* Quick view (41-world-extras.js): a saved choice for the plain, fast
+     page with no 3D or motion */
+  var quick = false;
+  try { quick = localStorage.getItem('jt-quick') === '1'; } catch (e) {}
+  if (quick) document.documentElement.classList.add('quick');
+  if (!quick && t !== 'light' && matchMedia('(min-width:1024px) and (pointer:fine) and (prefers-reduced-motion:no-preference)').matches)
     document.documentElement.classList.add('world-pending');
 })();
 </script>

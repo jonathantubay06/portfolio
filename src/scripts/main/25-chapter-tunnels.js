@@ -51,6 +51,7 @@
     root.style.setProperty('--world-travel', travel.toFixed(3));
     root.style.setProperty('--world-hero-out', heroOut.toFixed(3));
     window.__worldHeroOut = heroOut;
+    window.__worldDim = heroOut * (1 - travel);
     root.classList.toggle('world-past-hero', scrollY > vh * 0.12);
   }
   addEventListener('scroll', queue, { passive: true });

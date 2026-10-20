@@ -16,7 +16,7 @@
   /* no 3D after all (software WebGL, CDN blocked, lost context): bring
      the hero's still poster back */
   addEventListener('hero3d:skip', function () { root.classList.remove('world-pending'); });
-  if (!gate.matches || !document.querySelector('.tunnel')) { if (loader) loader.remove(); root.classList.remove('world-pending'); return; }
+  if (!gate.matches || root.classList.contains('quick') || !document.querySelector('.tunnel')) { if (loader) loader.remove(); root.classList.remove('world-pending'); return; }
 
   /* ── intro counter ── */
   if (loader && !root.classList.contains('intro-seen')) {
@@ -55,9 +55,10 @@
   var hud = document.createElement('div');
   hud.className = 'world-hud';
   hud.setAttribute('aria-hidden', 'true');
-  hud.innerHTML = '<span class="wh-ch"></span><span class="wh-meta">14.60N 120.98E · <b class="wh-pc">000</b>%</span>';
+  hud.innerHTML = '<span class="wh-ch"></span><span class="wh-meta">Manila <i class="wh-ph"></i> · <b class="wh-pc">000</b>%</span>';
   document.body.appendChild(hud);
-  var ch = hud.querySelector('.wh-ch'), pc = hud.querySelector('.wh-pc');
+  var ch = hud.querySelector('.wh-ch'), pc = hud.querySelector('.wh-pc'), ph = hud.querySelector('.wh-ph');
+  setInterval(queue, 30000);
   var lastCh = -1, lastPc = -1, raf = 0;
   function pad(n) { return (n < 10 ? '0' : '') + n; }
   function update() {
@@ -72,6 +73,7 @@
     var max = root.scrollHeight - innerHeight;
     var p = max > 0 ? Math.round(scrollY / max * 100) : 0;
     if (p !== lastPc) { lastPc = p; pc.textContent = (p < 10 ? '00' : p < 100 ? '0' : '') + p; }
+    if (window.__manilaPhase && ph.textContent !== window.__manilaPhase) ph.textContent = window.__manilaPhase;
   }
   function queue() { if (!raf) raf = requestAnimationFrame(update); }
   addEventListener('scroll', queue, { passive: true });

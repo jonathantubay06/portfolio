@@ -26,7 +26,7 @@
 ═══════════════════════════════════════ */
 (function () {
   var gate = matchMedia('(min-width:1024px) and (pointer:fine) and (prefers-reduced-motion:no-preference)');
-  if (!gate.matches) return;
+  if (!gate.matches || document.documentElement.classList.contains('quick')) return;
   var hero = document.querySelector('.hero'), copy = document.querySelector('.hero-copy');
   if (!hero || !copy) return;
   var root = document.documentElement;
