@@ -65,10 +65,14 @@
     .sec > *,.testi-inner > *{
       animation:flowIn linear both,flowOut linear both;
       animation-timeline:view(),view();
-      animation-range:entry 0% entry 90%,exit 35% exit 100%;
+      /* fixed-length entry (40vh of scroll), not a share of the entry range:
+         for a block taller than the screen the entry range lasts until its
+         top reaches the top, so a % range kept tall cards half-faded while
+         they were being read. No blur: it smeared big cards and cost GPU. */
+      animation-range:entry 0% entry 40vh,exit 40% exit 100%;
     }
-    @keyframes flowIn{from{opacity:0;translate:0 48px;scale:.98;filter:blur(6px)}}
-    @keyframes flowOut{to{opacity:0;translate:0 -36px;scale:.985;filter:blur(4px)}}
+    @keyframes flowIn{from{opacity:0;translate:0 48px;scale:.98}}
+    @keyframes flowOut{to{opacity:0;translate:0 -36px;scale:.985}}
     /* translate/scale, not transform: the reveal's .r.on{transform:none!important}
        and the card tilt scripts keep owning transform. The timeline replaces
        the one-shot reveal, so its transition is switched off. */
@@ -117,11 +121,31 @@ html.world-on .world-3d{opacity:1}
 .world-scrim{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:0;
   background:radial-gradient(ellipse 80% 70% at 50% 45%,rgba(8,18,36,.82),rgba(8,18,36,.93))}
 html.world-on .world-scrim{opacity:var(--world-dim,0);transition:opacity .2s linear}
-html.world-on{background:#081221}
+html.world-on:not([data-theme="light"]){background:#081221}
 /* !important: several theme and audit partials set body and hero
    backgrounds with their own !important (59-dark-lift's hero rule is
    (0,3,1), hence the repeated class); the world layer must win */
-html.world-on body,html.world-on.world-on.world-on .hero{background:transparent!important}
+html.world-on:not([data-theme="light"]) body,html.world-on.world-on.world-on:not([data-theme="light"]) .hero{background:transparent!important}
 html.world-on main::before,html.world-on main::after,html.world-on .hero::before{display:none}
+/* the tech stack band and the section backdrops painted solid navy strips
+   across the world (55-section-backdrops sets .built-wrap to var(--bg)) */
+html.world-on .built-wrap{background:none!important}
+/* the desk's Before/After switch belongs to the hero framing; once the
+   page scrolls, the hero moves up but the world stays, so it would float
+   loose over the desk (world-past-hero comes from 25-chapter-tunnels.js) */
+html.world-on .desk-ba{transition:opacity .3s}
+html.world-on.world-past-hero .desk-ba{opacity:0;pointer-events:none}
+/* chapter titles sit left, in the space the camera keeps clear (the
+   subject is framed right of centre), with a soft shade for legibility */
+html.world-on .tn-text{left:7vw;right:auto;text-align:left;max-width:44vw}
+html.world-on .tn-text::before{content:"";position:absolute;inset:-40% -30% -40% -20%;z-index:-1;
+  background:radial-gradient(closest-side,rgba(6,14,28,.7),transparent);pointer-events:none}
+/* the world is drawn for the dark page; the light theme keeps the plain
+   page (no fixed 3D layer) rather than a navy scene behind pale cards */
+html[data-theme="light"] :is(.world-3d,.world-scrim){display:none}
 /* the camera travel is the transition now; the rings would fight it */
 html.world-on .tn-rings{display:none}
+/* big cards are translucent; over the world the dimmed 3D still ghosted
+   through them (dashboard numbers behind the case studies). Frost them. */
+html.world-on:not([data-theme="light"]) main :is(.proj-feature,.proj-card,.svc-compact > *){
+  -webkit-backdrop-filter:blur(14px) saturate(.8);backdrop-filter:blur(14px) saturate(.8)}

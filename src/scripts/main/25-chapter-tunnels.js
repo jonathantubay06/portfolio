@@ -46,6 +46,7 @@
     window.__worldShot = sum;
     var heroOut = Math.min(1, Math.max(0, (scrollY - vh * 0.35) / (vh * 0.45)));
     root.style.setProperty('--world-dim', (heroOut * (1 - travel)).toFixed(3));
+    root.classList.toggle('world-past-hero', scrollY > vh * 0.12);
   }
   addEventListener('scroll', queue, { passive: true });
   addEventListener('resize', queue);

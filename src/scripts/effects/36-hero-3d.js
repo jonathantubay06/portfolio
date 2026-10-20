@@ -229,13 +229,13 @@
         return { p: p, l: c, o: o };
       }
       var hero = { p: camBase.clone(), l: target.clone(), o: 0.22 };
-      var lap = { p: new THREE.Vector3(0, 0.3, 0.95).multiplyScalar(2.3).add(zc), l: zc.clone(), o: 0.2 };
+      var lap = { p: new THREE.Vector3(0, 0.3, 0.95).multiplyScalar(3.0).add(zc), l: zc.clone(), o: 0.24 };
       shots = [
         hero,
-        at('holo_chart', 2.4, 0.25, 0.2, -0.5) || hero,
+        at('holo_chart', 3.4, 0.3, 0.24, -0.5) || hero,
         lap,
-        at('holo_order', 2.0, 0.15, 0.2, 0.4) || lap,
-        at('rack', 3.0, 0.35, 0.2, 0.3) || hero
+        at('holo_order', 3.0, 0.2, 0.24, 0.4) || lap,
+        at('rack', 3.6, 0.35, 0.24, 0.3) || hero
       ];
       /* fog: the far wire shell and particles fade into the page navy */
       world.fog = new THREE.FogExp2(0x0a1628, 0.05);
