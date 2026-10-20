@@ -9,12 +9,16 @@ Static portfolio. No framework, no runtime dependencies, no npm install.
                             inline CSS and the @font-face declarations
       _order.txt            section order for index.html
       manifest.json         concatenation order for css/js
-      sections/             16 page sections, one file each
-      styles/               22 css partials, grouped by area
-      scripts/main/         18 partials -> main.js
-      scripts/effects/      27 partials -> effects.js
+      sections/             24 page sections and chapter tunnels, one file each
+      styles/               36 css partials, grouped by area
+      scripts/main/         26 partials -> main.js
+      scripts/effects/      34 partials -> effects.js
     fonts/                  self-hosted variable woff2 (latin) + OFL texts
     img/                    source renders and their responsive variants
+                            (img/hero3d/: WebGL desk scene, room models)
+    3d/                     Blender scripts for the hero desk scene
+    docs/                   guides and audits (not deployed)
+    history/                daily work log (not deployed)
     build.js                assembles src/ into dist/
     minify.js               the whitespace/comment minifiers build.js uses
     dist/                   build output (gitignored, published by Netlify)
@@ -44,6 +48,21 @@ The build also:
   stylesheet reference it could not rewrite.
 - **generates `sitemap.xml`** from each page's canonical URL and the date
   of the last commit that touched its sources.
+
+## Desktop 3D world
+
+Desktops (min-width 1024 and a fine pointer) get the 3D world: the hero
+desk, then a gamer bedroom around it, chapter tunnels between sections, a
+HUD, Manila day/night and the dogs. `html.dk` is set before first paint in
+`src/_head.html`; desktop-only markup is `.d-only`, phone-only `.m-only`.
+Phones and tablets keep the flat layout and never load the room.
+
+Main files: `scripts/effects/36-hero-3d.js` (scene, room, props),
+`scripts/main/25-chapter-tunnels.js` (scroll progress, hero hand-over),
+`scripts/main/27-world-hud.js`, `scripts/effects/41-world-extras.js`.
+The room's models, credits and how to add one are in
+[docs/3d-room.md](docs/3d-room.md). Every CC BY model is credited in the
+footer's `d-only` line.
 
 ## Images
 
