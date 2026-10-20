@@ -433,6 +433,71 @@
       var grp = new THREE.Group(), mats = [];
       function M(o) { var m = new THREE.MeshStandardMaterial(o); m.transparent = true; mats.push(m); return m; }
       function box(w, h, d, x, y, z, m) { var b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); b.position.set(x, y, z); grp.add(b); return b; }
+      /* Sketchfab props (CC BY 4.0, credits in the footer and in
+         docs/source-art/room/CREDITS.md), cut down with glTF-Transform.
+         prop(file, size, x, y, z, ry, done): scales the model so its
+         largest side is `size` (or its height, when size is {h}), turns it,
+         and stands it with its base centred on x, y, z. Its materials join
+         the room fade; mirror-like metal is dulled because the room has no
+         environment map to reflect, so pure metal renders black. */
+      var propLoader = new GLTFLoader(); propLoader.setMeshoptDecoder(MeshoptDecoder);
+      var mixers = [], propCache = {};
+      /* shaders are compiled in the background before the room shows
+         (parallel compile where the GPU allows it). Without this the
+         first frame with the room compiled ~30 programs at once and froze
+         the page for about 3 s. Light counts are part of every program,
+         and the hero's lights switch off as it scrolls away, so this runs
+         at the moment the room is about to show, with the room's lights
+         on, and the room waits for it. Frames go through the bloom
+         composer's render target, whose variants (no tone mapping,
+         linear output) differ from the screen's, so compile against it. */
+      var ready = false, warming = false, earlyT = 0;
+      /* while the hero is up, compile as the models arrive (debounced) so
+         the gate at the reveal finds the programs already built */
+      function early() { clearTimeout(earlyT); earlyT = setTimeout(function () { if (!ready) compileThen(grp, function () { prime = 1; }); }, 400); }
+      /* the GPU driver still finishes each shader on its first real draw
+         (~0.6 s for the whole room), so once compiled the room is drawn one
+         time while still hidden: no colour, no depth, during the hero */
+      var prime = 0;
+      function compileThen(obj, done) {
+        if (!renderer.compileAsync) { done(); return; }
+        var v = obj.visible, rt = renderer.getRenderTarget();
+        obj.visible = true;
+        if (bloomOn && composer) renderer.setRenderTarget(composer.renderTarget1);
+        renderer.compileAsync(obj, cam, world).then(done, done);
+        renderer.setRenderTarget(rt); obj.visible = v;
+      }
+      function prop(file, size, x, y, z, ry, done) {
+        var p = propCache[file] || (propCache[file] = new Promise(function (res) { propLoader.load('img/hero3d/room/' + file + '.glb', res, undefined, function () { res(null); }); }));
+        p.then(function (g) {
+          if (!g) return;
+          var o = g.animations.length ? g.scene : g.scene.clone(true);
+          o.traverse(function (m) {
+            if (!m.isMesh) return;
+            var mt = m.material = m.material.clone(); mt.transparent = true;
+            if (mt.metalness > 0.4) { mt.metalness = 0.4; mt.roughness = Math.max(mt.roughness, 0.35); }
+            mats.push(mt);
+            /* upload its textures now, not on the frame the room appears */
+            for (var key in mt) if (mt[key] && mt[key].isTexture && renderer.initTexture) renderer.initTexture(mt[key]);
+          });
+          /* an animated model is measured in its pose, not its T-pose */
+          var mx = g.animations.length ? new THREE.AnimationMixer(o) : null;
+          if (mx) { mx.clipAction(g.animations[0]).play(); mx.update(0.01); mixers.push(mx); }
+          if (size.rx) o.rotation.x = size.rx;
+          var piv = new THREE.Group(), bb = new THREE.Box3(); piv.add(o); piv.rotation.y = ry || 0; piv.updateMatrixWorld(true);
+          bb.setFromObject(piv, true); var sz = bb.getSize(new THREE.Vector3());
+          var k = size.h ? size.h / sz.y : (size.s || size) / Math.max(sz.x, sz.y, sz.z);
+          piv.scale.setScalar(k); piv.updateMatrixWorld(true); bb.setFromObject(piv, true);
+          var c0 = bb.getCenter(new THREE.Vector3());
+          piv.position.set(x - c0.x, y - bb.min.y, z - c0.z);
+          grp.add(piv);
+          if (done) done(piv, o);
+          shown = -1;
+          /* a model that arrives after the room is up compiles before it shows */
+          if (ready) { piv.visible = false; compileThen(piv, function () { piv.visible = true; }); }
+          else early();
+        });
+      }
       var wallM = M({ color: 0x26365e, roughness: 0.92 }), floorM = M({ color: 0x3a2b20, roughness: 0.75 });
       var woodM = M({ color: 0x3a2a1f, roughness: 0.7 }), frameM = M({ color: 0x0f1626, roughness: 0.5, metalness: 0.3 });
       /* floor and rug */
@@ -518,7 +583,7 @@
         box(cbW - 0.08, 0.012, 0.012, cbX, by + BAY - 0.05, backZ + 0.05, stripM);              /* LED strip aimed at the panel */
         glowCard(cbW - 0.04, BAY - 0.06, cbX, by + BAY / 2, backZ + 0.026, 0, 0.55);
       }
-      var cabL = new THREE.PointLight(0xffe7c4, 0, 2.6); cabL.position.set(cbX, cbY0 + cbH - 0.3, backZ + cbD + 0.35); grp.add(cabL);
+      var cabL = new THREE.PointLight(0xffe7c4, 0, 2.6); cabL.position.set(cbX, cbY0 + cbH - 0.3, backZ + cbD + 0.35); world.add(cabL);
 
       /* ── vinyl figures ── */
       var S = 1.3;   /* chibi: big head, short body (after the chibi hero prints) */
@@ -536,6 +601,7 @@
         part(CYL(0.07, 0.075, 0.016), 0x0b0f17, x, y + 0.008 * u, z, { roughness: 0.3, metalness: 0.4 });
         part(CYL(0.0755, 0.0755, 0.003), 0x7fe3ff, x, y + 0.004 * u, z, { emissive: 0x00d4ff, emissiveIntensity: 1.2 });
         var y0 = y + 0.016 * u;
+        if (f.glb) { prop(f.glb, { h: f.h }, x, y0, z, f.ry || 0); return; }
         /* boots and legs */
         [-1, 1].forEach(function (s) {
           part(CAP(0.019, 0.03), f.boots || f.legs, x + s * 0.022 * u, y0 + 0.02 * u, z + 0.006 * u);
@@ -553,8 +619,7 @@
         });
         /* chibi head: about as tall as the whole body */
         var hY = tY + 0.118 * u;
-        var head = part(SPH(0.082, 1.06, 0.98, 1), f.head, x, hY, z, f.headMap ? { map: f.headMap, color: 0xffffff } : null);
-        head.rotation.y = -Math.PI / 2;   /* puts the texture's centre line on the face */
+        part(SPH(0.082, 1.06, 0.98, 1), f.head, x, hY, z);
         if (f.face) f.face(x, hY, z, u);
         if (f.extra) f.extra(x, y0, z, u, tY, hY);
       }
@@ -573,23 +638,9 @@
           part(SPH(0.004, 1, 1, 0.5), 0xffffff, x + s * 0.028 * u + 0.004 * u, y + 0.012 * u, z + 0.083 * u, { roughness: 0.1 });   /* catch light */
         });
       };
-      var webTex = (function () {
-        var c = document.createElement('canvas'); c.width = 512; c.height = 256;
-        var g = c.getContext('2d'); g.fillStyle = '#c8141e'; g.fillRect(0, 0, 512, 256);
-        g.strokeStyle = 'rgba(20,10,10,.85)'; g.lineWidth = 2;
-        for (var i = 0; i <= 24; i++) { g.beginPath(); g.moveTo(i * 512 / 24, 0); g.lineTo(i * 512 / 24, 256); g.stroke(); }
-        for (var j = 1; j < 9; j++) { g.beginPath(); for (var k = 0; k <= 24; k++) { var xx = k * 512 / 24, yy = j * 256 / 9 + (k % 2 ? 5 : -5); k ? g.lineTo(xx, yy) : g.moveTo(xx, yy); } g.stroke(); }
-        var t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t;
-      })();
       var FIGS = [
-        { body: 0xb3121b, legs: 0xb3121b, arms: 0xb3121b, hands: 0xd4a017, boots: 0xd4a017, head: 0xb3121b, belt: 0xd4a017,
-          face: function (x, y, z, u) {   /* armour: gold faceplate, glowing slits */
-            part(SPH(0.065, 1, 1.05, 0.5), 0xd4a017, x, y - 0.008 * u, z + 0.058 * u, { metalness: 0.75, roughness: 0.28 });
-            [-1, 1].forEach(function (s) { part(RBX(0.022, 0.006, 0.006), 0xbff3ff, x + s * 0.024 * u, y + 0.012 * u, z + 0.091 * u, { emissive: 0x7fe3ff, emissiveIntensity: 2.4 }); });
-          },
-          extra: function (x, y0, z, u, tY) { part(CYL(0.012, 0.012, 0.006).rotateX(Math.PI / 2), 0xbff3ff, x, tY + 0.012 * u, z + 0.034 * u, { emissive: 0x7fe3ff, emissiveIntensity: 2.6 }); } },
-        { body: 0xc8141e, legs: 0x1d3fb8, arms: 0x1d3fb8, hands: 0xc8141e, boots: 0xc8141e, head: 0xc8141e, headMap: webTex, face: LENS(0xf8fafc, 0x111111),
-          extra: function (x, y0, z, u, tY) { part(SPH(0.012, 1.4, 1, 0.4), 0x111111, x, tY + 0.012 * u, z + 0.033 * u); } },
+        { glb: 'ironman', h: 0.52, ry: Math.PI },   /* "Iron Man Mark 6" by Mittergen */
+        { glb: 'chibi', h: 0.46 },   /* "Chibi Spider-Man Animated" by Ysn.Aitaddi */
         { body: 0x1e3a8a, legs: 0x1e3a8a, arms: 0x1e3a8a, hands: 0x9b1c1c, boots: 0x9b1c1c, head: 0x1e3a8a, belt: 0x6b3f1d,
           face: function (x, y, z, u) {
             part(SPH(0.056, 1.05, 0.6, 0.6), 0xf1c27d, x, y - 0.037 * u, z + 0.05 * u);   /* chin below the helmet */
@@ -694,21 +745,19 @@
         glowCard(cw - 0.04, ch - 0.04, leftX + 0.03, y + ch / 2, zc, Math.PI / 2, 0.2);
         shoeSlots.push({ ph: sneaker(xc + 0.01, y + 0.012, zc, -Math.PI / 2 + 0.12, CW[k], 1.1), x: xc, y: y + 0.006, z: zc, w: cd - 0.04, h: ch - 0.06, d: cw - 0.06, hue: SHOE_HUE[i], ry: Math.PI / 2 });
       });
-      var swL = new THREE.PointLight(0xe8f1ff, 0, 3); swL.position.set(leftX + 1.1, swY0 + rowH, (swZ0 + swZ1) / 2); grp.add(swL);
+      var swL = new THREE.PointLight(0xe8f1ff, 0, 3); swL.position.set(leftX + 1.1, swY0 + rowH, (swZ0 + swZ1) / 2); world.add(swL);
 
       /* ── shoe boxes by the desk, the top one open with a pair inside ── */
-      var bxX = B.max.x + 0.8, bxZ = backZ + 0.7, boxM = M({ color: 0xf26b1d, roughness: 0.8 }), lidM = M({ color: 0x111111, roughness: 0.75 }), labM = M({ color: 0xf8fafc, roughness: 0.9 });
-      for (var k = 0; k < 4; k++) {
-        var ox = bxX + (k % 2) * 0.03, oy = floorY + k * 0.215, oz = bxZ + k * 0.02;
-        box(0.64, 0.2, 0.4, ox, oy + 0.1, oz, boxM);
-        if (k < 3) box(0.66, 0.05, 0.42, ox, oy + 0.205, oz, lidM);
-        box(0.16, 0.07, 0.004, ox + 0.2, oy + 0.1, oz + 0.203, labM);   /* size label */
-      }
-      var lid = box(0.66, 0.05, 0.42, bxX + 0.03, floorY + 0.64 + 0.24, bxZ + 0.3, lidM); lid.rotation.x = -1.1;
+      /* "Nike Shoe Box" by samplemem: three closed, the top one open with
+         its lid on the floor beside the stack */
+      var bxX = B.max.x + 0.8, bxZ = backZ + 0.7, BXH = 0.235;
+      function only(part) { return function (piv, o) { o.traverse(function (m) { if (m.isMesh && m.name.indexOf(part) < 0) m.visible = false; }); }; }
+      for (var k = 0; k < 4; k++) prop('shoebox', 0.64, bxX + (k % 2) * 0.03, floorY + k * BXH, bxZ + k * 0.02, (k % 2) * 0.04, k < 3 ? null : only('BOTTOM'));
+      prop('shoebox', 0.64, bxX + 0.75, floorY, bxZ + 0.35, 0.5, only('TOP'));
       var boxPair = new THREE.Group();
       boxPair.add(sneaker(-0.12, 0, 0.04, 0.1, CW.chicago, 0.95), sneaker(0.13, 0, 0.08, -0.15, CW.chicago, 0.95));
-      grp.add(boxPair); boxPair.position.set(bxX, floorY + 0.85, bxZ);
-      shoeSlots.push({ ph: boxPair, x: bxX, y: floorY + 0.85, z: bxZ + 0.04, w: 0.6, h: 0.32, d: 0.5, hue: SHOE_HUE[0], ry: 0.15 });
+      grp.add(boxPair); boxPair.position.set(bxX, floorY + 3 * BXH + 0.03, bxZ);
+      shoeSlots.push({ ph: boxPair, x: bxX + 0.03, y: floorY + 3 * BXH + 0.03, z: bxZ + 0.06, w: 0.56, h: 0.3, d: 0.36, hue: SHOE_HUE[0], ry: 0.15 });
       var HUE_GLSL = 'vec3 hueRot(vec3 c,float a,float s){vec3 y=mat3(.299,.596,.211,.587,-.274,-.523,.114,-.322,.312)*c;' +
         'float h=atan(y.z,y.y)+a,k=length(y.yz)*s;y.y=k*cos(h);y.z=k*sin(h);return mat3(1.,1.,1.,.956,-.272,-1.106,.621,-.647,1.703)*y;}\n';
       var shoeLoader = new GLTFLoader(); shoeLoader.setMeshoptDecoder(MeshoptDecoder);
@@ -735,7 +784,7 @@
           piv.position.set(sl.x - c0.x, sl.y - bb.min.y, sl.z - c0.z);
           grp.add(piv); sl.ph.visible = false;
         });
-        shown = -1;   /* re-apply the current fade to the new materials */
+        shown = -1; if (!ready) early();   /* re-apply the current fade to the new materials */
       });
       /* the bed along the left wall, between it and the desk */
       var bz = backZ + 2.1, bx = leftX + 0.95;
@@ -744,6 +793,32 @@
       box(1.62, 0.12, 1.9, bx, floorY + 0.56, bz + 0.55, M({ color: 0x0f4c6e, roughness: 0.95 }));
       box(1.1, 0.16, 0.45, bx, floorY + 0.6, bz - 1.2, M({ color: 0xf1f5f9, roughness: 1 }));
       box(1.7, 1.0, 0.1, bx, floorY + 0.5, bz - 1.55, woodM);
+      /* gamer corner: the desk gets an AULA F75 and a gaming chair, the bed
+         an iPad with its pencil and a SNES pad, a monstera fills the gap
+         between bed and desk, a film camera lies by the pillow and a neon
+         sign glows on the wall under the cabinet */
+      var topY = B.max.y, bedTop = floorY + 0.62;
+      prop('keyboard', 0.62, B.min.x + 0.95, topY, B.max.z - 0.32, 0.12);
+      prop('chair', { h: 1.5 }, B.min.x + 0.55, floorY, B.max.z + 0.05, Math.PI + 0.6);
+      /* the iPad model has no textures: a space-grey body plus a lit screen */
+      var padScr = (function () {
+        var c = document.createElement('canvas'); c.width = 128; c.height = 92;
+        var g = c.getContext('2d'), gr = g.createLinearGradient(0, 0, 128, 92);
+        gr.addColorStop(0, '#1e1b4b'); gr.addColorStop(0.55, '#0e7490'); gr.addColorStop(1, '#f59e0b');
+        g.fillStyle = gr; g.fillRect(0, 0, 128, 92);
+        var t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+      })();
+      prop('ipad', 0.5, bx + 0.15, bedTop, bz + 0.2, 0.35, function (piv, o) {
+        o.traverse(function (m) { if (m.isMesh) m.material.color.setHex(0x2b2f36); });
+        var sm = new THREE.MeshBasicMaterial({ map: padScr, transparent: true, toneMapped: false }); mats.push(sm);
+        var scr = new THREE.Mesh(new THREE.PlaneGeometry(0.44, 0.3), sm); scr.rotation.x = -Math.PI / 2;
+        var hold = new THREE.Group(); hold.add(scr); hold.rotation.y = 0.35; hold.position.set(bx + 0.15, bedTop + 0.013, bz + 0.2); grp.add(hold);
+      });
+      prop('pencil', 0.32, bx + 0.5, bedTop, bz + 0.25, -0.2);
+      prop('snes', 0.5, bx - 0.3, bedTop, bz + 0.85, -0.5);
+      prop('monstera', { h: 2.0 }, B.min.x - 0.5, floorY, backZ + 0.55, 0.4);
+      prop('camera', 0.3, bx - 0.35, bedTop, bz - 0.55, 0.6);
+      prop('neon', { h: 0.95 }, cbX - cbW * 0.22, deskY - 0.3, backZ + 0.12, 0);
       /* outside: the city below the window and a sky that follows Manila */
       var city = skyline(new THREE.Vector3(cx, floorY, backZ - 18), 0, 0, 0, 0, 0, 0, 0.32, {
         x0: cx - 30, x1: cx + 30, z0: backZ - 4, z1: backZ - 32, base: floorY - 12, h0: 7, h1: 17, count: 230 });
@@ -762,11 +837,14 @@
       sky.position.set(cx, floorY + 6, backZ - 34); sky.renderOrder = -3; grp.add(sky);
       /* room lights: a warm ceiling lamp (stronger at night) and cool
          light spilling in from the window; both fade in with the room */
-      var lampL = new THREE.PointLight(0xffc98a, 0, 13); lampL.position.set(cx - 1.2, floorY + H - 0.7, backZ + 3.2); grp.add(lampL);
-      var winL = new THREE.PointLight(0x8fb8ff, 0, 11); winL.position.set(cx, (wy0 + wy1) / 2, backZ + 1.2); grp.add(winL);
+      /* the room's lights live in the world, not in the room group, and
+         sit at 0 while it is hidden: hiding them changed the light count,
+         which is part of every shader, so each reveal recompiled them all */
+      var lampL = new THREE.PointLight(0xffc98a, 0, 13); lampL.position.set(cx - 1.2, floorY + H - 0.7, backZ + 3.2); world.add(lampL);
+      var winL = new THREE.PointLight(0x8fb8ff, 0, 11); winL.position.set(cx, (wy0 + wy1) / 2, backZ + 1.2); world.add(winL);
       var dayNow = 0;
       world.add(grp);
-      var shown = -1;
+      var shown = -1, mixT = 0;
       return {
         tick: function () {
           /* the room fades in as the hero scrolls away; hidden in the hero */
@@ -774,6 +852,18 @@
              without it the walls went see-through and the bed showed
              through the desk (an x-ray look, not a fade) */
           var h = Math.min(1, (window.__worldHeroOut || 0) / 0.7), a = h * h * (3 - 2 * h);
+          if (prime === 1 && a <= 0.01) {
+            prime = 2; grp.visible = true;
+            for (var q = 0; q < mats.length; q++) { mats[q].colorWrite = false; mats[q].depthWrite = false; }
+            return;
+          }
+          if (prime === 2) { prime = 3; for (var q2 = 0; q2 < mats.length; q2++) mats[q2].colorWrite = true; shown = -1; }
+          var now = performance.now(), dt = Math.min(0.1, (now - (mixT || now)) / 1000); mixT = now;
+          if (a > 0.01 && !ready) {
+            if (!warming) { warming = true; compileThen(grp, function () { ready = true; shown = -1; }); }
+            a = 0;
+          }
+          if (a > 0.01) for (var j = 0; j < mixers.length; j++) mixers[j].update(dt);
           if (Math.abs(a - shown) < 0.01) return;
           shown = a;
           grp.visible = city.mesh.visible = a > 0.01;
