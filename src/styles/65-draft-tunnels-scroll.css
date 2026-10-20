@@ -49,11 +49,20 @@
 }
 .tn-text span{display:block;margin-bottom:.6rem;font-size:.28em;letter-spacing:.3em;color:var(--cyan)}
 
-/* phones, small tablets, reduced motion: no tunnel. The still frame was
-   an empty glowing box half a screen tall, and each section already opens
-   with its own "Chapter 0x" label, so the chapters still read in order. */
+.tn-still{display:none}
+/* phones, small tablets, reduced motion: no live 3D, so each chapter opens
+   with a still of the same desk from that chapter's camera angle (rendered
+   from the 3D world, 12-20 KB each, lazy) and its title over it */
 @media(max-width:900px),(prefers-reduced-motion:reduce){
-  .tunnel{display:none}
+  .tunnel{height:auto;margin:2.5rem auto 0;padding:0 16px;max-width:720px}
+  .tn-pin{position:relative;height:auto;display:block;opacity:1;perspective:none;overflow:hidden;
+    border-radius:14px;border:1px solid rgba(0,212,255,.2);background:#081221}
+  .tn-pin::after{content:"";position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(180deg,transparent 45%,rgba(6,14,28,.9))}
+  .tn-rings{display:none}
+  .tn-still{display:block;width:100%;height:auto;aspect-ratio:16/10;object-fit:cover}
+  .tn-text{opacity:1;position:absolute;left:18px;right:18px;top:auto;bottom:14px;transform:none;
+    text-align:left;font-size:clamp(1.4rem,7vw,2.2rem)}
 }
 
 /* ── content flow: every block in a chapter drifts up and in as it enters
@@ -77,6 +86,17 @@
        and the card tilt scripts keep owning transform. The timeline replaces
        the one-shot reveal, so its transition is switched off. */
     .sec > .r,.testi-inner > .r{transition:none}
+    /* headings rise out of a mask line (igloo's text reveal): the clip
+       opens upward while the heading lifts into place, then it reads as
+       plain text; the generous negative insets keep glows and descenders */
+    .sec > h2,.testi-inner > h2{
+      animation:headIn linear both,flowOut linear both;
+      animation-timeline:view(),view();
+      animation-range:entry 0% entry 35vh,exit 40% exit 100%;
+    }
+    @keyframes headIn{
+      from{clip-path:inset(100% -10% -40% -10%);translate:0 .55em;opacity:.2}
+      to{clip-path:inset(-40% -10% -40% -10%);translate:0 0;opacity:1}}
   }
 }
 

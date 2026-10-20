@@ -137,12 +137,13 @@
       import(V + '/examples/jsm/postprocessing/EffectComposer.js/+esm'),
       import(V + '/examples/jsm/postprocessing/RenderPass.js/+esm'),
       import(V + '/examples/jsm/postprocessing/UnrealBloomPass.js/+esm'),
-      import(V + '/examples/jsm/postprocessing/OutputPass.js/+esm')
-    ]).then(function (m) { start(m[0], m[1].GLTFLoader, m[2].MeshoptDecoder, m[3].EffectComposer, m[4].RenderPass, m[5].UnrealBloomPass, m[6].OutputPass); })
+      import(V + '/examples/jsm/postprocessing/OutputPass.js/+esm'),
+      import(V + '/examples/jsm/postprocessing/ShaderPass.js/+esm')
+    ]).then(function (m) { start(m[0], m[1].GLTFLoader, m[2].MeshoptDecoder, m[3].EffectComposer, m[4].RenderPass, m[5].UnrealBloomPass, m[6].OutputPass, m[7].ShaderPass); })
       .catch(function () { skip('three.js did not load (offline or blocked CDN)'); });
   }
 
-  function start(THREE, GLTFLoader, MeshoptDecoder, EffectComposer, RenderPass, UnrealBloomPass, OutputPass) {
+  function start(THREE, GLTFLoader, MeshoptDecoder, EffectComposer, RenderPass, UnrealBloomPass, OutputPass, ShaderPass) {
     var canvas = document.createElement('canvas');
     /* WORLD (draft 2026-10-20, igloo.inc idea): when the page has chapter
        tunnels, the desk is not a hero picture but the page's fixed world.
@@ -194,6 +195,19 @@
     composer.addPass(new RenderPass(world, cam));
     var bloom = new UnrealBloomPass(new THREE.Vector2(512, 512), 0.22, 0.4, 0.9);
     composer.addPass(bloom);
+    /* WORLD: a short radial colour split at the start of each camera
+       flight (igloo's scene-change glitch). Off, so free, the rest of
+       the time: the pass only runs while its amount is above zero. */
+    var split = null;
+    if (WORLD && ShaderPass) {
+      split = new ShaderPass({
+        uniforms: { tDiffuse: { value: null }, amount: { value: 0 } },
+        vertexShader: 'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+        fragmentShader: 'uniform sampler2D tDiffuse;uniform float amount;varying vec2 vUv;void main(){vec2 d=(vUv-0.5)*amount;vec4 r=texture2D(tDiffuse,vUv+d),g=texture2D(tDiffuse,vUv),b=texture2D(tDiffuse,vUv-d);gl_FragColor=vec4(r.r,g.g,b.b,max(g.a,max(r.a,b.a)));}'
+      });
+      split.enabled = false;
+      composer.addPass(split);
+    }
     composer.addPass(new OutputPass());
     var bloomOn = true;
 
@@ -210,7 +224,7 @@
     new ResizeObserver(size).observe(canvas);
 
     /* scratch objects, reused every frame (no per-frame allocation) */
-    var v1 = new THREE.Vector3(), v2 = new THREE.Vector3(), v3 = new THREE.Vector3();
+    var v1 = new THREE.Vector3(), v2 = new THREE.Vector3(), v3 = new THREE.Vector3(), UP = new THREE.Vector3(0, 1, 0);
     var camRight = new THREE.Vector3().subVectors(target, camBase).cross(new THREE.Vector3(0, 1, 0)).normalize();
 
     /* ── WORLD: chapter shots and the atmosphere around the desk ──
@@ -235,7 +249,11 @@
         at('holo_chart', 3.4, 0.3, 0.24, -0.5) || hero,
         lap,
         at('holo_order', 3.0, 0.2, 0.24, 0.4) || lap,
-        at('rack', 3.6, 0.35, 0.24, 0.3) || hero
+        at('rack', 3.6, 0.35, 0.24, 0.3) || hero,
+        /* 05 Debug: pull right back, the whole desk small in its world */
+        { p: target.clone().addScaledVector(away, 13).add(new THREE.Vector3(0, 1.6, 0)), l: target.clone(), o: 0.2 },
+        /* 06 Ping: looking down on the desk from above, lights on, done */
+        { p: target.clone().add(new THREE.Vector3(0.6, 8.5, 2.4)), l: target.clone(), o: 0.18 }
       ];
       /* fog: the far wire shell and particles fade into the page navy */
       world.fog = new THREE.FogExp2(0x0a1628, 0.03);
@@ -1116,12 +1134,22 @@
         shotPos.lerpVectors(SA.p, SB.p, sf); shotLook.lerpVectors(SA.l, SB.l, sf);
         var so = SA.o + (SB.o - SA.o) * sf;
         v1.subVectors(shotPos, shotLook);
+        /* idle drift: a slow sway around the subject so the world never
+           sits frozen while a chapter is read */
+        v1.applyAxisAngle(UP, Math.sin(t * 0.09) * 0.07 * lean);
+        v1.y += Math.sin(t * 0.13) * 0.08 * lean;
         v1.x += px * 0.45 * lean; v1.y -= py * 0.25 * lean;
         cam.position.copy(shotLook).add(v1).lerp(zcam, z);
         cam.lookAt(look.copy(shotLook).lerp(zc, z));
         cam.setViewOffset(vw, vh, -so * (1 - z) * vw, 0, vw, vh);
         rig.rotation.x = 0;
         worldTick(t, shotS, sf);
+        if (split) {
+          /* a bell over the first third of each leg, nothing at rest */
+          var lf = shotS - si, amt = lf > 0.01 && lf < 0.4 ? Math.sin(lf / 0.4 * Math.PI) * 0.018 : 0;
+          split.uniforms.amount.value = amt;
+          split.enabled = amt > 0.0005;
+        }
       } else {
       v1.set(camBase.x + px * 0.9 * lean, camBase.y - py * 0.5 * lean, camBase.z - px * 0.6 * lean).sub(target).multiplyScalar((1 + sp * 0.45 * lean) * (1 - H.dolly * 0.16));
       cam.position.copy(target).add(v1).lerp(zcam, z);
