@@ -13,7 +13,10 @@
   var root = document.documentElement;
   var loader = document.querySelector('.world-loader');
   var gate = matchMedia('(min-width:1024px) and (pointer:fine) and (prefers-reduced-motion:no-preference)');
-  if (!gate.matches || !document.querySelector('.tunnel')) { if (loader) loader.remove(); return; }
+  /* no 3D after all (software WebGL, CDN blocked, lost context): bring
+     the hero's still poster back */
+  addEventListener('hero3d:skip', function () { root.classList.remove('world-pending'); });
+  if (!gate.matches || !document.querySelector('.tunnel')) { if (loader) loader.remove(); root.classList.remove('world-pending'); return; }
 
   /* ── intro counter ── */
   if (loader && !root.classList.contains('intro-seen')) {

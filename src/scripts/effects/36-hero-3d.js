@@ -150,7 +150,9 @@
        The canvas becomes a full-viewport layer behind everything, and the
        scroll flies the camera from shot to shot (one per chapter) instead
        of fading the desk out. Without tunnels it is the hero canvas as before. */
-    var WORLD = !!document.querySelector('.tunnel');
+    /* the world is drawn for the dark page: a light-theme visit keeps the
+       hero canvas as before */
+    var WORLD = !!document.querySelector('.tunnel') && document.documentElement.getAttribute('data-theme') !== 'light';
     if (WORLD) {
       canvas.className = 'world-3d';
       document.body.insertBefore(canvas, document.body.firstChild);

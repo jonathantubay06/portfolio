@@ -238,3 +238,15 @@ html.world-on:not([data-theme="light"]) .world-fx{display:block}
   .hero-eyebrow,.glow,.avail-dot,.tz-dot,.card-live-badge::before,
   h2 em{animation:none!important}
 }
+
+/* first paint without the still poster where the 3D world will boot (set
+   pre-paint in _head): the desk fades in as 3D instead of a picture that
+   gets swapped. If nothing has replaced it by 6 s (script blocked, slow
+   CDN) the poster comes back on its own; once .has-3d is set this rule
+   stops matching and the normal hand-over takes over. */
+html.world-pending .hero-scene:not(.has-3d) :is(.hero-plate,.hero-fx,.hs,.hero-ambient,.hero-light,.desk-mess){
+  opacity:0;animation:posterLate .6s ease 6s forwards}
+@keyframes posterLate{to{opacity:1}}
+/* light theme switched on after the world booted: the world layer hides,
+   so the poster stands in for the desk */
+html.world-on[data-theme="light"] .hero-scene .hero-plate{opacity:1!important}
