@@ -207,7 +207,8 @@
        flight (igloo's scene-change glitch). Off, so free, the rest of
        the time: the pass only runs while its amount is above zero. */
     var split = null;
-    if (WORLD && ShaderPass) {
+    /* switched off 2026-10-20: it read as flicker ("matrix") */
+    if (false && WORLD && ShaderPass) {
       split = new ShaderPass({
         uniforms: { tDiffuse: { value: null }, amount: { value: 0 } },
         vertexShader: 'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
@@ -445,13 +446,19 @@
       sh.holes.push(hole);
       var bw = new THREE.Mesh(new THREE.ExtrudeGeometry(sh, { depth: 0.14, bevelEnabled: false }), wallM);
       bw.position.z = backZ - 0.14; grp.add(bw);
-      /* window frame: sill, head, jambs, one mullion and one transom */
-      box(wx1 - wx0 + 0.3, 0.1, 0.34, cx, wy0 - 0.05, backZ + 0.08, frameM);
-      box(wx1 - wx0 + 0.2, 0.08, 0.2, cx, wy1, backZ - 0.07, frameM);
-      box(0.08, wy1 - wy0, 0.2, wx0, (wy0 + wy1) / 2, backZ - 0.07, frameM);
-      box(0.08, wy1 - wy0, 0.2, wx1, (wy0 + wy1) / 2, backZ - 0.07, frameM);
-      box(0.06, wy1 - wy0, 0.12, cx, (wy0 + wy1) / 2, backZ - 0.07, frameM);
-      box(wx1 - wx0, 0.05, 0.12, cx, wy0 + (wy1 - wy0) * 0.72, backZ - 0.07, frameM);
+      /* window: a proper frame (outer casing, a centred mullion and one
+         transom, a deep sill) all centred on the opening, plus a faint
+         glass pane so it reads as a window, not a hole */
+      var wc = (wx0 + wx1) / 2, ww = wx1 - wx0, wh = wy1 - wy0, fz = backZ - 0.07;
+      box(ww + 0.36, 0.08, 0.42, wc, wy0 - 0.04, backZ + 0.1, frameM);
+      box(ww + 0.24, 0.12, 0.22, wc, wy1 + 0.06, fz, frameM);
+      box(0.12, wh + 0.24, 0.22, wx0 - 0.06, (wy0 + wy1) / 2, fz, frameM);
+      box(0.12, wh + 0.24, 0.22, wx1 + 0.06, (wy0 + wy1) / 2, fz, frameM);
+      box(0.07, wh, 0.14, wc, (wy0 + wy1) / 2, fz, frameM);
+      box(ww, 0.06, 0.14, wc, wy0 + wh * 0.7, fz, frameM);
+      var glassM = new THREE.MeshStandardMaterial({ color: 0x9cc8ff, roughness: 0.05, metalness: 0.6, transparent: true, opacity: 0.08, depthWrite: false });
+      mats.push(glassM); glassM.userData.max = 0.08;
+      var glass = new THREE.Mesh(new THREE.PlaneGeometry(ww, wh), glassM); glass.position.set(wc, (wy0 + wy1) / 2, fz); grp.add(glass);
       /* left wall, a shelf with books and a cyan LED strip along the top */
       box(0.14, H, 9, leftX - 0.07, floorY + H / 2, backZ + 4.5, wallM);
       box(0.32, 0.05, 1.8, leftX + 0.16, deskY + 1.6, backZ + 1.6, woodM);
@@ -461,52 +468,124 @@
       box(x1 - x0, 0.04, 0.04, (x0 + x1) / 2, floorY + H - 0.12, backZ + 0.05, ledM);
       box(0.04, 0.04, 9, leftX + 0.05, floorY + H - 0.12, backZ + 4.5, ledM);
       /* the collection: three floating shelves on the back wall above the
-         bed, hero figures on two, a row of high-top sneakers on the middle
-         one, and a stack of sneaker boxes on the floor right of the desk.
-         Generic low-poly shapes in the familiar colourways, no logos. */
-      var shX = (leftX + wx0) / 2, shW = Math.max(1.4, wx0 - leftX - 0.5);
-      [1.15, 1.85, 2.55].forEach(function (h) { box(shW, 0.05, 0.36, shX, deskY + h, backZ + 0.2, woodM); });
-      function figure(x, y, body, legs, head, extra) {
-        box(0.13, 0.13, 0.1, x, y + 0.065, backZ + 0.22, M({ color: legs, roughness: 0.6 }));
-        box(0.16, 0.16, 0.11, x, y + 0.2, backZ + 0.22, M({ color: body, roughness: 0.55, metalness: 0.2 }));
-        var hd = new THREE.Mesh(new THREE.SphereGeometry(0.065, 14, 10), M({ color: head, roughness: 0.5, metalness: 0.2 }));
-        hd.position.set(x, y + 0.34, backZ + 0.22); grp.add(hd);
-        if (extra) extra(x, y);
-        box(0.22, 0.02, 0.16, x, y + 0.01, backZ + 0.22, frameM);
+         bed. Vinyl-style hero figures (big head, small body, arms, the
+         familiar suits) stand in front of their window boxes on the top and
+         bottom shelves; high-top sneakers sit in clear display boxes on the
+         middle one; a stack of shoe boxes with an open pair stands by the
+         desk. Generic shapes in the colourways, no logos or likenesses. */
+      var shX = (leftX + wx0) / 2, shW = Math.max(1.6, wx0 - leftX - 0.45), shD = 0.46;
+      [1.1, 1.85, 2.6].forEach(function (h) {
+        box(shW, 0.05, shD, shX, deskY + h, backZ + shD / 2, woodM);
+        box(0.04, 0.12, 0.04, shX - shW / 2 + 0.15, deskY + h - 0.08, backZ + 0.03, frameM);
+        box(0.04, 0.12, 0.04, shX + shW / 2 - 0.15, deskY + h - 0.08, backZ + 0.03, frameM);
+      });
+      var S = 1.25;   /* figure scale */
+      function part(geo, col, x, y, z, o) {
+        var m = new THREE.Mesh(geo, M(Object.assign({ color: col, roughness: 0.45, metalness: 0.05 }, o || {})));
+        m.position.set(x, y, z); grp.add(m); return m;
       }
-      var fy = deskY + 2.575, n = 0, step = shW / 5;
-      [[0xb91c1c, 0xb91c1c, 0xd4a017, null], [0xc81e1e, 0x1e40af, 0xc81e1e, null], [0x1e3a8a, 0x1e3a8a, 0x1e3a8a, function (x, y) {
-        var sh = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.02, 24), M({ color: 0xdc2626, roughness: 0.4, metalness: 0.5 }));
-        sh.rotation.x = Math.PI / 2; sh.position.set(x + 0.1, y + 0.2, backZ + 0.3); grp.add(sh);
-        var st = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.024, 16), M({ color: 0xf8fafc, roughness: 0.4 }));
-        st.rotation.x = Math.PI / 2; st.position.set(x + 0.1, y + 0.2, backZ + 0.31); grp.add(st);
-      }], [0x15803d, 0x4c1d95, 0x16a34a, null]].forEach(function (f) {
-        figure(shX - shW / 2 + step * (++n), fy, f[0], f[1], f[2], f[3]);
-      });
-      fy = deskY + 1.175; n = 0;
-      [[0x22c55e, 0x16a34a, 0xa16207, null], [0x991b1b, 0x111827, 0x991b1b, null], [0x6b7280, 0x1f2937, 0x94a3b8, null], [0x7c3aed, 0x1e1b4b, 0xc4b5fd, null]].forEach(function (f) {
-        figure(shX - shW / 2 + step * (++n), fy, f[0], f[1], f[2], f[3]);
-      });
-      /* high-tops: sole, toe box, ankle collar and a contrasting overlay */
-      function sneaker(x, y, z, a, upper, over, sole) {
-        var g = new THREE.Group();
-        var p = function (w, h, d, px, py, pz, col, r) { var b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), M({ color: col, roughness: r || 0.6 })); b.position.set(px, py, pz); g.add(b); };
-        p(0.11, 0.035, 0.3, 0, 0.0175, 0, sole, 0.8);
-        p(0.1, 0.07, 0.17, 0, 0.07, 0.06, upper);
-        p(0.105, 0.2, 0.13, 0, 0.135, -0.075, upper);
-        p(0.107, 0.06, 0.14, 0, 0.21, -0.08, over);
-        p(0.107, 0.05, 0.1, 0, 0.065, 0.1, over);
-        g.position.set(x, y, z); g.rotation.y = a; grp.add(g);
+      var BX = function (w, h, d) { return new THREE.BoxGeometry(w * S, h * S, d * S); };
+      var SP = function (r, sx, sy, sz) { var g = new THREE.SphereGeometry(r * S, 20, 14); g.scale(sx || 1, sy || 1, sz || 1); return g; };
+      var CY = function (r, h) { return new THREE.CylinderGeometry(r * S, r * S, h * S, 16); };
+      /* f: suit colours and the details that make each one readable */
+      function figure(x, y, z, f) {
+        var u = S;
+        /* the window box behind it */
+        part(BX(0.2, 0.3, 0.06), f.box, x, y + 0.15 * u, z - 0.1 * u);
+        part(BX(0.15, 0.2, 0.005), 0x0b1220, x, y + 0.17 * u, z - 0.068 * u, { roughness: 0.2 });
+        /* legs, body, arms */
+        part(BX(0.035, 0.07, 0.04), f.legs, x - 0.022 * u, y + 0.035 * u, z);
+        part(BX(0.035, 0.07, 0.04), f.legs, x + 0.022 * u, y + 0.035 * u, z);
+        part(BX(0.085, 0.075, 0.05), f.body, x, y + 0.105 * u, z);
+        part(BX(0.025, 0.065, 0.03), f.arms || f.body, x - 0.058 * u, y + 0.105 * u, z);
+        part(BX(0.025, 0.065, 0.03), f.arms || f.body, x + 0.058 * u, y + 0.105 * u, z);
+        /* the big vinyl head */
+        part(SP(0.062, 1.08, 0.98, 1), f.head, x, y + 0.2 * u, z);
+        if (f.face) f.face(x, y + 0.2 * u, z + 0.05 * u, u);
+        if (f.extra) f.extra(x, y, z, u);
       }
-      var sy = deskY + 1.875, sx0 = shX - shW / 2 + 0.25;
-      [[0xf8fafc, 0xb91c1c, 0xf8fafc], [0xf8fafc, 0x1d4ed8, 0xf8fafc], [0xf8fafc, 0x7dd3fc, 0xf8fafc], [0x111827, 0xb91c1c, 0xf8fafc]].forEach(function (c, i) {
-        sneaker(sx0 + i * (shW - 0.5) / 3, sy, backZ + 0.22, 0.5, c[0], c[1], c[2]);
+      var EYE_W = function (x, y, z, u) {
+        part(SP(0.02, 1.3, 0.8, 0.4), 0xf8fafc, x - 0.024 * u, y + 0.005 * u, z + 0.008 * u, { roughness: 0.3 });
+        part(SP(0.02, 1.3, 0.8, 0.4), 0xf8fafc, x + 0.024 * u, y + 0.005 * u, z + 0.008 * u, { roughness: 0.3 });
+      };
+      var EYE_D = function (x, y, z, u) {
+        part(SP(0.011, 1, 1.2, 0.5), 0x0b0b0b, x - 0.022 * u, y, z + 0.009 * u);
+        part(SP(0.011, 1, 1.2, 0.5), 0x0b0b0b, x + 0.022 * u, y, z + 0.009 * u);
+      };
+      var FIGS = [
+        { body: 0xb91c1c, legs: 0xb91c1c, head: 0xb91c1c, box: 0x7f1d1d, face: function (x, y, z, u) {   /* armour: gold faceplate, glowing slits, chest light */
+          part(BX(0.075, 0.07, 0.01), 0xd4a017, x, y - 0.005 * u, z, { metalness: 0.7, roughness: 0.3 });
+          part(BX(0.02, 0.006, 0.004), 0xbff3ff, x - 0.017 * u, y + 0.012 * u, z + 0.007 * u, { emissive: 0x7fe3ff, emissiveIntensity: 2 });
+          part(BX(0.02, 0.006, 0.004), 0xbff3ff, x + 0.017 * u, y + 0.012 * u, z + 0.007 * u, { emissive: 0x7fe3ff, emissiveIntensity: 2 });
+        }, extra: function (x, y, z, u) { part(CY(0.012, 0.006).rotateX(Math.PI / 2), 0xbff3ff, x, y + 0.115 * u, z + 0.027 * u, { emissive: 0x7fe3ff, emissiveIntensity: 2 }); } },
+        { body: 0xc81e1e, legs: 0x1d4ed8, arms: 0x1d4ed8, head: 0xc81e1e, box: 0x1e3a8a, face: EYE_W },   /* web-slinger */
+        { body: 0x1e3a8a, legs: 0x1e3a8a, head: 0x1e3a8a, box: 0x1e40af, face: function (x, y, z, u) {
+          part(BX(0.07, 0.035, 0.01), 0xf1c27d, x, y - 0.022 * u, z);   /* chin below the cowl */
+          EYE_D(x, y + 0.008 * u, z - 0.002 * u, u);
+        }, extra: function (x, y, z, u) {   /* the round shield on the arm */
+          [[0.045, 0xb91c1c], [0.034, 0xf8fafc], [0.023, 0xb91c1c], [0.013, 0x1d4ed8]].forEach(function (r, i) {
+            part(CY(r[0], 0.006).rotateX(Math.PI / 2), r[1], x + 0.085 * u, y + 0.1 * u, z + 0.03 * u + i * 0.002, { metalness: 0.5, roughness: 0.35 });
+          });
+        } },
+        { body: 0x16a34a, legs: 0x6d28d9, arms: 0x16a34a, head: 0x15803d, box: 0x14532d, face: EYE_D },   /* the big green one */
+        { body: 0x111827, legs: 0x111827, head: 0x111827, box: 0x312e81, face: function (x, y, z, u) {
+          part(BX(0.05, 0.008, 0.004), 0xe5e7eb, x, y + 0.012 * u, z + 0.004 * u, { metalness: 0.8 });
+          EYE_W(x, y, z, u);
+        } },
+        { body: 0x9ca3af, legs: 0x374151, head: 0xf1c27d, box: 0x7f1d1d, face: EYE_D, extra: function (x, y, z, u) {   /* cape and hammer */
+          part(BX(0.1, 0.12, 0.008), 0xb91c1c, x, y + 0.09 * u, z - 0.03 * u);
+          part(CY(0.006, 0.07), 0x78350f, x + 0.062 * u, y + 0.05 * u, z + 0.02 * u);
+          part(BX(0.035, 0.022, 0.022), 0x9ca3af, x + 0.062 * u, y + 0.02 * u, z + 0.02 * u, { metalness: 0.7 });
+        } }
+      ];
+      var figZ = backZ + shD * 0.62;
+      [0, 1, 2].forEach(function (i) { figure(shX - shW / 2 + shW * (i + 0.5) / 3, deskY + 2.625, figZ, FIGS[i]); });
+      [3, 4, 5].forEach(function (i) { figure(shX - shW / 2 + shW * (i - 2.5) / 3, deskY + 1.125, figZ, FIGS[i]); });
+
+      /* a high-top: side profile extruded with rounded edges, a white
+         midsole, colour-blocked toe cap, eyelet strip, heel and collar */
+      var PROF = (function () {
+        var p = new THREE.Shape();
+        p.moveTo(0, 0); p.lineTo(0.3, 0); p.quadraticCurveTo(0.335, 0.005, 0.33, 0.04);
+        p.quadraticCurveTo(0.32, 0.075, 0.25, 0.09); p.lineTo(0.17, 0.12);
+        p.lineTo(0.12, 0.2); p.lineTo(0.035, 0.205); p.quadraticCurveTo(0.005, 0.2, 0.01, 0.15); p.lineTo(0, 0.03);
+        return p;
+      })();
+      var EX = { depth: 0.09, bevelEnabled: true, bevelThickness: 0.012, bevelSize: 0.01, bevelSegments: 3, curveSegments: 10 };
+      var upperGeo = new THREE.ExtrudeGeometry(PROF, EX); upperGeo.translate(-0.16, 0.022, -0.045);
+      var soleGeo = new THREE.BoxGeometry(0.34, 0.025, 0.115); soleGeo.translate(0.005, 0.0125, 0);
+      function sneaker(x, y, z, a, base, block, out) {
+        var g = new THREE.Group(), add = function (geo, col, px, py, pz, r) {
+          var m = new THREE.Mesh(geo, M({ color: col, roughness: r || 0.55 })); m.position.set(px || 0, py || 0, pz || 0); g.add(m); return m;
+        };
+        add(upperGeo, base);
+        add(soleGeo, 0xf5f5f4, 0, 0, 0, 0.7);
+        add(new THREE.BoxGeometry(0.34, 0.008, 0.117), out, 0.005, 0.002, 0, 0.9);
+        add(new THREE.BoxGeometry(0.1, 0.05, 0.118), block, 0.11, 0.05, 0);          /* toe cap */
+        add(new THREE.BoxGeometry(0.06, 0.13, 0.118), block, -0.1, 0.1, 0);          /* heel */
+        add(new THREE.BoxGeometry(0.11, 0.04, 0.119), block, -0.075, 0.2, 0);        /* collar */
+        add(new THREE.BoxGeometry(0.1, 0.025, 0.119), block, 0.02, 0.12, 0).rotation.z = -0.55;   /* eyelet strip */
+        add(new THREE.BoxGeometry(0.035, 0.02, 0.02), 0xf8fafc, -0.06, 0.22, 0.05);  /* tongue tag */
+        g.position.set(x, y, z); g.rotation.y = a; g.scale.setScalar(1.15); grp.add(g);
+        return g;
+      }
+      /* each pair on the middle shelf sits in a clear display box */
+      var SHOES = [[0xf8fafc, 0xb91c1c, 0x111111], [0xf8fafc, 0x1d4ed8, 0x1d4ed8], [0xf8fafc, 0x7dd3fc, 0x7dd3fc], [0x111111, 0xb91c1c, 0xb91c1c]];
+      var caseM = new THREE.MeshStandardMaterial({ color: 0xdbeafe, roughness: 0.05, metalness: 0.2, transparent: true, opacity: 0.12, depthWrite: false });
+      mats.push(caseM); caseM.userData.max = 0.12;
+      SHOES.forEach(function (c, i) {
+        var sx = shX - shW / 2 + shW * (i + 0.5) / 4, sy = deskY + 1.875;
+        sneaker(sx - 0.02, sy, backZ + 0.18, 0.35, c[0], c[1], c[2]);
+        var cs = new THREE.Mesh(new THREE.BoxGeometry(shW / 4 - 0.05, 0.32, 0.4), caseM); cs.position.set(sx, sy + 0.16, backZ + 0.23); grp.add(cs);
       });
-      /* sneaker boxes by the desk, the top one open with a pair inside */
-      var bxX = B.max.x + 0.75, bxZ = backZ + 0.6;
-      for (var k = 0; k < 4; k++) box(0.62, 0.22, 0.38, bxX + (k % 2) * 0.03, floorY + 0.11 + k * 0.225, bxZ + k * 0.02, M({ color: k % 2 ? 0x111111 : 0xf97316, roughness: 0.8 }));
-      sneaker(bxX - 0.12, floorY + 0.9 + 0.02, bxZ + 0.05, 1.57, 0xf8fafc, 0xb91c1c, 0xf8fafc);
-      sneaker(bxX + 0.14, floorY + 0.9 + 0.02, bxZ + 0.08, 1.4, 0xf8fafc, 0xb91c1c, 0xf8fafc);
+      /* shoe boxes by the desk, the top one open with a pair inside */
+      var bxX = B.max.x + 0.8, bxZ = backZ + 0.7;
+      for (var k = 0; k < 4; k++) {
+        box(0.64, 0.2, 0.4, bxX + (k % 2) * 0.03, floorY + 0.1 + k * 0.205, bxZ + k * 0.02, M({ color: 0xf97316, roughness: 0.8 }));
+        box(0.66, 0.05, 0.42, bxX + (k % 2) * 0.03, floorY + 0.2 + k * 0.205 - 0.02, bxZ + k * 0.02, M({ color: 0x111111, roughness: 0.8 }));
+      }
+      sneaker(bxX - 0.14, floorY + 0.83, bxZ - 0.02, 1.57, 0xf8fafc, 0xb91c1c, 0x111111);
+      sneaker(bxX + 0.12, floorY + 0.83, bxZ + 0.04, 1.45, 0xf8fafc, 0xb91c1c, 0x111111);
       /* the bed along the left wall, between it and the desk */
       var bz = backZ + 2.1, bx = leftX + 0.95;
       box(1.7, 0.32, 3.1, bx, floorY + 0.16, bz, woodM);
@@ -544,7 +623,7 @@
           if (Math.abs(a - shown) < 0.01) return;
           shown = a;
           grp.visible = city.mesh.visible = a > 0.01;
-          for (var i = 0; i < mats.length; i++) { mats[i].opacity = a; mats[i].depthWrite = a > 0.98; }
+          for (var i = 0; i < mats.length; i++) { var mx = mats[i].userData.max; mats[i].opacity = a * (mx || 1); mats[i].depthWrite = !mx && a > 0.98; }
           city.fade(a); su.uA.value = a;
           lampL.intensity = a * (9 - 6 * dayNow); winL.intensity = a * (3 + 5 * dayNow);
         },
