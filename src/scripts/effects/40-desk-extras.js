@@ -125,7 +125,7 @@
       g.font = '700 19px ' + FONT; g.fillStyle = '#9fdcff'; g.fillText('OPS DASHBOARD', 24, 38);
       var on = (t % 1.2) < 0.8;
       g.fillStyle = on ? '#2ee6a0' : '#14684a'; g.beginPath(); g.arc(w - 82, 32, 6, 0, 7); g.fill();
-      g.font = '700 15px ' + FONT; g.fillStyle = '#2ee6a0'; g.fillText('LIVE', w - 70, 38);
+      g.font = '700 15px ' + FONT; g.fillStyle = '#2ee6a0'; g.fillText('DEMO', w - 76, 38);
       [['Orders synced', st.orders.toLocaleString(), 'orders', '#00e6ff'],
        ['SKUs updated', st.skus.toLocaleString(), 'skus', '#ffa04a'],
        ['Hours saved', st.hours.toFixed(1), 'hours', '#2ee6a0']].forEach(function (row, i) {

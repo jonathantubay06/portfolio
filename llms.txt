@@ -5,7 +5,7 @@
 ## Services
 - Shopify development: custom themes, app integrations, catalog, payments and checkout setup, post-launch support
 - WordPress and WooCommerce: new builds and CMS migrations, ACF/Gutenberg, mobile-first and SEO-ready
-- Workflow automation: Zapier, n8n and Make, with Airtable and Google Sheets as data layers (reports, alerts, order and data flows)
+- Workflow automation: Zapier, n8n and Python scripts, with Airtable and Google Sheets as data layers (reports, alerts, order and data flows)
 - Inventory and ERP sync: Cin7 Core to Shopify price, inventory and product-data sync, with staged batches, validation before going live, MAP pricing rules, and weight and shipping-dimension updates
 - Also: Softr apps on Airtable (client portals, internal dashboards) and Figma-to-production front-end builds
 
@@ -13,7 +13,7 @@
 - Email jonatsbuilds@gmail.com or use the [contact form](https://jonathantubay.com/#contact)
 - Replies within 24 hours (Mon-Fri, Manila time, UTC+8), then a call to scope the project
 - Pricing is scoped per project after that call; there are no fixed packages
-- Working hours overlap US mornings, most of the Australian workday and UK mornings
+- Hours: weekdays 9am to 6pm Manila (UTC+8), covering most of the Australian workday; early or late calls for the UK and US by arrangement
 - Ongoing support after launch is available
 
 ## Case studies
@@ -25,12 +25,12 @@
 - Deirdre P. Malcolm: freelance website build
 - Toolmart Houston: Shopify store build
 - Kingdomland Kids: Shopify store work
-- Sapmok USA: Shopify store revamp
-- Internal tools: KDL Video Health Checker, daily report generators, service and project health dashboards, E.D.I.T.H. and T.H.O.R. assistants
+- Sapmok USA: Shopify store revamp for a closing-down sale (store now closed, archived)
+- Internal tools: KDL Video Health Checker, daily report generators, service and project health dashboards, E.D.I.T.H. and T.H.O.R. AI agents (built by me, now run by SentryX)
 
 ## Proof
 - 11 client and LinkedIn reviews on the site
-- 10 sites and tools shipped: 5 live sites I build and look after, plus 5 monitoring tools and AI agents
+- 11 sites and tools shipped: 5 live sites I build and look after, plus 6 tools and AI agents
 
 ## Links
 - [Portfolio](https://jonathantubay.com/)

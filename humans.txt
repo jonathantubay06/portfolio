@@ -5,14 +5,14 @@ Location: Manila, Philippines
 Contact: jonatsbuilds@gmail.com
 
 /* TECH */
-Stack: HTML5, CSS3, Vanilla JS — zero frameworks
+Stack: HTML5, CSS3, vanilla JS, three.js (WebGL hero) — no framework
 Hosting: Netlify
 Repo: https://github.com/jonathantubay06/portfolio
-Fonts: Orbitron, Plus Jakarta Sans (Google Fonts)
+Fonts: Orbitron, Plus Jakarta Sans (self-hosted)
 Icons: Simple Icons CDN + emoji
 Analytics: None (privacy-first)
 
 /* THANKS */
 Nick Le — for the leadership that sparked the hustle
 Claude (Anthropic) — for the code review passes
-E.D.I.T.H. (Hermes Agent) — for keeping the repo clean
+E.D.I.T.H. (Hermes Agent, now run by SentryX) — for keeping the repo clean

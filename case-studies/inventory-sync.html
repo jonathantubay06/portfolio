@@ -7,7 +7,7 @@
 <meta name="description" content="How I synced Cin7 Core and Shopify for a US tools and hardware retailer: staged, validated batches of about 200 SKUs, MAP pricing checks and 10+ hours a week saved."/>
 <link rel="canonical" href="https://jonathantubay.com/case-studies/inventory-sync"/>
 <meta property="og:title" content="Cin7 ↔ Shopify Inventory Sync — Case Study | Jonathan Tubay"/>
-<meta property="og:description" content="Cin7 Core and Shopify kept in step for a US tools and hardware retailer: validated batches, MAP checks, 10+ hours a week saved."/>
+<meta property="og:description" content="How I kept Cin7 Core and Shopify in step for a US tools and hardware retailer: validated batches, MAP checks, 10+ hours a week saved."/>
 <meta property="og:url" content="https://jonathantubay.com/case-studies/inventory-sync"/>
 <meta property="og:type" content="article"/>
 <meta property="og:image" content="https://jonathantubay.com/og-preview.jpg"/>
@@ -73,7 +73,7 @@
       </div>
       <h1>Inventory &amp; Price Sync</h1>
       <p style="color:var(--muted);font-size:1.1rem;max-width:620px;margin:1rem auto 0">
-        Cin7 Core and Shopify kept in step for a US tools and hardware retailer with thousands of SKUs. Prices, stock and product data now move in checked batches instead of by hand.
+        Cin7 Core and Shopify kept in step for a US tools and hardware retailer with thousands of SKUs. Prices, stock and product data moved in checked batches instead of by hand.
       </p>
     </div>
   </section>
@@ -112,10 +112,10 @@
     <figure class="cs-flow">
       <svg class="d" viewBox="0 0 760 230" role="img" aria-labelledby="flowTitle flowDesc">
         <title id="flowTitle">Sync pipeline</title>
-        <desc id="flowDesc">The weekly price list in Google Sheets feeds Zapier and Airtable workflows, which stage a batch in Cin7 Core. The batch is validated, pushed to Shopify as drafts, then set live.</desc>
+        <desc id="flowDesc">The weekly price list in Google Sheets feeds Python and Playwright scripts, which stage a batch in Cin7 Core. The batch is validated, pushed to Shopify as drafts, then set live.</desc>
         <defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#00d4ff"/></marker></defs>
         <g class="n"><rect x="10" y="20" width="160" height="70" rx="8"/><text x="90" y="50" text-anchor="middle">Google Sheets</text><text class="s" x="90" y="70" text-anchor="middle">weekly price list</text></g>
-        <g class="n"><rect x="300" y="20" width="160" height="70" rx="8"/><text x="380" y="50" text-anchor="middle">Zapier + Airtable</text><text class="s" x="380" y="70" text-anchor="middle">clean up, MAP rules</text></g>
+        <g class="n"><rect x="300" y="20" width="160" height="70" rx="8"/><text x="380" y="50" text-anchor="middle">Python + Playwright</text><text class="s" x="380" y="70" text-anchor="middle">clean up, MAP rules</text></g>
         <g class="n"><rect x="590" y="20" width="160" height="70" rx="8"/><text x="670" y="50" text-anchor="middle">Cin7 Core</text><text class="s" x="670" y="70" text-anchor="middle">batch staged</text></g>
         <g class="n chk"><rect x="590" y="140" width="160" height="70" rx="8"/><text x="670" y="170" text-anchor="middle">Validation</text><text class="s" x="670" y="190" text-anchor="middle">price, MAP, dims</text></g>
         <g class="n"><rect x="300" y="140" width="160" height="70" rx="8"/><text x="380" y="170" text-anchor="middle">Shopify (draft)</text><text class="s" x="380" y="190" text-anchor="middle">pushed via API</text></g>
@@ -126,10 +126,10 @@
         <path class="e" d="M590 175H464" marker-end="url(#ah)"/><text class="lbl" x="525" y="166" text-anchor="middle">pass</text>
         <path class="e" d="M300 175H174" marker-end="url(#ah)"/><text class="lbl" x="236" y="166" text-anchor="middle">go-ahead</text>
       </svg>
-      <svg class="m" viewBox="0 0 300 545" role="img" aria-label="Sync pipeline: Google Sheets price list, Zapier and Airtable, Cin7 Core staging, validation, Shopify draft, live">
+      <svg class="m" viewBox="0 0 300 545" role="img" aria-label="Sync pipeline: Google Sheets price list, Python and Playwright scripts, Cin7 Core staging, validation, Shopify draft, live">
         <defs><marker id="ahm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#00d4ff"/></marker></defs>
         <g class="n"><rect x="40" y="5" width="220" height="62" rx="8"/><text x="150" y="32" text-anchor="middle">Google Sheets</text><text class="s" x="150" y="52" text-anchor="middle">weekly price list</text></g>
-        <g class="n"><rect x="40" y="99" width="220" height="62" rx="8"/><text x="150" y="126" text-anchor="middle">Zapier + Airtable</text><text class="s" x="150" y="146" text-anchor="middle">clean up, MAP rules</text></g>
+        <g class="n"><rect x="40" y="99" width="220" height="62" rx="8"/><text x="150" y="126" text-anchor="middle">Python + Playwright</text><text class="s" x="150" y="146" text-anchor="middle">clean up, MAP rules</text></g>
         <g class="n"><rect x="40" y="193" width="220" height="62" rx="8"/><text x="150" y="220" text-anchor="middle">Cin7 Core</text><text class="s" x="150" y="240" text-anchor="middle">batch staged</text></g>
         <g class="n chk"><rect x="40" y="287" width="220" height="62" rx="8"/><text x="150" y="314" text-anchor="middle">Validation</text><text class="s" x="150" y="334" text-anchor="middle">price, MAP, dims</text></g>
         <g class="n"><rect x="40" y="381" width="220" height="62" rx="8"/><text x="150" y="408" text-anchor="middle">Shopify (draft)</text><text class="s" x="150" y="428" text-anchor="middle">pushed via API</text></g>
@@ -140,8 +140,8 @@
     </figure>
 
     <ul>
-      <li><strong>Cin7 ↔ Shopify sync through the APIs:</strong> prices and stock levels flow from Cin7 Core to Shopify without anyone retyping them.</li>
-      <li><strong>Zapier, Airtable and Google Sheets workflows:</strong> the weekly price list is the single input. Workflows clean it up, apply the pricing rules and hand it to the sync.</li>
+      <li><strong>Cin7 ↔ Shopify sync through the APIs:</strong> prices and stock levels flowed from Cin7 Core to Shopify without anyone retyping them.</li>
+      <li><strong>Python, Playwright and Google Sheets:</strong> the weekly price list is the single input. Scripts clean it up, apply the pricing rules and hand it to the sync.</li>
       <li><strong>Batch staging and validation:</strong> changes go out in batches of about 200 SKUs. Each batch is staged in Cin7 first and checked before it is pushed to Shopify, where it lands as drafts for a final review.</li>
       <li><strong>MAP handling:</strong> products with a minimum advertised price are flagged and checked against it, so the store does not advertise below the supplier's floor.</li>
       <li><strong>Shipping data:</strong> missing weights and dimensions are filled in and synced to Shopify and the shipping app, so rates come out right and products can be added to the cart.</li>
@@ -150,7 +150,7 @@
     <h2>The Tech Stack</h2>
     <div class="cs-tech">
       <span>Shopify</span><span>Cin7 Core</span><span>Shopify Admin API</span>
-      <span>Cin7 API</span><span>Zapier</span><span>Airtable</span>
+      <span>Cin7 API</span><span>Python</span><span>Playwright</span>
       <span>Google Sheets</span>
     </div>
 
@@ -172,7 +172,7 @@
 <footer>
   <div class="foot-inner">
     <p>© <span id="footYear"></span> Jonathan Tubay. Built by hand.</p>
-    <p class="foot-reg">DTI Registered · BIR Accredited · BMBE Certified</p>
+    <p class="foot-reg">DTI Registered · BIR Registered · BMBE Certified</p>
   </div>
 </footer>
 <script>document.getElementById('footYear').textContent=new Date().getFullYear()</script>
