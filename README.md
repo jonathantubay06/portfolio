@@ -11,6 +11,18 @@ library is three.js 0.170 (WebGL) for the 3D hero desk, loaded from
 jsDelivr; the bedroom world around it is desktop only. Without WebGL (or
 in Quick View) the page falls back to a still poster.
 
+## Tech stack
+
+| Area | Used |
+|---|---|
+| Markup and styles | Hand-written HTML sections and CSS partials, no framework |
+| Scripts | Vanilla JavaScript (IIFE partials, no bundler) |
+| 3D | three.js 0.170: GLTFLoader, meshopt decoder, EffectComposer with bloom |
+| 3D assets | Blender + Python (`3d/build_scene.py`) for the desk scene; Sketchfab CC BY models for the room, optimized with glTF-Transform (meshopt, WebP textures) |
+| Build | Node `build.js` + `minify.js`: concatenates, minifies, content-hashes, writes the sitemap |
+| Images | WebP renders with responsive `srcset` variants (Pillow) |
+| Fonts | Orbitron and Plus Jakarta Sans, self-hosted variable woff2 |
+| Hosting | Netlify (publishes `dist/`, skips builds for docs-only pushes), Netlify Forms with honeypot and reCAPTCHA (Special Thanks note) |
 ## Structure
 
     src/
