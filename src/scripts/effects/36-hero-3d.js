@@ -676,7 +676,8 @@
 
       /* ── sneaker wall on the left wall, above the bed ── */
       var swZ0 = backZ + 1.05, swZ1 = backZ + 3.55, swY0 = deskY + 0.35, cell = (swZ1 - swZ0) / 3, rowH = 0.62;
-      box(0.025, rowH * 2 + 0.2, swZ1 - swZ0 + 0.2, leftX + 0.013, swY0 + rowH - 0.04, (swZ0 + swZ1) / 2, panelM);   /* dark panel */
+      /* dark panel; drawn first so the glass cubes (no depth write) are not painted over by it */
+      box(0.025, rowH * 2 + 0.2, swZ1 - swZ0 + 0.2, leftX + 0.013, swY0 + rowH - 0.04, (swZ0 + swZ1) / 2, panelM).renderOrder = -1;
       var shoeSlots = [];
       /* the real pair (img/hero3d/sneaker-aj1.glb: "Nike Air Jordan" by Ar41k,
          CC BY 4.0, cut to 25k triangles) replaces each code-built placeholder
