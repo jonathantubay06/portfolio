@@ -173,7 +173,10 @@ html.world-on:not([data-theme="light"]) main :is(.proj-feature,.proj-card,.svc-c
 /* ── igloo pass 2 (2026-10-20): plasma, grade, grain, HUD, intro ── */
 /* the live site's hero plasma (37-live-wallpaper) stays the hero's
    backdrop and hands over to the world as the hero scrolls away */
-html.world-on .live-wallpaper{opacity:calc(1 - var(--world-hero-out,0));transition:opacity .3s linear}
+/* z -2: both canvases are z -1 and the world canvas is inserted only
+   after three.js loads, so it landed in the DOM before the wallpaper and
+   the plasma streaks painted over the desk. The plasma must sit behind. */
+html.world-on .live-wallpaper{z-index:-2;opacity:calc(1 - var(--world-hero-out,0));transition:opacity .3s linear}
 /* colour grade: while the camera flies the scene goes cool and nearly
    monochrome, and the colour comes back when it lands on a chapter */
 html.world-on .world-3d{filter:saturate(calc(1 - .7 * var(--world-travel,0))) hue-rotate(calc(-12deg * var(--world-travel,0))) blur(calc(7px * var(--world-dim,0)))}
