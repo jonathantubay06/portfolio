@@ -466,133 +466,228 @@
       var glassM = new THREE.MeshStandardMaterial({ color: 0x9cc8ff, roughness: 0.05, metalness: 0.6, transparent: true, opacity: 0.08, depthWrite: false });
       mats.push(glassM); glassM.userData.max = 0.08;
       var glass = new THREE.Mesh(new THREE.PlaneGeometry(ww, wh), glassM); glass.position.set(wc, (wy0 + wy1) / 2, fz); grp.add(glass);
-      /* left wall, a shelf with books and a cyan LED strip along the top */
+      /* left wall (the sneaker wall hangs on it), a book shelf on the back
+         wall right of the window, and a cyan LED strip along the top */
       box(0.14, H, 9, leftX - 0.07, floorY + H / 2, backZ + 4.5, wallM);
-      box(0.32, 0.05, 1.8, leftX + 0.16, deskY + 1.6, backZ + 1.6, woodM);
+      box(1.8, 0.05, 0.32, wx1 + 1.4, deskY + 1.6, backZ + 0.16, woodM);
       var BOOK = [0x00a6d6, 0xf59e0b, 0x1e3a8a, 0xe2e8f0, 0x0e7490, 0xc2410c];
-      for (var i = 0; i < 9; i++) box(0.22, 0.26 + (i * 37 % 10) / 50, 0.1, leftX + 0.17, deskY + 1.6 + 0.15 + (i * 37 % 10) / 100, backZ + 0.85 + i * 0.13, M({ color: BOOK[i % BOOK.length], roughness: 0.8 }));
+      for (var i = 0; i < 9; i++) box(0.1, 0.26 + (i * 37 % 10) / 50, 0.22, wx1 + 0.65 + i * 0.13, deskY + 1.6 + 0.15 + (i * 37 % 10) / 100, backZ + 0.15, M({ color: BOOK[i % BOOK.length], roughness: 0.8 }));
       var ledM = new THREE.MeshBasicMaterial({ color: 0x00d4ff, transparent: true, toneMapped: false }); mats.push(ledM);
       box(x1 - x0, 0.04, 0.04, (x0 + x1) / 2, floorY + H - 0.12, backZ + 0.05, ledM);
       box(0.04, 0.04, 9, leftX + 0.05, floorY + H - 0.12, backZ + 4.5, ledM);
-      /* the collection: three floating shelves on the back wall above the
-         bed. Vinyl-style hero figures (big head, small body, arms, the
-         familiar suits) stand in front of their window boxes on the top and
-         bottom shelves; high-top sneakers sit in clear display boxes on the
-         middle one; a stack of shoe boxes with an open pair stands by the
-         desk. Generic shapes in the colourways, no logos or likenesses. */
-      var shX = (leftX + wx0) / 2, shW = Math.max(1.6, wx0 - leftX - 0.45), shD = 0.46;
-      [1.1, 1.85, 2.6].forEach(function (h) {
-        box(shW, 0.05, shD, shX, deskY + h, backZ + shD / 2, woodM);
-        box(0.04, 0.12, 0.04, shX - shW / 2 + 0.15, deskY + h - 0.08, backZ + 0.03, frameM);
-        box(0.04, 0.12, 0.04, shX + shW / 2 - 0.15, deskY + h - 0.08, backZ + 0.03, frameM);
-      });
-      var S = 1.25;   /* figure scale */
+      /* the collection (2026-10-20 polish, after real collector setups):
+         a wall-mounted glass cabinet above the bed with a backlit back
+         panel (the LED faces the panel, so the glow is soft and bounced)
+         holds six vinyl-style hero figures on round stands and risers;
+         the left wall is a sneaker wall, each high-top in its own clear
+         cube with an LED strip under the lid, on a dark panel; shoe boxes
+         stack by the desk. Generic shapes in the colourways, no logos or
+         likenesses. */
+      var caseM = new THREE.MeshStandardMaterial({ color: 0xdbeafe, roughness: 0.05, metalness: 0.2, transparent: true, opacity: 0.1, depthWrite: false });
+      mats.push(caseM); caseM.userData.max = 0.1;
+      var shelfGlassM = new THREE.MeshStandardMaterial({ color: 0xbfe6ff, roughness: 0.1, metalness: 0.1, transparent: true, opacity: 0.32, depthWrite: false });
+      mats.push(shelfGlassM); shelfGlassM.userData.max = 0.32;
+      var stripM = new THREE.MeshBasicMaterial({ color: 0xfff4e0, transparent: true, toneMapped: false }); mats.push(stripM);
+      var panelM = M({ color: 0x0b1220, roughness: 0.6 });
+      /* soft bounced glow: a vertical gradient card, brightest at the top */
+      var glowTex = (function () {
+        var c = document.createElement('canvas'); c.width = 4; c.height = 64;
+        var g = c.getContext('2d'), gr = g.createLinearGradient(0, 0, 0, 64);
+        gr.addColorStop(0, 'rgba(255,236,210,1)'); gr.addColorStop(0.45, 'rgba(255,220,180,.35)'); gr.addColorStop(1, 'rgba(255,210,170,0)');
+        g.fillStyle = gr; g.fillRect(0, 0, 4, 64);
+        var t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+      })();
+      function glowCard(w, h, x, y, z, ry, max) {
+        var m = new THREE.MeshBasicMaterial({ map: glowTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false });
+        m.userData.max = max; mats.push(m);
+        var p = new THREE.Mesh(new THREE.PlaneGeometry(w, h), m); p.position.set(x, y, z); p.rotation.y = ry || 0; grp.add(p); return p;
+      }
+
+      /* ── figure cabinet ── */
+      var cbW = Math.min(1.5, wx0 - leftX - 0.5), cbX = (leftX + wx0) / 2 + 0.05, cbD = 0.38;
+      var cbY0 = deskY + 0.75, cbH = 2.25, cbZ = backZ + cbD / 2;
+      box(cbW, cbH, 0.02, cbX, cbY0 + cbH / 2, backZ + 0.012, panelM);                       /* back panel */
+      [cbY0, cbY0 + cbH].forEach(function (y) { box(cbW + 0.06, 0.05, cbD + 0.02, cbX, y, cbZ, frameM); });   /* top and base */
+      [-1, 1].forEach(function (s) { box(0.035, cbH, cbD, cbX + s * (cbW / 2 + 0.012), cbY0 + cbH / 2, cbZ, frameM); });   /* sides */
+      var front = new THREE.Mesh(new THREE.PlaneGeometry(cbW, cbH - 0.05), caseM); front.position.set(cbX, cbY0 + cbH / 2, backZ + cbD + 0.004); grp.add(front);
+      box(0.012, cbH - 0.05, 0.012, cbX, cbY0 + cbH / 2, backZ + cbD + 0.01, frameM);          /* door split */
+      var BAY = cbH / 3;
+      for (var b = 0; b < 3; b++) {
+        var by = cbY0 + b * BAY;
+        if (b) { var gs = new THREE.Mesh(new THREE.BoxGeometry(cbW - 0.02, 0.014, cbD - 0.04), shelfGlassM); gs.position.set(cbX, by, cbZ + 0.01); grp.add(gs); }
+        box(cbW - 0.08, 0.012, 0.012, cbX, by + BAY - 0.05, backZ + 0.05, stripM);              /* LED strip aimed at the panel */
+        glowCard(cbW - 0.04, BAY - 0.06, cbX, by + BAY / 2, backZ + 0.026, 0, 0.55);
+      }
+      var cabL = new THREE.PointLight(0xffe7c4, 0, 2.6); cabL.position.set(cbX, cbY0 + cbH - 0.3, backZ + cbD + 0.35); grp.add(cabL);
+
+      /* ── vinyl figures ── */
+      var S = 1.3;
       function part(geo, col, x, y, z, o) {
-        var m = new THREE.Mesh(geo, M(Object.assign({ color: col, roughness: 0.45, metalness: 0.05 }, o || {})));
+        var m = new THREE.Mesh(geo, M(Object.assign({ color: col, roughness: 0.38, metalness: 0.04 }, o || {})));
         m.position.set(x, y, z); grp.add(m); return m;
       }
-      var BX = function (w, h, d) { return new THREE.BoxGeometry(w * S, h * S, d * S); };
-      var SP = function (r, sx, sy, sz) { var g = new THREE.SphereGeometry(r * S, 20, 14); g.scale(sx || 1, sy || 1, sz || 1); return g; };
-      var CY = function (r, h) { return new THREE.CylinderGeometry(r * S, r * S, h * S, 16); };
-      /* f: suit colours and the details that make each one readable */
+      var CAP = function (r, l) { return new THREE.CapsuleGeometry(r * S, l * S, 6, 16); };
+      var SPH = function (r, sx, sy, sz) { var g = new THREE.SphereGeometry(r * S, 24, 18); g.scale(sx || 1, sy || 1, sz || 1); return g; };
+      var CYL = function (r0, r1, h, n) { return new THREE.CylinderGeometry(r0 * S, r1 * S, h * S, n || 24); };
+      var RBX = function (w, h, d) { return new THREE.BoxGeometry(w * S, h * S, d * S); };
       function figure(x, y, z, f) {
-        var u = S;
-        /* the window box behind it */
-        part(BX(0.2, 0.3, 0.06), f.box, x, y + 0.15 * u, z - 0.1 * u);
-        part(BX(0.15, 0.2, 0.005), 0x0b1220, x, y + 0.17 * u, z - 0.068 * u, { roughness: 0.2 });
-        /* legs, body, arms */
-        part(BX(0.035, 0.07, 0.04), f.legs, x - 0.022 * u, y + 0.035 * u, z);
-        part(BX(0.035, 0.07, 0.04), f.legs, x + 0.022 * u, y + 0.035 * u, z);
-        part(BX(0.085, 0.075, 0.05), f.body, x, y + 0.105 * u, z);
-        part(BX(0.025, 0.065, 0.03), f.arms || f.body, x - 0.058 * u, y + 0.105 * u, z);
-        part(BX(0.025, 0.065, 0.03), f.arms || f.body, x + 0.058 * u, y + 0.105 * u, z);
+        var u = S, big = f.big || 1;
+        /* collector stand with a thin lit rim */
+        part(CYL(0.07, 0.075, 0.016), 0x0b0f17, x, y + 0.008 * u, z, { roughness: 0.3, metalness: 0.4 });
+        part(CYL(0.0755, 0.0755, 0.003), 0x7fe3ff, x, y + 0.004 * u, z, { emissive: 0x00d4ff, emissiveIntensity: 1.2 });
+        var y0 = y + 0.016 * u;
+        /* boots and legs */
+        [-1, 1].forEach(function (s) {
+          part(CAP(0.019, 0.03), f.boots || f.legs, x + s * 0.022 * u, y0 + 0.02 * u, z + 0.006 * u);
+          part(CAP(0.017 * big, 0.045), f.legs, x + s * 0.022 * u, y0 + 0.06 * u, z);
+        });
+        /* torso, belt */
+        var tY = y0 + 0.125 * u;
+        var torso = part(CAP(0.042 * big, 0.04), f.body, x, tY, z); torso.scale.set(1, 1, 0.78);
+        if (f.belt) part(CYL(0.044 * big, 0.044 * big, 0.012), f.belt, x, tY - 0.035 * u, z, { metalness: 0.5, roughness: 0.3 }).scale.set(1, 1, 0.8);
+        /* arms out a little, round hands */
+        [-1, 1].forEach(function (s) {
+          var arm = part(CAP(0.014 * big, 0.05), f.arms || f.body, x + s * 0.056 * big * u, tY + 0.005 * u, z);
+          arm.rotation.z = s * 0.22;
+          part(SPH(0.016 * big), f.hands || f.arms || f.body, x + s * 0.066 * big * u, tY - 0.04 * u, z);
+        });
         /* the big vinyl head */
-        part(SP(0.062, 1.08, 0.98, 1), f.head, x, y + 0.2 * u, z);
-        if (f.face) f.face(x, y + 0.2 * u, z + 0.05 * u, u);
-        if (f.extra) f.extra(x, y, z, u);
+        var hY = tY + 0.105 * u;
+        part(SPH(0.066, 1.06, 1, 1), f.head, x, hY, z);
+        if (f.face) f.face(x, hY, z, u);
+        if (f.extra) f.extra(x, y0, z, u, tY, hY);
       }
-      var EYE_W = function (x, y, z, u) {
-        part(SP(0.02, 1.3, 0.8, 0.4), 0xf8fafc, x - 0.024 * u, y + 0.005 * u, z + 0.008 * u, { roughness: 0.3 });
-        part(SP(0.02, 1.3, 0.8, 0.4), 0xf8fafc, x + 0.024 * u, y + 0.005 * u, z + 0.008 * u, { roughness: 0.3 });
+      var LENS = function (col, rim) {
+        return function (x, y, z, u) {
+          [-1, 1].forEach(function (s) {
+            if (rim) part(SPH(0.024, 1.25, 0.95, 0.35), rim, x + s * 0.026 * u, y + 0.006 * u, z + 0.053 * u, { roughness: 0.3, metalness: 0.6 });
+            var l = part(SPH(0.02, 1.25, 0.95, 0.35), col, x + s * 0.026 * u, y + 0.006 * u, z + 0.057 * u, { roughness: 0.15 });
+            l.rotation.z = s * -0.35;
+          });
+        };
       };
-      var EYE_D = function (x, y, z, u) {
-        part(SP(0.011, 1, 1.2, 0.5), 0x0b0b0b, x - 0.022 * u, y, z + 0.009 * u);
-        part(SP(0.011, 1, 1.2, 0.5), 0x0b0b0b, x + 0.022 * u, y, z + 0.009 * u);
+      var DOTS = function (x, y, z, u) {
+        [-1, 1].forEach(function (s) { part(SPH(0.009, 1, 1.25, 0.6), 0x111111, x + s * 0.022 * u, y + 0.004 * u, z + 0.061 * u, { roughness: 0.2 }); });
       };
       var FIGS = [
-        { body: 0xb91c1c, legs: 0xb91c1c, head: 0xb91c1c, box: 0x7f1d1d, face: function (x, y, z, u) {   /* armour: gold faceplate, glowing slits, chest light */
-          part(BX(0.075, 0.07, 0.01), 0xd4a017, x, y - 0.005 * u, z, { metalness: 0.7, roughness: 0.3 });
-          part(BX(0.02, 0.006, 0.004), 0xbff3ff, x - 0.017 * u, y + 0.012 * u, z + 0.007 * u, { emissive: 0x7fe3ff, emissiveIntensity: 2 });
-          part(BX(0.02, 0.006, 0.004), 0xbff3ff, x + 0.017 * u, y + 0.012 * u, z + 0.007 * u, { emissive: 0x7fe3ff, emissiveIntensity: 2 });
-        }, extra: function (x, y, z, u) { part(CY(0.012, 0.006).rotateX(Math.PI / 2), 0xbff3ff, x, y + 0.115 * u, z + 0.027 * u, { emissive: 0x7fe3ff, emissiveIntensity: 2 }); } },
-        { body: 0xc81e1e, legs: 0x1d4ed8, arms: 0x1d4ed8, head: 0xc81e1e, box: 0x1e3a8a, face: EYE_W },   /* web-slinger */
-        { body: 0x1e3a8a, legs: 0x1e3a8a, head: 0x1e3a8a, box: 0x1e40af, face: function (x, y, z, u) {
-          part(BX(0.07, 0.035, 0.01), 0xf1c27d, x, y - 0.022 * u, z);   /* chin below the cowl */
-          EYE_D(x, y + 0.008 * u, z - 0.002 * u, u);
-        }, extra: function (x, y, z, u) {   /* the round shield on the arm */
-          [[0.045, 0xb91c1c], [0.034, 0xf8fafc], [0.023, 0xb91c1c], [0.013, 0x1d4ed8]].forEach(function (r, i) {
-            part(CY(r[0], 0.006).rotateX(Math.PI / 2), r[1], x + 0.085 * u, y + 0.1 * u, z + 0.03 * u + i * 0.002, { metalness: 0.5, roughness: 0.35 });
-          });
-        } },
-        { body: 0x16a34a, legs: 0x6d28d9, arms: 0x16a34a, head: 0x15803d, box: 0x14532d, face: EYE_D },   /* the big green one */
-        { body: 0x111827, legs: 0x111827, head: 0x111827, box: 0x312e81, face: function (x, y, z, u) {
-          part(BX(0.05, 0.008, 0.004), 0xe5e7eb, x, y + 0.012 * u, z + 0.004 * u, { metalness: 0.8 });
-          EYE_W(x, y, z, u);
-        } },
-        { body: 0x9ca3af, legs: 0x374151, head: 0xf1c27d, box: 0x7f1d1d, face: EYE_D, extra: function (x, y, z, u) {   /* cape and hammer */
-          part(BX(0.1, 0.12, 0.008), 0xb91c1c, x, y + 0.09 * u, z - 0.03 * u);
-          part(CY(0.006, 0.07), 0x78350f, x + 0.062 * u, y + 0.05 * u, z + 0.02 * u);
-          part(BX(0.035, 0.022, 0.022), 0x9ca3af, x + 0.062 * u, y + 0.02 * u, z + 0.02 * u, { metalness: 0.7 });
-        } }
+        { body: 0xb3121b, legs: 0xb3121b, arms: 0xb3121b, hands: 0xd4a017, boots: 0xd4a017, head: 0xb3121b, belt: 0xd4a017,
+          face: function (x, y, z, u) {   /* armour: gold faceplate, glowing slits */
+            part(SPH(0.052, 1, 1.05, 0.5), 0xd4a017, x, y - 0.006 * u, z + 0.032 * u, { metalness: 0.75, roughness: 0.28 });
+            [-1, 1].forEach(function (s) { part(RBX(0.022, 0.006, 0.006), 0xbff3ff, x + s * 0.019 * u, y + 0.01 * u, z + 0.06 * u, { emissive: 0x7fe3ff, emissiveIntensity: 2.4 }); });
+          },
+          extra: function (x, y0, z, u, tY) { part(CYL(0.012, 0.012, 0.006).rotateX(Math.PI / 2), 0xbff3ff, x, tY + 0.012 * u, z + 0.034 * u, { emissive: 0x7fe3ff, emissiveIntensity: 2.6 }); } },
+        { body: 0xc8141e, legs: 0x1d3fb8, arms: 0x1d3fb8, hands: 0xc8141e, boots: 0xc8141e, head: 0xc8141e, face: LENS(0xf8fafc, 0x111111),
+          extra: function (x, y0, z, u, tY) { part(SPH(0.012, 1.4, 1, 0.4), 0x111111, x, tY + 0.012 * u, z + 0.033 * u); } },
+        { body: 0x1e3a8a, legs: 0x1e3a8a, arms: 0x1e3a8a, hands: 0x9b1c1c, boots: 0x9b1c1c, head: 0x1e3a8a, belt: 0x6b3f1d,
+          face: function (x, y, z, u) {
+            part(SPH(0.045, 1.05, 0.6, 0.6), 0xf1c27d, x, y - 0.03 * u, z + 0.03 * u);   /* chin below the helmet */
+            DOTS(x, y, z, u);
+          },
+          extra: function (x, y0, z, u, tY) {
+            [0, 1, 2].forEach(function (i) { part(RBX(0.06, 0.006, 0.004), i % 2 ? 0xf8fafc : 0xb91c1c, x, tY - 0.012 * u - i * 0.009 * u, z + 0.034 * u); });
+            [[0.05, 0xb91c1c], [0.038, 0xf8fafc], [0.026, 0xb91c1c], [0.015, 0x1d4ed8]].forEach(function (r, i) {   /* round shield */
+              part(CYL(r[0], r[0], 0.006).rotateX(Math.PI / 2), r[1], x + 0.088 * u, tY - 0.01 * u, z + 0.03 * u + i * 0.0025, { metalness: 0.55, roughness: 0.3 });
+            });
+          } },
+        { body: 0x2f8f3a, legs: 0x5b2a86, arms: 0x2f8f3a, hands: 0x2f8f3a, boots: 0x2f8f3a, head: 0x2f8f3a, big: 1.28, face: DOTS,
+          extra: function (x, y0, z, u, tY, hY) { part(SPH(0.068, 1.08, 0.5, 1.02), 0x111111, x, hY + 0.035 * u, z - 0.004 * u, { roughness: 0.7 }); } },
+        { body: 0x15151a, legs: 0x15151a, arms: 0x15151a, hands: 0x15151a, boots: 0x15151a, head: 0x15151a, face: LENS(0xf1f5f9, 0xc0c4cc),
+          extra: function (x, y0, z, u, tY, hY) {
+            part(new THREE.TorusGeometry(0.03 * u, 0.004 * u, 8, 24, Math.PI), 0xd1d5db, x, tY + 0.03 * u, z + 0.028 * u, { metalness: 0.9, roughness: 0.2 }).rotation.z = Math.PI;
+            [-1, 1].forEach(function (s) { part(new THREE.ConeGeometry(0.012 * u, 0.026 * u, 10), 0x15151a, x + s * 0.042 * u, hY + 0.06 * u, z); });
+          } },
+        { body: 0x8b939e, legs: 0x2d3440, arms: 0x2d3440, hands: 0x2d3440, boots: 0x6b4423, head: 0xf1c27d, face: DOTS,
+          extra: function (x, y0, z, u, tY, hY) {   /* blond hair, chest discs, cape and hammer */
+            part(SPH(0.069, 1.07, 0.75, 1.03), 0xe8c26a, x, hY + 0.02 * u, z - 0.01 * u, { roughness: 0.6 });
+            [-1, 0, 1].forEach(function (i) { part(CYL(0.008, 0.008, 0.004).rotateX(Math.PI / 2), 0xe5e7eb, x + i * 0.018 * u, tY + 0.015 * u, z + 0.034 * u, { metalness: 0.9, roughness: 0.2 }); });
+            var cape = part(RBX(0.11, 0.15, 0.006), 0xa3141c, x, tY - 0.02 * u, z - 0.04 * u, { roughness: 0.6 }); cape.rotation.x = 0.12;
+            part(CYL(0.006, 0.006, 0.07), 0x5b3a1e, x + 0.07 * u, tY - 0.07 * u, z + 0.006 * u);
+            part(RBX(0.042, 0.026, 0.026), 0x9ca3af, x + 0.07 * u, tY - 0.11 * u, z + 0.006 * u, { metalness: 0.75, roughness: 0.3 });
+          } }
       ];
-      var figZ = backZ + shD * 0.62;
-      [0, 1, 2].forEach(function (i) { figure(shX - shW / 2 + shW * (i + 0.5) / 3, deskY + 2.625, figZ, FIGS[i]); });
-      [3, 4, 5].forEach(function (i) { figure(shX - shW / 2 + shW * (i - 2.5) / 3, deskY + 1.125, figZ, FIGS[i]); });
-
-      /* a high-top: side profile extruded with rounded edges, a white
-         midsole, colour-blocked toe cap, eyelet strip, heel and collar */
-      var PROF = (function () {
-        var p = new THREE.Shape();
-        p.moveTo(0, 0); p.lineTo(0.3, 0); p.quadraticCurveTo(0.335, 0.005, 0.33, 0.04);
-        p.quadraticCurveTo(0.32, 0.075, 0.25, 0.09); p.lineTo(0.17, 0.12);
-        p.lineTo(0.12, 0.2); p.lineTo(0.035, 0.205); p.quadraticCurveTo(0.005, 0.2, 0.01, 0.15); p.lineTo(0, 0.03);
-        return p;
-      })();
-      var EX = { depth: 0.09, bevelEnabled: true, bevelThickness: 0.012, bevelSize: 0.01, bevelSegments: 3, curveSegments: 10 };
-      var upperGeo = new THREE.ExtrudeGeometry(PROF, EX); upperGeo.translate(-0.16, 0.022, -0.045);
-      var soleGeo = new THREE.BoxGeometry(0.34, 0.025, 0.115); soleGeo.translate(0.005, 0.0125, 0);
-      function sneaker(x, y, z, a, base, block, out) {
-        var g = new THREE.Group(), add = function (geo, col, px, py, pz, r) {
-          var m = new THREE.Mesh(geo, M({ color: col, roughness: r || 0.55 })); m.position.set(px || 0, py || 0, pz || 0); g.add(m); return m;
-        };
-        add(upperGeo, base);
-        add(soleGeo, 0xf5f5f4, 0, 0, 0, 0.7);
-        add(new THREE.BoxGeometry(0.34, 0.008, 0.117), out, 0.005, 0.002, 0, 0.9);
-        add(new THREE.BoxGeometry(0.1, 0.05, 0.118), block, 0.11, 0.05, 0);          /* toe cap */
-        add(new THREE.BoxGeometry(0.06, 0.13, 0.118), block, -0.1, 0.1, 0);          /* heel */
-        add(new THREE.BoxGeometry(0.11, 0.04, 0.119), block, -0.075, 0.2, 0);        /* collar */
-        add(new THREE.BoxGeometry(0.1, 0.025, 0.119), block, 0.02, 0.12, 0).rotation.z = -0.55;   /* eyelet strip */
-        add(new THREE.BoxGeometry(0.035, 0.02, 0.02), 0xf8fafc, -0.06, 0.22, 0.05);  /* tongue tag */
-        g.position.set(x, y, z); g.rotation.y = a; g.scale.setScalar(1.15); grp.add(g);
-        return g;
-      }
-      /* each pair on the middle shelf sits in a clear display box */
-      var SHOES = [[0xf8fafc, 0xb91c1c, 0x111111], [0xf8fafc, 0x1d4ed8, 0x1d4ed8], [0xf8fafc, 0x7dd3fc, 0x7dd3fc], [0x111111, 0xb91c1c, 0xb91c1c]];
-      var caseM = new THREE.MeshStandardMaterial({ color: 0xdbeafe, roughness: 0.05, metalness: 0.2, transparent: true, opacity: 0.12, depthWrite: false });
-      mats.push(caseM); caseM.userData.max = 0.12;
-      SHOES.forEach(function (c, i) {
-        var sx = shX - shW / 2 + shW * (i + 0.5) / 4, sy = deskY + 1.875;
-        sneaker(sx - 0.02, sy, backZ + 0.18, 0.35, c[0], c[1], c[2]);
-        var cs = new THREE.Mesh(new THREE.BoxGeometry(shW / 4 - 0.05, 0.32, 0.4), caseM); cs.position.set(sx, sy + 0.16, backZ + 0.23); grp.add(cs);
+      var figZ = backZ + cbD * 0.55;
+      FIGS.forEach(function (f, i) {
+        var bay = Math.floor(i / 2), side = i % 2 ? 1 : -1, by = cbY0 + bay * BAY + 0.008;
+        var lift = side > 0 ? 0.05 : 0;                    /* one figure per bay on a clear riser */
+        if (lift) { var rs = new THREE.Mesh(new THREE.BoxGeometry(0.2, lift, 0.16), shelfGlassM); rs.position.set(cbX + side * cbW * 0.24, by + lift / 2, figZ); grp.add(rs); }
+        figure(cbX + side * cbW * 0.24, by + lift, figZ, f);
       });
-      /* shoe boxes by the desk, the top one open with a pair inside */
-      var bxX = B.max.x + 0.8, bxZ = backZ + 0.7;
-      for (var k = 0; k < 4; k++) {
-        box(0.64, 0.2, 0.4, bxX + (k % 2) * 0.03, floorY + 0.1 + k * 0.205, bxZ + k * 0.02, M({ color: 0xf97316, roughness: 0.8 }));
-        box(0.66, 0.05, 0.42, bxX + (k % 2) * 0.03, floorY + 0.2 + k * 0.205 - 0.02, bxZ + k * 0.02, M({ color: 0x111111, roughness: 0.8 }));
+
+      /* ── high-top sneaker: a side profile with layered colour-block
+         panels (toe cap, heel counter, collar, eyestay), a stitched
+         midsole, outsole, laces and a padded tongue ── */
+      function shp(pts) {
+        var p = new THREE.Shape(); p.moveTo(pts[0][0], pts[0][1]);
+        for (var i = 1; i < pts.length; i++) { var q = pts[i]; if (q.length === 4) p.quadraticCurveTo(q[0], q[1], q[2], q[3]); else p.lineTo(q[0], q[1]); }
+        return p;
       }
-      sneaker(bxX - 0.14, floorY + 0.83, bxZ - 0.02, 1.57, 0xf8fafc, 0xb91c1c, 0x111111);
-      sneaker(bxX + 0.12, floorY + 0.83, bxZ + 0.04, 1.45, 0xf8fafc, 0xb91c1c, 0x111111);
+      function ext(shape, depth, bevel) {
+        var g = new THREE.ExtrudeGeometry(shape, { depth: depth, bevelEnabled: true, bevelThickness: bevel, bevelSize: bevel * 0.8, bevelSegments: 3, curveSegments: 12 });
+        g.translate(0, 0, -depth / 2); return g;
+      }
+      var SN = {
+        upper: ext(shp([[-0.165, 0.03], [0.15, 0.03], [0.18, 0.033, 0.178, 0.062], [0.175, 0.09, 0.145, 0.098], [0.075, 0.115], [0.035, 0.13, 0.012, 0.17],
+          [-0.025, 0.245], [-0.075, 0.262, -0.135, 0.258], [-0.168, 0.255, -0.17, 0.225], [-0.172, 0.07], [-0.174, 0.03, -0.165, 0.03]]), 0.1, 0.008),
+        toe: ext(shp([[0.03, 0.026], [0.15, 0.026], [0.184, 0.029, 0.182, 0.062], [0.18, 0.094, 0.148, 0.102], [0.125, 0.108], [0.14, 0.075, 0.11, 0.062], [0.03, 0.058]]), 0.104, 0.008),
+        heel: ext(shp([[-0.174, 0.026], [-0.06, 0.026], [-0.055, 0.06, -0.085, 0.1], [-0.12, 0.15, -0.176, 0.16], [-0.176, 0.07]]), 0.104, 0.008),
+        collar: ext(shp([[-0.176, 0.19], [-0.06, 0.2], [-0.028, 0.25], [-0.075, 0.267, -0.135, 0.263], [-0.172, 0.26, -0.175, 0.225]]), 0.104, 0.008),
+        stay: ext(shp([[0.078, 0.11], [0.086, 0.122], [0.04, 0.14, 0.018, 0.175], [-0.02, 0.25], [-0.034, 0.243], [0.004, 0.172], [0.022, 0.135, 0.078, 0.11]]), 0.104, 0.008),
+        mid: ext(shp([[-0.168, 0.004], [0.16, 0.004], [0.185, 0.008, 0.182, 0.036], [-0.172, 0.036], [-0.176, 0.008, -0.168, 0.004]]), 0.106, 0.006),
+        out: ext(shp([[-0.168, -0.002], [0.162, -0.002], [0.188, 0.002, 0.185, 0.012], [-0.174, 0.012], [-0.178, 0.002, -0.168, -0.002]]), 0.11, 0.004),
+        stitch: new THREE.BoxGeometry(0.33, 0.003, 0.1245),
+        lace: new THREE.BoxGeometry(0.012, 0.006, 0.086),
+        tongue: new THREE.BoxGeometry(0.03, 0.05, 0.07)
+      };
+      var SNM = {};
+      function snMat(col, r) { var k = col + ':' + r; return SNM[k] || (SNM[k] = M({ color: col, roughness: r })); }
+      function sneaker(x, y, z, ry, c, sc) {
+        var g = new THREE.Group(), add = function (geo, col, r, px, py, pz) {
+          var m = new THREE.Mesh(geo, snMat(col, r)); m.position.set(px || 0, py || 0, pz || 0); g.add(m); return m;
+        };
+        add(SN.upper, c.base, 0.6);
+        add(SN.toe, c.over, 0.5); add(SN.heel, c.over, 0.5); add(SN.stay, c.over, 0.5);
+        add(SN.collar, c.collar, 0.55);
+        add(SN.mid, 0xf4f1ea, 0.7); add(SN.out, c.sole, 0.85);
+        add(SN.stitch, 0x8a8478, 0.9, 0.005, 0.03, 0);
+        for (var i = 0; i < 6; i++) add(SN.lace, c.lace || 0xf8fafc, 0.8, 0.062 - i * 0.016, 0.13 + i * 0.021, 0).rotation.z = -0.95;
+        add(SN.tongue, c.collar, 0.6, -0.042, 0.262, 0).rotation.z = 0.3;
+        g.position.set(x, y, z); g.rotation.y = ry; g.scale.setScalar(sc || 1.15); grp.add(g); return g;
+      }
+      var CW = {
+        chicago: { base: 0xf6f4ef, over: 0xb4121b, collar: 0x111111, sole: 0xb4121b },
+        royal: { base: 0x111111, over: 0x1e40af, collar: 0x111111, sole: 0x1e40af },
+        unc: { base: 0xf6f4ef, over: 0x7cc0ec, collar: 0x7cc0ec, sole: 0x7cc0ec },
+        bred: { base: 0x111111, over: 0xb4121b, collar: 0x111111, sole: 0xb4121b },
+        shadow: { base: 0x9aa0a6, over: 0x111111, collar: 0x111111, sole: 0x111111 },
+        pine: { base: 0xf6f4ef, over: 0x0f6b3f, collar: 0x111111, sole: 0x0f6b3f }
+      };
+
+      /* ── sneaker wall on the left wall, above the bed ── */
+      var swZ0 = backZ + 1.05, swZ1 = backZ + 3.55, swY0 = deskY + 0.35, cell = (swZ1 - swZ0) / 3, rowH = 0.62;
+      box(0.025, rowH * 2 + 0.2, swZ1 - swZ0 + 0.2, leftX + 0.013, swY0 + rowH - 0.04, (swZ0 + swZ1) / 2, panelM);   /* dark panel */
+      ['chicago', 'royal', 'unc', 'bred', 'shadow', 'pine'].forEach(function (k, i) {
+        var col = i % 3, row = Math.floor(i / 3), zc = swZ0 + cell * (col + 0.5), y = swY0 + (1 - row) * rowH;
+        var cw = cell - 0.12, ch = 0.44, cd = 0.36, xc = leftX + 0.025 + cd / 2 + 0.02;
+        box(cd + 0.03, 0.012, cw + 0.03, xc, y - 0.006, zc, shelfGlassM);   /* floating acrylic ledge */
+        var cube = new THREE.Mesh(new THREE.BoxGeometry(cd, ch, cw), caseM); cube.position.set(xc, y + ch / 2, zc); grp.add(cube);
+        var lit = new THREE.Mesh(new THREE.PlaneGeometry(cd - 0.08, cw - 0.08), stripM);   /* lit panel under the lid */
+        lit.rotation.x = Math.PI / 2; lit.position.set(xc, y + ch - 0.014, zc); grp.add(lit);
+        glowCard(cw - 0.04, ch - 0.04, leftX + 0.03, y + ch / 2, zc, Math.PI / 2, 0.2);
+        sneaker(xc + 0.01, y + 0.012, zc, -Math.PI / 2 + 0.12, CW[k], 1.1);
+      });
+      var swL = new THREE.PointLight(0xe8f1ff, 0, 3); swL.position.set(leftX + 1.1, swY0 + rowH, (swZ0 + swZ1) / 2); grp.add(swL);
+
+      /* ── shoe boxes by the desk, the top one open with a pair inside ── */
+      var bxX = B.max.x + 0.8, bxZ = backZ + 0.7, boxM = M({ color: 0xf26b1d, roughness: 0.8 }), lidM = M({ color: 0x111111, roughness: 0.75 }), labM = M({ color: 0xf8fafc, roughness: 0.9 });
+      for (var k = 0; k < 4; k++) {
+        var ox = bxX + (k % 2) * 0.03, oy = floorY + k * 0.215, oz = bxZ + k * 0.02;
+        box(0.64, 0.2, 0.4, ox, oy + 0.1, oz, boxM);
+        if (k < 3) box(0.66, 0.05, 0.42, ox, oy + 0.205, oz, lidM);
+        box(0.16, 0.07, 0.004, ox + 0.2, oy + 0.1, oz + 0.203, labM);   /* size label */
+      }
+      var lid = box(0.66, 0.05, 0.42, bxX + 0.03, floorY + 0.64 + 0.24, bxZ + 0.3, lidM); lid.rotation.x = -1.1;
+      sneaker(bxX - 0.12, floorY + 0.85, bxZ + 0.04, 0.1, CW.chicago, 0.95);
+      sneaker(bxX + 0.13, floorY + 0.85, bxZ + 0.08, -0.15, CW.chicago, 0.95);
       /* the bed along the left wall, between it and the desk */
       var bz = backZ + 2.1, bx = leftX + 0.95;
       box(1.7, 0.32, 3.1, bx, floorY + 0.16, bz, woodM);
@@ -626,13 +721,17 @@
       return {
         tick: function () {
           /* the room fades in as the hero scrolls away; hidden in the hero */
-          var a = Math.min(1, (window.__worldHeroOut || 0) * 1.4);
+          /* eased, and solid surfaces keep writing depth while they fade:
+             without it the walls went see-through and the bed showed
+             through the desk (an x-ray look, not a fade) */
+          var h = Math.min(1, (window.__worldHeroOut || 0) / 0.7), a = h * h * (3 - 2 * h);
           if (Math.abs(a - shown) < 0.01) return;
           shown = a;
           grp.visible = city.mesh.visible = a > 0.01;
-          for (var i = 0; i < mats.length; i++) { var mx = mats[i].userData.max; mats[i].opacity = a * (mx || 1); mats[i].depthWrite = !mx && a > 0.98; }
+          for (var i = 0; i < mats.length; i++) { var mx = mats[i].userData.max; mats[i].opacity = a * (mx || 1); mats[i].depthWrite = !mx; }
           city.fade(a); su.uA.value = a;
           lampL.intensity = a * (9 - 6 * dayNow); winL.intensity = a * (3 + 5 * dayNow);
+          cabL.intensity = a * 2.2; swL.intensity = a * 1.6;
         },
         day: function (k, dusk) { dayNow = k; shown = -1; su.uDay.value = k; su.uDusk.value = dusk || 0; city.day(k); ledM.color.setHex(k > 0.5 ? 0x5fa8c0 : 0x00d4ff); }
       };

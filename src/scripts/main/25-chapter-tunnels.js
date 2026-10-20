@@ -45,13 +45,17 @@
     });
     window.__worldShot = sum;
     var heroOut = Math.min(1, Math.max(0, (scrollY - vh * 0.35) / (vh * 0.45)));
-    root.style.setProperty('--world-dim', (heroOut * (1 - travel)).toFixed(3));
+    /* the room arrives first (36-hero-3d.js fades it over heroOut 0-.7),
+       then the dim and focus pull come in as the first chapter's text
+       does, so the hand-over never looks milky */
+    var dimIn = Math.min(1, Math.max(0, (heroOut - 0.45) / 0.55)); dimIn = dimIn * dimIn * (3 - 2 * dimIn);
+    root.style.setProperty('--world-dim', (dimIn * (1 - travel)).toFixed(3));
     /* for the colour grade (cooler, near mono while flying) and the hero
        plasma, which hands over to the world once the hero has gone */
     root.style.setProperty('--world-travel', travel.toFixed(3));
     root.style.setProperty('--world-hero-out', heroOut.toFixed(3));
     window.__worldHeroOut = heroOut;
-    window.__worldDim = heroOut * (1 - travel);
+    window.__worldDim = dimIn * (1 - travel);
     root.classList.toggle('world-past-hero', scrollY > vh * 0.12);
   }
   addEventListener('scroll', queue, { passive: true });

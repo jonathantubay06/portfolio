@@ -24,7 +24,9 @@
 
   // Fall back to OS preference if nothing is saved yet (matches the inline
   // head script in index.html that sets data-theme before first paint)
-  apply(saved || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'));
+  // the 3D world runs dark only (html.world-lock, set in _head); the saved
+  // choice is kept for Quick view and phones
+  apply(root.classList.contains('world-lock') ? 'dark' : saved || (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'));
 
   btn.addEventListener('click', () => {
     // Toggle: if the attribute exists we're in light mode, clicking goes dark, and vice versa

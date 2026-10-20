@@ -146,7 +146,17 @@ html.world-on:not([data-theme="light"]){background:#081221}
    backgrounds with their own !important (59-dark-lift's hero rule is
    (0,3,1), hence the repeated class); the world layer must win */
 html.world-on:not([data-theme="light"]) body,html.world-on.world-on.world-on:not([data-theme="light"]) .hero{background:transparent!important}
-html.world-on main::before,html.world-on main::after,html.world-on .hero::before{display:none}
+html.world-on main::before,html.world-on main::after,html.world-on .hero::before,html.world-on .hero::after{display:none}
+/* the hero's still-poster ambience image stayed on under the live 3D as a
+   dark slab that ended in a hard line at the tech stack band; and the
+   text shade behind the hero copy now feathers out at its bottom */
+html.world-on .hero-ambient{display:none}
+html.world-on .hero-copy::before{
+  -webkit-mask:linear-gradient(180deg,#000 55%,transparent);mask:linear-gradient(180deg,#000 55%,transparent)}
+/* the tech stack band's glow lines fade out at both ends over the world,
+   so the hero hands over without a hard ruled edge */
+html.world-on .built-wrap::before,html.world-on .built-wrap::after{
+  -webkit-mask:linear-gradient(90deg,transparent,#000 22%,#000 78%,transparent);mask:linear-gradient(90deg,transparent,#000 22%,#000 78%,transparent)}
 /* the tech stack band and the section backdrops painted solid navy strips
    across the world (55-section-backdrops sets .built-wrap to var(--bg)) */
 html.world-on .built-wrap{background:none!important}

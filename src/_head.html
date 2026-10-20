@@ -12,22 +12,27 @@
 (function(){
   var t = localStorage.getItem('jt-theme');
   if (!t) t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-  if (t === 'light') document.documentElement.setAttribute('data-theme','light');
   /* desktop (wide screen + mouse) gets the 3D world redesign; phones and
      tablets keep the live site's layout (.d-only / .m-only blocks) */
-  if (matchMedia('(min-width:1024px) and (pointer:fine)').matches) document.documentElement.classList.add('dk');
-  /* the 3D world's intro counter plays once per visit (27-world-hud.js) */
-  try { if (sessionStorage.getItem('jt-intro')) document.documentElement.classList.add('intro-seen'); } catch (e) {}
-  /* where the live 3D world will boot (dark theme, desktop), hold back the
-     hero's still poster so the first paint is not a picture that then
-     swaps for the 3D; 27-world-hud.js lifts this if the 3D is skipped */
+  var dk = matchMedia('(min-width:1024px) and (pointer:fine)').matches;
+  if (dk) document.documentElement.classList.add('dk');
   /* Quick view (41-world-extras.js): a saved choice for the plain, fast
      page with no 3D or motion */
   var quick = false;
   try { quick = localStorage.getItem('jt-quick') === '1'; } catch (e) {}
   if (quick) document.documentElement.classList.add('quick');
-  if (!quick && t !== 'light' && matchMedia('(min-width:1024px) and (pointer:fine) and (prefers-reduced-motion:no-preference)').matches)
-    document.documentElement.classList.add('world-pending');
+  /* the 3D world is drawn for the dark page, so while it runs the page is
+     dark and the theme switch is hidden (html.world-lock); light mode
+     lives in Quick view and on phones. The saved choice is kept. */
+  var world = dk && !quick && !matchMedia('(prefers-reduced-motion:reduce)').matches;
+  if (world) { t = 'dark'; document.documentElement.classList.add('world-lock'); }
+  if (t === 'light') document.documentElement.setAttribute('data-theme','light');
+  /* the 3D world's intro counter plays once per visit (27-world-hud.js) */
+  try { if (sessionStorage.getItem('jt-intro')) document.documentElement.classList.add('intro-seen'); } catch (e) {}
+  /* where the live 3D world will boot (dark theme, desktop), hold back the
+     hero's still poster so the first paint is not a picture that then
+     swaps for the 3D; 27-world-hud.js lifts this if the 3D is skipped */
+  if (world) document.documentElement.classList.add('world-pending');
 })();
 </script>
 

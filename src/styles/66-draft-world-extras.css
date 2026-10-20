@@ -8,6 +8,9 @@
 html:not(.dk) .d-only{display:none!important}
 html.dk .m-only{display:none!important}
 
+/* the world runs dark only: no theme switch until Quick view is on */
+html.world-lock .theme-toggle{display:none}
+
 /* ── Quick view switch (header) ── */
 .quick-toggle{margin-left:.5rem;padding:.32rem .75rem;border-radius:99px;
   font:600 .68rem/1 var(--font-body,inherit);letter-spacing:.08em;text-transform:uppercase;
