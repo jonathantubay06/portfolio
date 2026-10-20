@@ -289,6 +289,9 @@
          up the copy, so they fade in only as the hero scrolls away */
       var k = Math.round(Math.min(1, Math.max(0, 1 - hb / H)) * 20) / 20;
       if (k !== secK) { secK = k; root.style.setProperty('--wp-sec', k); }
+      /* with the 3D world on, this canvas fades out with the hero; once the
+         hero is off screen it is invisible, so skip the draw */
+      if (hb < 0 && root.classList.contains('world-on')) return;
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.clear(gl.COLOR_BUFFER_BIT);
 

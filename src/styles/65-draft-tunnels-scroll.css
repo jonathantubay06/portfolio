@@ -149,3 +149,56 @@ html.world-on .tn-rings{display:none}
    through them (dashboard numbers behind the case studies). Frost them. */
 html.world-on:not([data-theme="light"]) main :is(.proj-feature,.proj-card,.svc-compact > *){
   -webkit-backdrop-filter:blur(14px) saturate(.8);backdrop-filter:blur(14px) saturate(.8)}
+
+/* ── igloo pass 2 (2026-10-20): plasma, grade, grain, HUD, intro ── */
+/* the live site's hero plasma (37-live-wallpaper) stays the hero's
+   backdrop and hands over to the world as the hero scrolls away */
+html.world-on .live-wallpaper{opacity:calc(1 - var(--world-hero-out,0));transition:opacity .3s linear}
+/* colour grade: while the camera flies the scene goes cool and nearly
+   monochrome, and the colour comes back when it lands on a chapter */
+html.world-on .world-3d{filter:saturate(calc(1 - .7 * var(--world-travel,0))) hue-rotate(calc(-12deg * var(--world-travel,0))) blur(calc(7px * var(--world-dim,0)))}
+/* readability: while a chapter is read the world sits further back and
+   goes out of focus (blur above), so the 3D's own labels (order toasts,
+   dashboard numbers) never read as text behind the real text */
+.world-scrim{background:radial-gradient(ellipse 80% 70% at 50% 45%,rgba(8,18,36,.88),rgba(8,18,36,.95))}
+/* chapter titles: smaller and calmer, igloo-style, not a wall of type */
+html.world-on .tn-text{font-size:clamp(1.8rem,3.8vw,3.2rem);letter-spacing:.06em}
+html.world-on .tn-text span{font-size:.36em}
+
+/* grain + vignette: above the 3D and its scrim, below every text block */
+.world-fx{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;display:none}
+html.world-on:not([data-theme="light"]) .world-fx{display:block}
+.world-fx::before{content:"";position:absolute;inset:-60px;opacity:.07;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1.4 0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E") 0 0/180px 180px;
+  animation:grainShift .9s steps(6) infinite}
+.world-fx::after{content:"";position:absolute;inset:0;
+  background:radial-gradient(ellipse 75% 70% at 50% 48%,transparent 55%,rgba(2,6,14,.55) 100%)}
+@keyframes grainShift{
+  0%{transform:translate(0,0)}20%{transform:translate(-22px,14px)}40%{transform:translate(18px,-26px)}
+  60%{transform:translate(-30px,-10px)}80%{transform:translate(26px,22px)}100%{transform:translate(0,0)}}
+
+/* HUD: small mono readouts in the bottom-left gutter, clear of the
+   content column, the Available pill and back-to-top on the right */
+.world-hud{position:fixed;left:24px;bottom:22px;z-index:40;display:none;flex-direction:column;gap:4px;
+  font:500 11px/1.3 ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.14em;text-transform:uppercase;
+  color:rgba(170,225,255,.78);text-shadow:0 1px 6px rgba(0,0,0,.8);pointer-events:none}
+.world-hud .wh-ch{color:#e8f7ff}
+.world-hud b{font-weight:600;color:var(--cyan)}
+/* only where the gutter left of the 1070px content column fits it */
+@media(min-width:1500px){html.world-on:not([data-theme="light"]) .world-hud{display:flex}}
+
+/* intro counter: only where the 3D world can run, once per visit; it
+   also fades itself out at 3 s if no script ever runs */
+.world-loader{display:none}
+@media(min-width:1024px) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+  html:not(.intro-seen):not([data-theme="light"]) .world-loader{
+    display:grid;place-items:center;position:fixed;inset:0;z-index:9999;background:#060d1a;
+    animation:wlAuto .6s ease 3s forwards}
+}
+.world-loader.wl-out{opacity:0;visibility:hidden;transition:opacity .6s ease,visibility 0s .6s;animation:none}
+@keyframes wlAuto{to{opacity:0;visibility:hidden}}
+.wl-in{display:grid;justify-items:start;gap:10px;width:min(320px,70vw)}
+.wl-k{font:500 11px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.3em;text-transform:uppercase;color:rgba(170,225,255,.7)}
+.wl-n{font-family:var(--font-head);font-weight:900;font-size:clamp(3rem,7vw,5.5rem);line-height:1;color:#fff;letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.wl-bar{display:block;width:100%;height:2px;background:rgba(0,212,255,.15);overflow:hidden}
+.wl-bar i{display:block;height:100%;background:var(--cyan);transform:scaleX(0);transform-origin:left}

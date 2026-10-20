@@ -238,7 +238,7 @@
         at('rack', 3.6, 0.35, 0.24, 0.3) || hero
       ];
       /* fog: the far wire shell and particles fade into the page navy */
-      world.fog = new THREE.FogExp2(0x0a1628, 0.05);
+      world.fog = new THREE.FogExp2(0x0a1628, 0.03);
       /* the igloo-style wire network: two slow, counter-turning geodesic
          shells around the desk, plus a faint floor grid far below */
       var lm = new THREE.LineBasicMaterial({ color: 0x00d4ff, transparent: true, opacity: 0.16, depthWrite: false });
@@ -268,6 +268,13 @@
     function worldTick(t, s, sf) {
       if (shell) { shell.rotation.y = t * 0.018; shell.rotation.x = Math.sin(t * 0.05) * 0.08; }
       if (shell2) shell2.rotation.y = -t * 0.03;
+      /* in the hero the live wallpaper's plasma is the backdrop; the wire
+         shells come up only once the hero has scrolled away */
+      if (shell) {
+        var ho = window.__worldHeroOut || 0;
+        shell.material.opacity = 0.03 + 0.11 * ho;
+        shell2.material.opacity = 0.02 + 0.06 * ho;
+      }
       if (field) field.rotation.y = t * 0.008;
       if (focus) {
         focus.position.copy(shotLook); focus.position.y += 0.45; focus.position.z += 0.5;

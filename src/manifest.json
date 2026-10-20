@@ -61,7 +61,8 @@
     "23-process-proof.js",
     "24-testi-fan.js",
     "25-chapter-tunnels.js",
-    "26-smooth-wheel.js"
+    "26-smooth-wheel.js",
+    "27-world-hud.js"
   ],
   "effects": [
     "00-preamble.js",
@@ -87,6 +88,7 @@
     "34-exp-tabs-cert-carousel.js",
     "35-swipe-dots.js",
     "36-hero-3d.js",
+    "37-live-wallpaper.js",
     "38-section-motion.js",
     "39-section-3d.js",
     "40-desk-extras.js"

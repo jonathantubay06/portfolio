@@ -1,4 +1,5 @@
 nav
+world-loader
 main-landmark
 hero
 tech-stack-marquee

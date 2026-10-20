@@ -141,7 +141,7 @@
    and each card needs a solid face so the ones behind do not show through */
 .sm-vis .fan-card.tq,.fan-card.tq{animation:none}
 .fan-card.tq{background:linear-gradient(160deg,#10223b,#0b1a2e);border-color:rgba(0,212,255,.22)}
-.fan-card.tq:not(.is-front) > *{opacity:.3;transition:opacity .4s ease}
+.fan-card.tq:not(.is-front) > *{opacity:.12;transition:opacity .4s ease}
 .fan-card.tq.is-front{border-color:rgba(0,212,255,.4);box-shadow:0 24px 60px rgba(0,0,0,.55)}
 [data-theme="light"] .fan-card.tq{background:#fff;border-color:rgba(10,99,184,.18)}
 .fan-card .tq-author{flex-wrap:wrap;row-gap:.8rem}

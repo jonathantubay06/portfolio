@@ -13,6 +13,8 @@
   var t = localStorage.getItem('jt-theme');
   if (!t) t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
   if (t === 'light') document.documentElement.setAttribute('data-theme','light');
+  /* the 3D world's intro counter plays once per visit (27-world-hud.js) */
+  try { if (sessionStorage.getItem('jt-intro')) document.documentElement.classList.add('intro-seen'); } catch (e) {}
 })();
 </script>
 
