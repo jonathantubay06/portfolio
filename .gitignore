@@ -30,3 +30,6 @@ dist/
 /main.js
 /effects.js
 3d/scene.raw.glb
+
+# Full-size 3D source models (342 MB, local only; credits in docs/3d-room.md)
+docs/source-art/
