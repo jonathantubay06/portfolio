@@ -136,6 +136,8 @@
 
 /* ── tier 3 · the toolkit ───────────────────────────────────────── */
 .work-tiles{display:grid;grid-template-columns:repeat(6,1fr);gap:1rem}
+/* my own AI: two tiles, wider than the toolkit ones */
+.work-tiles.work-tiles-duo{grid-template-columns:repeat(2,1fr);max-width:46rem}
 .proj-tile .proj-thumb{aspect-ratio:4/3}
 .proj-tile .proj-body{padding:1rem 1rem 1.1rem}
 .proj-tile .proj-origin{font-size:.52rem;padding:.18rem .5rem;margin-bottom:.55rem}

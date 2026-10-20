@@ -27,10 +27,11 @@
 - Kingdomland Kids: Shopify store work
 - Sapmok USA: Shopify store revamp for a closing-down sale (store now closed, archived)
 - Internal tools: KDL Video Health Checker, daily report generators, service and project health dashboards, E.D.I.T.H. and T.H.O.R. AI agents (built by me, now run by SentryX)
+- Personal AI: A.L.I.S.O.N. (my voice-driven desktop and phone assistant) and Caelia (a family assistant on Telegram), both built and run by me, mostly on free models
 
 ## Proof
 - 11 client and LinkedIn reviews on the site
-- 11 sites and tools shipped: 5 live sites I build and look after, plus 6 tools and AI agents
+- 13 sites and tools shipped: 5 live sites I build and look after, 6 tools and AI agents, plus 2 personal AI assistants
 
 ## Links
 - [Portfolio](https://jonathantubay.com/)

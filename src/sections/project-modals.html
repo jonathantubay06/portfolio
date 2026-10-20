@@ -311,6 +311,63 @@
   </div>
 </div>
 
+<!-- A.L.I.S.O.N. modal — personal AI assistant -->
+<div class="proj-modal" id="modal-alison" style="--glow:60,150,240" role="dialog" aria-modal="true" aria-label="A.L.I.S.O.N. details">
+  <div class="modal-backdrop"></div>
+  <div class="modal-inner">
+    <button class="modal-close" aria-label="Close">✕</button>
+    <div class="modal-screenshot"><div class="mw"><img src="img/preview-alison.webp" alt="A.L.I.S.O.N. desktop HUD" loading="lazy" decoding="async" width="2048" height="1152"
+             srcset="img/preview-alison-720w.webp 720w, img/preview-alison-1080w.webp 1080w, img/preview-alison.webp 2048w"
+             sizes="(min-width:900px) 824px,calc(100vw - 4rem)"></div></div>
+    <div class="modal-content">
+      <header class="mh">
+        <div class="mh-row"><span class="proj-origin proj-origin-personal">Personal</span><span class="modal-badge badge-role">Solo Build</span><span class="modal-badge badge-status">In daily use · Private</span></div>
+        <h3 class="modal-title">A.L.I.S.O.N.</h3>
+        <p class="mh-sub">Desktop · Phone · Voice · Multi-model</p>
+        <div class="mh-actions"><a href="#contact" class="btn btn-p modal-cta">Talk about a build like this →</a></div>
+      </header>
+
+      <div class="modal-impact">
+        <div class="modal-problem"><span class="modal-label">Problem</span>I wanted one assistant that runs my PC by voice and follows me to my phone, without paying per token.</div>
+        <span class="mi-arrow" aria-hidden="true"></span>
+        <div class="modal-result"><span class="modal-label">Result</span>A Jarvis-style HUD on my desktop and phone. Her own wake word, voice control of apps and files, reminders, notes and a daily briefing, routed across free cloud models with an offline fallback.</div>
+      </div>
+      <p class="modal-desc">A.L.I.S.O.N. (Adaptive Learning Intelligent System for Operational Neural assistance) is my own desktop assistant. A small router hands the model only the tools that fit each message, and deterministic "arms" do the real work, so a free model only has to choose, never calculate. She listens for a wake word I trained myself, opens and closes apps, handles files, volume and screenshots, turns screenshots into todos and notes, and asks for a yes before anything risky. Every change starts from a snapshot, so it can be rolled back in one command. On my phone she runs as a sign-in web app. She also talks to Caelia, so alerts land on my desk when I am at the PC and on my phone when I am not.</p>
+      <div class="modal-stack-label">Tech Stack</div>
+      <div class="modal-stack"><span>Node.js</span><span>Electron</span><span>JavaScript</span><span>Python</span><span>openWakeWord</span><span>Vosk</span><span>llama.cpp</span><span>Cloudflare Workers</span><span>Gemini</span><span>Groq</span><span>OpenRouter</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Caelia modal — personal AI assistant -->
+<div class="proj-modal" id="modal-caelia" style="--glow:170,120,255" role="dialog" aria-modal="true" aria-label="Caelia details">
+  <div class="modal-backdrop"></div>
+  <div class="modal-inner">
+    <button class="modal-close" aria-label="Close">✕</button>
+    <div class="modal-screenshot"><div class="mw"><img src="img/preview-caelia.webp" alt="Caelia on Telegram (example chat)" loading="lazy" decoding="async" width="2048" height="1152"
+             srcset="img/preview-caelia-720w.webp 720w, img/preview-caelia-1080w.webp 1080w, img/preview-caelia.webp 2048w"
+             sizes="(min-width:900px) 824px,calc(100vw - 4rem)"></div></div>
+    <div class="modal-content">
+      <header class="mh">
+        <div class="mh-row"><span class="proj-origin proj-origin-personal">Personal</span><span class="modal-badge badge-role">Solo Build</span><span class="modal-badge badge-status">In daily use · Invite only</span></div>
+        <h3 class="modal-title">Caelia</h3>
+        <p class="mh-sub">Telegram · Family assistant · Free models</p>
+        <div class="mh-actions"><a href="#contact" class="btn btn-p modal-cta">Talk about a build like this →</a></div>
+      </header>
+
+      <div class="modal-impact">
+        <div class="modal-problem"><span class="modal-label">Problem</span>My family needed one place for reminders, todos, expenses and quick answers, in the languages we speak at home.</div>
+        <span class="mi-arrow" aria-hidden="true"></span>
+        <div class="modal-result"><span class="modal-label">Result</span>A Telegram assistant with 18 skills: research with sources, reminders, a shared family todo board and expense log, receipt and voice-note reading, translation, PDF summaries and a 7 AM briefing.</div>
+      </div>
+      <p class="modal-desc">Caelia lives on Telegram and only answers family and friends I invite, each with a private notebook. She runs on a small server with her own agent runtime on Node 22 and a failover chain of free models, picked after benchmarking 13 of them. Voice notes are transcribed with Whisper, and she translates between English, Tagalog, Cebuano and Aklanon. A separate watchdog bot sends the alerts and reminders, a Cloudflare Worker checks the server is alive, and she links to A.L.I.S.O.N. on my PC. 137 unit tests cover the bridge and the skills.</p>
+      <p class="modal-desc"><em>The chat in the picture is an example, not real family data.</em></p>
+      <div class="modal-stack-label">Tech Stack</div>
+      <div class="modal-stack"><span>Node.js 22</span><span>Telegram Bot API</span><span>systemd</span><span>Whisper</span><span>Gemini</span><span>OpenRouter</span><span>Groq</span><span>Cloudflare Workers</span><span>Cloudflare KV</span></div>
+    </div>
+  </div>
+</div>
+
 <!-- Deirdre P. Malcolm modal — Squarespace takeover, store setup, Prodigi print-on-demand,
      custom CSS/JS tablet responsive fix -->
 <div class="proj-modal" id="modal-dpm" style="--glow:60,164,221" role="dialog" aria-modal="true" aria-label="Deirdre P. Malcolm Art details">

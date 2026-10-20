@@ -31,12 +31,13 @@
   const IS_WEBKIT = /AppleWebKit/.test(navigator.userAgent) && !/Chrome\/|Chromium\/|Edg\//.test(navigator.userAgent);
   const CAN_VT  = typeof document.startViewTransition === 'function' && !REDUCED && !IS_WEBKIT;
 
-  // Reading order of the Work section: freelance, more builds, toolkit.
+  // Reading order of the Work section: freelance, more builds, toolkit, my own AI.
   const MODAL_ORDER = [
     'modal-moev', 'modal-dpm',
     'modal-toolmart', 'modal-kdl', 'modal-portfolio',
     'modal-kdl-checker', 'modal-service-health', 'modal-project-health',
-    'modal-edith', 'modal-thor'
+    'modal-edith', 'modal-thor',
+    'modal-alison', 'modal-caelia'
   ];
 
   let _opener = null;   // element focus returns to when the modal closes
