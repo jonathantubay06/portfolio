@@ -1,6 +1,15 @@
 # jonathantubay.com
 
-Static portfolio. No framework, no runtime dependencies, no npm install.
+**Live: [jonathantubay.com](https://jonathantubay.com)**
+
+![Hero: the WebGL desk with the RGB gaming laptop, ops dashboard and the dogs](docs/img/readme-hero.webp)
+
+![The desktop 3D bedroom: sneaker wall, figure cabinet, bed, desk and shoe-box stack](docs/img/readme-room.webp)
+
+Static portfolio. No framework and no npm install. The only runtime
+library is three.js 0.170 (WebGL) for the 3D hero desk, loaded from
+jsDelivr; the bedroom world around it is desktop only. Without WebGL (or
+in Quick View) the page falls back to a still poster.
 
 ## Structure
 
