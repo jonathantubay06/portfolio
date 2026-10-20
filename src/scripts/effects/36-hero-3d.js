@@ -240,7 +240,7 @@
        the subject sits (fraction of the viewport). Order matches the
        tunnels: hero, 01 Services, 02 Work, 03 Reviews, 04 Experience. */
     var shots = null, shotS = 0, shotPos = new THREE.Vector3(), shotLook = new THREE.Vector3();
-    var shell = null, shell2 = null, field = null, focus = null;
+    var shell = null, shell2 = null, field = null, focus = null, bg = null;
     function buildWorld(root3) {
       var away = new THREE.Vector3().subVectors(camBase, target).normalize();
       function at(name, dist, lift, o, side) {
@@ -265,17 +265,20 @@
       ];
       /* fog: the far wire shell and particles fade into the page navy */
       world.fog = new THREE.FogExp2(0x0a1628, 0.03);
-      /* the igloo-style wire network: two slow, counter-turning geodesic
-         shells around the desk, plus a faint floor grid far below */
-      var lm = new THREE.LineBasicMaterial({ color: 0x00d4ff, transparent: true, opacity: 0.16, depthWrite: false });
-      shell = new THREE.LineSegments(new THREE.WireframeGeometry(new THREE.IcosahedronGeometry(9, 2)), lm);
-      shell2 = new THREE.LineSegments(new THREE.WireframeGeometry(new THREE.IcosahedronGeometry(5.6, 1)), lm.clone());
-      shell2.material.opacity = 0.09;
-      shell.position.copy(target); shell2.position.copy(target);
-      var grid = new THREE.GridHelper(40, 80, 0x00d4ff, 0x0a6fa0);
-      grid.material.transparent = true; grid.material.opacity = 0.12; grid.material.depthWrite = false;
-      grid.position.set(target.x, target.y - 1.6, target.z);
-      world.add(shell, shell2, grid);
+      /* the world around the desk (2026-10-20, four looks to compare on
+         port 3002): ?bg=city, ?bg=ocean, ?bg=island, or the default combo
+         (the data ocean close in, the Manila skyline on the horizon).
+         Each is one or two draw calls; all fade into the fog. */
+      var mode = (/[?&]bg=(city|ocean|island)/.exec(location.search) || [])[1] || 'combo';
+      var parts = [];
+      if (mode === 'ocean' || mode === 'combo') parts.push(dataOcean(target));
+      if (mode === 'city') parts.push(skyline(target, 9, 26, 9, 4, 10.5, 190, 0.28));
+      if (mode === 'combo') parts.push(skyline(target, 20, 34, 6, 2, 6.5, 240, 0.3));
+      bg = {
+        tick: function (t) { for (var i = 0; i < parts.length; i++) parts[i].tick(t); },
+        day: function (k) { for (var i = 0; i < parts.length; i++) parts[i].day(k); }
+      };
+      var isle = mode === 'island';
       /* a deep particle field, not just the motes by the desk */
       var N = 700, fp = new Float32Array(N * 3);
       for (var i = 0; i < N; i++) {
@@ -288,8 +291,108 @@
       field = new THREE.Points(fg, new THREE.PointsMaterial({ color: 0x7fe3ff, size: 0.035, transparent: true, opacity: 0.55, depthWrite: false }));
       field.position.copy(target);
       world.add(field);
+      if (isle) parts.push(island(target));
       /* a soft key light that follows the camera's subject */
       focus = new THREE.PointLight(0x66e0ff, 0, 2.6); world.add(focus);
+    }
+    /* ── world backgrounds ── */
+    /* B. data ocean: a rolling field of dots under the desk; rings of light
+       run inward toward it, like orders flowing in */
+    function dataOcean(c) {
+      var n = 160, sp = 0.36, pos = new Float32Array(n * n * 3), k = 0;
+      for (var i = 0; i < n; i++) for (var j = 0; j < n; j++) {
+        pos[k++] = (i - n / 2) * sp; pos[k++] = 0; pos[k++] = (j - n / 2) * sp;
+      }
+      var g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+      var u = { uT: { value: 0 }, uDay: { value: 0 }, uPx: { value: renderer.getPixelRatio() } };
+      var m = new THREE.ShaderMaterial({
+        uniforms: u, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+        vertexShader: 'uniform float uT,uPx;varying float vP,vF;void main(){vec3 p=position;float d=length(p.xz);' +
+          'p.y+=sin(p.x*.32+uT*.45)*.22+sin(p.z*.27-uT*.38)*.22+sin(d*.45-uT*.55)*.12;' +
+          'vP=pow(smoothstep(.86,1.,fract(d*.05+uT*.13)),2.);vF=(1.-smoothstep(9.,27.,d))*smoothstep(1.2,3.2,d);' +
+          'vec4 mv=modelViewMatrix*vec4(p,1.);gl_PointSize=(2.2+vP*3.)*uPx*(16./-mv.z);gl_Position=projectionMatrix*mv;}',
+        fragmentShader: 'uniform float uDay;varying float vP,vF;void main(){vec2 q=gl_PointCoord-.5;if(dot(q,q)>.25)discard;' +
+          'vec3 base=mix(vec3(.1,.55,.8),vec3(.3,.6,.85),uDay);vec3 col=mix(base,vec3(.55,.95,1.),vP);' +
+          'gl_FragColor=vec4(col,vF*(.5+.5*vP));}'
+      });
+      var pts = new THREE.Points(g, m); pts.position.set(c.x, c.y - 2.2, c.z); pts.frustumCulled = false;
+      world.add(pts);
+      return { tick: function (t) { u.uT.value = t; }, day: function (k) { u.uDay.value = k; } };
+    }
+    /* A. Manila skyline: low-poly towers in a ring, lit windows that dim by
+       day; one instanced draw. Close rings leave a gap where the hero and
+       wide-shot cameras stand, so no tower ever blocks them. */
+    function skyline(c, r0, r1, sink, h0, h1, count, lit) {
+      var cv = document.createElement('canvas'); cv.width = 64; cv.height = 128;
+      var x = cv.getContext('2d'); x.fillStyle = '#05080f'; x.fillRect(0, 0, 64, 128);
+      for (var wy = 4; wy < 124; wy += 8) for (var wx = 4; wx < 60; wx += 8) {
+        if (Math.random() < lit) { x.fillStyle = Math.random() < 0.7 ? '#ffcf8a' : '#7fe3ff'; x.fillRect(wx, wy, 4, 4); }
+      }
+      var tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace;
+      var mat = new THREE.MeshStandardMaterial({ color: 0x0c1830, roughness: 0.85, metalness: 0.1, emissive: 0xffffff, emissiveMap: tex, emissiveIntensity: 0.65 });
+      var mesh = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), mat, count);
+      var aw = Math.atan2(camBase.z - target.z, camBase.x - target.x), o = new THREE.Object3D(), n = 0;
+      for (var i = 0; i < count * 3 && n < count; i++) {
+        var a = Math.random() * Math.PI * 2;
+        var da = Math.abs(Math.atan2(Math.sin(a - aw), Math.cos(a - aw)));
+        if (da < 0.6 && r0 < 14) continue;
+        var r = r0 + Math.random() * (r1 - r0), h = h0 + Math.pow(Math.random(), 1.6) * (h1 - h0);
+        var w = 0.7 + Math.random() * 1.6;
+        o.position.set(c.x + Math.cos(a) * r, c.y - sink + h / 2, c.z + Math.sin(a) * r);
+        o.rotation.set(0, Math.random() * Math.PI, 0); o.scale.set(w, h, 0.7 + Math.random() * 1.4);
+        o.updateMatrix(); mesh.setMatrixAt(n++, o.matrix);
+      }
+      mesh.count = n; mesh.instanceMatrix.needsUpdate = true;
+      world.add(mesh);
+      return { tick: function () {}, day: function (k) { mat.emissiveIntensity = 0.65 - 0.55 * k; mat.color.setHex(k > 0.5 ? 0x3a5478 : 0x0c1830); } };
+    }
+    /* C. floating island: a rock under the desk, soft clouds below, an
+       aurora sky dome around it */
+    /* an upturned, roughed-up cone: reads as rock, not a party hat */
+    function rockGeo() {
+      var g = new THREE.ConeGeometry(2.7, 3.2, 18, 6), p = g.attributes.position, v = new THREE.Vector3();
+      for (var i = 0; i < p.count; i++) {
+        v.fromBufferAttribute(p, i);
+        var top = v.y > 1.55, n = Math.sin(v.x * 3.1) * Math.cos(v.z * 2.7) + Math.sin(v.y * 4.3 + v.x);
+        if (!top) { v.x *= 1 + n * 0.08; v.z *= 1 + n * 0.08; v.y += n * 0.06; }
+        p.setXYZ(i, v.x, v.y, v.z);
+      }
+      g.computeVertexNormals();
+      return g;
+    }
+    function island(c) {
+      var rock = new THREE.Mesh(rockGeo(), new THREE.MeshStandardMaterial({ color: 0x1b2a3f, roughness: 0.95, flatShading: true }));
+      rock.rotation.x = Math.PI; rock.position.set(c.x, c.y - 0.62 - 0.25 - 1.6, c.z);
+      world.add(rock);
+      var cv = document.createElement('canvas'); cv.width = cv.height = 128;
+      var x = cv.getContext('2d'), gr = x.createRadialGradient(64, 64, 4, 64, 64, 64);
+      gr.addColorStop(0, 'rgba(255,255,255,.9)'); gr.addColorStop(0.5, 'rgba(255,255,255,.35)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+      x.fillStyle = gr; x.fillRect(0, 0, 128, 128);
+      var ctex = new THREE.CanvasTexture(cv), clouds = new THREE.Group();
+      for (var i = 0; i < 46; i++) {
+        var sm = new THREE.SpriteMaterial({ map: ctex, color: 0x9fbce8, transparent: true, opacity: 0.5, depthWrite: false, fog: false });
+        var spr = new THREE.Sprite(sm), a = Math.random() * Math.PI * 2, r = 2.5 + Math.random() * 14;
+        spr.position.set(Math.cos(a) * r, -2.4 - Math.random() * 2.2, Math.sin(a) * r);
+        var sc = 3 + Math.random() * 5; spr.scale.set(sc * 1.6, sc, 1);
+        clouds.add(spr);
+      }
+      clouds.position.copy(c); world.add(clouds);
+      var su = { uT: { value: 0 }, uDay: { value: 0 } };
+      var sky = new THREE.Mesh(new THREE.SphereGeometry(44, 32, 16), new THREE.ShaderMaterial({
+        uniforms: su, side: THREE.BackSide, depthWrite: false,
+        vertexShader: 'varying vec3 vD;void main(){vD=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+        fragmentShader: 'uniform float uT,uDay;varying vec3 vD;void main(){float y=vD.y;float az=atan(vD.z,vD.x);' +
+          'vec3 nite=mix(vec3(.015,.025,.07),vec3(.04,.08,.2),smoothstep(-.3,.15,y));nite=mix(nite,vec3(.02,.03,.09),smoothstep(.15,.9,y));' +
+          'float band=exp(-pow((y-.32-.06*sin(az*3.+uT*.07))*9.,2.));' +
+          'vec3 aur=mix(vec3(.1,.9,.7),vec3(.45,.3,.95),.5+.5*sin(az*2.+uT*.05));nite+=aur*band*.9;' +
+          'vec3 dayc=mix(vec3(.55,.72,.92),vec3(.25,.5,.85),smoothstep(-.1,.8,y));gl_FragColor=vec4(mix(nite,dayc,uDay*.85),1.);}'
+      }));
+      sky.position.copy(c); world.add(sky);
+      if (field) field.material.opacity = 0.8;
+      return {
+        tick: function (t) { su.uT.value = t; clouds.rotation.y = t * 0.01; },
+        day: function (k) { su.uDay.value = k; for (var i = 0; i < clouds.children.length; i++) clouds.children[i].material.color.setHex(k > 0.5 ? 0xffffff : 0x9fbce8); }
+      };
     }
     /* Manila day and night: the world's light follows the real time in
        Manila (?hour=13 in the URL previews any hour). Checked once a
@@ -320,6 +423,7 @@
       key.color.setHex(day > 0.5 ? 0xfff1d6 : 0xcfe6ff);
       warm.intensity = 4 + 4 * dusk;
       if (world.fog) world.fog.color.copy(NIGHT_FOG).lerp(DAY_FOG, day);
+      if (bg) bg.day(day);
       var phase = day > 0.6 ? 'Day' : dusk > 0.3 ? (h < 12 ? 'Dawn' : 'Dusk') : 'Night';
       document.documentElement.setAttribute('data-manila', phase.toLowerCase());
       window.__manilaPhase = phase;
@@ -336,6 +440,7 @@
         shell2.material.opacity = 0.02 + 0.06 * ho;
       }
       if (field) field.rotation.y = t * 0.008;
+      if (bg) bg.tick(t);
       if (focus) {
         focus.position.copy(shotLook); focus.position.y += 0.45; focus.position.z += 0.5;
         /* brightest once the camera has arrived, dark in the hero shot */
