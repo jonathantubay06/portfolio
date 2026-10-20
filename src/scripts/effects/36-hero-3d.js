@@ -269,14 +269,15 @@
          port 3002): ?bg=city, ?bg=ocean, ?bg=island, or the default combo
          (the data ocean close in, the Manila skyline on the horizon).
          Each is one or two draw calls; all fade into the fog. */
-      var mode = (/[?&]bg=(city|ocean|island)/.exec(location.search) || [])[1] || 'combo';
+      var mode = (/[?&]bg=(city|ocean|island|room)/.exec(location.search) || [])[1] || 'combo';
       var parts = [];
       if (mode === 'ocean' || mode === 'combo') parts.push(dataOcean(target));
       if (mode === 'city') parts.push(skyline(target, 9, 26, 9, 4, 10.5, 190, 0.28));
       if (mode === 'combo') parts.push(skyline(target, 20, 34, 6, 2, 6.5, 240, 0.3));
+      if (mode === 'room') parts.push(room(target, root3));
       bg = {
         tick: function (t) { for (var i = 0; i < parts.length; i++) parts[i].tick(t); },
-        day: function (k) { for (var i = 0; i < parts.length; i++) parts[i].day(k); }
+        day: function (k, dusk) { for (var i = 0; i < parts.length; i++) parts[i].day(k, dusk); }
       };
       var isle = mode === 'island';
       /* a deep particle field, not just the motes by the desk */
@@ -322,7 +323,8 @@
     /* A. Manila skyline: low-poly towers in a ring, lit windows that dim by
        day; one instanced draw. Close rings leave a gap where the hero and
        wide-shot cameras stand, so no tower ever blocks them. */
-    function skyline(c, r0, r1, sink, h0, h1, count, lit) {
+    function skyline(c, r0, r1, sink, h0, h1, count, lit, rect) {
+      if (rect) count = rect.count;
       var cv = document.createElement('canvas'); cv.width = 64; cv.height = 128;
       var x = cv.getContext('2d'); x.fillStyle = '#05080f'; x.fillRect(0, 0, 64, 128);
       for (var wy = 4; wy < 124; wy += 8) for (var wx = 4; wx < 60; wx += 8) {
@@ -333,18 +335,27 @@
       var mesh = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), mat, count);
       var aw = Math.atan2(camBase.z - target.z, camBase.x - target.x), o = new THREE.Object3D(), n = 0;
       for (var i = 0; i < count * 3 && n < count; i++) {
-        var a = Math.random() * Math.PI * 2;
-        var da = Math.abs(Math.atan2(Math.sin(a - aw), Math.cos(a - aw)));
-        if (da < 0.6 && r0 < 14) continue;
-        var r = r0 + Math.random() * (r1 - r0), h = h0 + Math.pow(Math.random(), 1.6) * (h1 - h0);
-        var w = 0.7 + Math.random() * 1.6;
-        o.position.set(c.x + Math.cos(a) * r, c.y - sink + h / 2, c.z + Math.sin(a) * r);
+        var w = 0.7 + Math.random() * 1.6, h;
+        if (rect) {
+          h = rect.h0 + Math.pow(Math.random(), 1.4) * (rect.h1 - rect.h0); w *= 1.6;
+          o.position.set(rect.x0 + Math.random() * (rect.x1 - rect.x0), rect.base + h / 2, rect.z0 + Math.random() * (rect.z1 - rect.z0));
+        } else {
+          var a = Math.random() * Math.PI * 2;
+          var da = Math.abs(Math.atan2(Math.sin(a - aw), Math.cos(a - aw)));
+          if (da < 0.6 && r0 < 14) continue;
+          var r = r0 + Math.random() * (r1 - r0); h = h0 + Math.pow(Math.random(), 1.6) * (h1 - h0);
+          o.position.set(c.x + Math.cos(a) * r, c.y - sink + h / 2, c.z + Math.sin(a) * r);
+        }
         o.rotation.set(0, Math.random() * Math.PI, 0); o.scale.set(w, h, 0.7 + Math.random() * 1.4);
         o.updateMatrix(); mesh.setMatrixAt(n++, o.matrix);
       }
       mesh.count = n; mesh.instanceMatrix.needsUpdate = true;
       world.add(mesh);
-      return { tick: function () {}, day: function (k) { mat.emissiveIntensity = 0.65 - 0.55 * k; mat.color.setHex(k > 0.5 ? 0x3a5478 : 0x0c1830); } };
+      return {
+        mesh: mesh, tick: function () {},
+        fade: function (a) { mat.transparent = a < 0.99; mat.opacity = a; },
+        day: function (k) { mat.emissiveIntensity = 0.65 - 0.55 * k; mat.color.setHex(k > 0.5 ? 0x3a5478 : 0x0c1830); }
+      };
     }
     /* C. floating island: a rock under the desk, soft clouds below, an
        aurora sky dome around it */
@@ -394,6 +405,96 @@
         day: function (k) { su.uDay.value = k; for (var i = 0; i < clouds.children.length; i++) clouds.children[i].material.color.setHex(k > 0.5 ? 0xffffff : 0x9fbce8); }
       };
     }
+    /* D. work-from-home room (?bg=room): the desk in a bedroom office, a
+       big window onto the Manila skyline, day and night outside. The hero
+       keeps its plasma: the room builds itself around the desk as the hero
+       scrolls away (everything fades in with __worldHeroOut). Open on the
+       two camera sides and no ceiling, like a cut-away dollhouse, so no
+       chapter shot is ever blocked. */
+    function room(c, root3) {
+      var B = new THREE.Box3().setFromObject(root3);
+      var cx = (B.min.x + B.max.x) / 2, deskY = B.min.y, floorY = deskY - 1.45;
+      var backZ = B.min.z - 0.7, leftX = B.min.x - 2.6, H = 6.2;
+      var grp = new THREE.Group(), mats = [];
+      function M(o) { var m = new THREE.MeshStandardMaterial(o); m.transparent = true; mats.push(m); return m; }
+      function box(w, h, d, x, y, z, m) { var b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); b.position.set(x, y, z); grp.add(b); return b; }
+      var wallM = M({ color: 0x26365e, roughness: 0.92 }), floorM = M({ color: 0x3a2b20, roughness: 0.75 });
+      var woodM = M({ color: 0x3a2a1f, roughness: 0.7 }), frameM = M({ color: 0x0f1626, roughness: 0.5, metalness: 0.3 });
+      /* floor and rug */
+      var fl = new THREE.Mesh(new THREE.PlaneGeometry(16, 13), floorM); fl.rotation.x = -Math.PI / 2;
+      fl.position.set(cx + 1.5, floorY, backZ + 6.5); grp.add(fl);
+      var rug = new THREE.Mesh(new THREE.CircleGeometry(2.3, 40), M({ color: 0x123a52, roughness: 1 }));
+      rug.rotation.x = -Math.PI / 2; rug.position.set(cx + 0.3, floorY + 0.01, B.max.z + 0.6); grp.add(rug);
+      /* desk legs, so the glowing slab reads as a real desk */
+      [[B.min.x + 0.2, B.min.z + 0.25], [B.max.x - 0.2, B.min.z + 0.25], [B.min.x + 0.2, B.max.z - 0.25], [B.max.x - 0.2, B.max.z - 0.25]].forEach(function (p) {
+        box(0.09, deskY - floorY, 0.09, p[0], (deskY + floorY) / 2, p[1], frameM);
+      });
+      /* back wall with a big window cut out of it */
+      var x0 = leftX, x1 = cx + 8, wx0 = cx - 2.9, wx1 = cx + 2.9, wy0 = deskY + 0.45, wy1 = deskY + 3.4;
+      var sh = new THREE.Shape(); sh.moveTo(x0, floorY); sh.lineTo(x1, floorY); sh.lineTo(x1, floorY + H); sh.lineTo(x0, floorY + H); sh.lineTo(x0, floorY);
+      var hole = new THREE.Path(); hole.moveTo(wx0, wy0); hole.lineTo(wx0, wy1); hole.lineTo(wx1, wy1); hole.lineTo(wx1, wy0); hole.lineTo(wx0, wy0);
+      sh.holes.push(hole);
+      var bw = new THREE.Mesh(new THREE.ExtrudeGeometry(sh, { depth: 0.14, bevelEnabled: false }), wallM);
+      bw.position.z = backZ - 0.14; grp.add(bw);
+      /* window frame: sill, head, jambs, one mullion and one transom */
+      box(wx1 - wx0 + 0.3, 0.1, 0.34, cx, wy0 - 0.05, backZ + 0.08, frameM);
+      box(wx1 - wx0 + 0.2, 0.08, 0.2, cx, wy1, backZ - 0.07, frameM);
+      box(0.08, wy1 - wy0, 0.2, wx0, (wy0 + wy1) / 2, backZ - 0.07, frameM);
+      box(0.08, wy1 - wy0, 0.2, wx1, (wy0 + wy1) / 2, backZ - 0.07, frameM);
+      box(0.06, wy1 - wy0, 0.12, cx, (wy0 + wy1) / 2, backZ - 0.07, frameM);
+      box(wx1 - wx0, 0.05, 0.12, cx, wy0 + (wy1 - wy0) * 0.72, backZ - 0.07, frameM);
+      /* left wall, a shelf with books and a cyan LED strip along the top */
+      box(0.14, H, 9, leftX - 0.07, floorY + H / 2, backZ + 4.5, wallM);
+      box(0.32, 0.05, 1.8, leftX + 0.16, deskY + 1.6, backZ + 1.6, woodM);
+      var BOOK = [0x00a6d6, 0xf59e0b, 0x1e3a8a, 0xe2e8f0, 0x0e7490, 0xc2410c];
+      for (var i = 0; i < 9; i++) box(0.22, 0.26 + (i * 37 % 10) / 50, 0.1, leftX + 0.17, deskY + 1.6 + 0.15 + (i * 37 % 10) / 100, backZ + 0.85 + i * 0.13, M({ color: BOOK[i % BOOK.length], roughness: 0.8 }));
+      var ledM = new THREE.MeshBasicMaterial({ color: 0x00d4ff, transparent: true, toneMapped: false }); mats.push(ledM);
+      box(x1 - x0, 0.04, 0.04, (x0 + x1) / 2, floorY + H - 0.12, backZ + 0.05, ledM);
+      box(0.04, 0.04, 9, leftX + 0.05, floorY + H - 0.12, backZ + 4.5, ledM);
+      /* the bed along the left wall, between it and the desk */
+      var bz = backZ + 2.1, bx = leftX + 0.95;
+      box(1.7, 0.32, 3.1, bx, floorY + 0.16, bz, woodM);
+      box(1.6, 0.2, 3.0, bx, floorY + 0.42, bz, M({ color: 0xdfe6ee, roughness: 0.95 }));
+      box(1.62, 0.12, 1.9, bx, floorY + 0.56, bz + 0.55, M({ color: 0x0f4c6e, roughness: 0.95 }));
+      box(1.1, 0.16, 0.45, bx, floorY + 0.6, bz - 1.2, M({ color: 0xf1f5f9, roughness: 1 }));
+      box(1.7, 1.0, 0.1, bx, floorY + 0.5, bz - 1.55, woodM);
+      /* outside: the city below the window and a sky that follows Manila */
+      var city = skyline(new THREE.Vector3(cx, floorY, backZ - 18), 0, 0, 0, 0, 0, 0, 0.32, {
+        x0: cx - 30, x1: cx + 30, z0: backZ - 4, z1: backZ - 32, base: floorY - 12, h0: 7, h1: 17, count: 230 });
+      var su = { uDay: { value: 0 }, uDusk: { value: 0 }, uA: { value: 0 } };
+      var skyM = new THREE.ShaderMaterial({
+        uniforms: su, transparent: true, depthWrite: false,
+        vertexShader: 'varying vec2 vU;void main(){vU=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
+        fragmentShader: 'uniform float uDay,uDusk,uA;varying vec2 vU;float h(vec2 p){return fract(sin(dot(p,vec2(12.9,78.2)))*43758.5);}' +
+          'void main(){float y=vU.y;vec3 nite=mix(vec3(.05,.09,.2),vec3(.01,.02,.06),y);' +
+          'vec2 g=floor(vU*vec2(260.,130.));float st=step(.997,h(g))*smoothstep(.35,.8,y);nite+=st*.8;' +
+          'vec3 dusk=mix(vec3(.85,.42,.2),vec3(.12,.15,.35),smoothstep(.1,.7,y));' +
+          'vec3 day=mix(vec3(.62,.78,.95),vec3(.25,.5,.86),y);' +
+          'vec3 col=mix(mix(nite,dusk,uDusk),day,uDay);gl_FragColor=vec4(col,uA);}'
+      });
+      var sky = new THREE.Mesh(new THREE.PlaneGeometry(110, 50), skyM);
+      sky.position.set(cx, floorY + 6, backZ - 34); sky.renderOrder = -3; grp.add(sky);
+      /* room lights: a warm ceiling lamp (stronger at night) and cool
+         light spilling in from the window; both fade in with the room */
+      var lampL = new THREE.PointLight(0xffc98a, 0, 13); lampL.position.set(cx - 1.2, floorY + H - 0.7, backZ + 3.2); grp.add(lampL);
+      var winL = new THREE.PointLight(0x8fb8ff, 0, 11); winL.position.set(cx, (wy0 + wy1) / 2, backZ + 1.2); grp.add(winL);
+      var dayNow = 0;
+      world.add(grp);
+      var shown = -1;
+      return {
+        tick: function () {
+          /* the room fades in as the hero scrolls away; hidden in the hero */
+          var a = Math.min(1, (window.__worldHeroOut || 0) * 1.4);
+          if (Math.abs(a - shown) < 0.01) return;
+          shown = a;
+          grp.visible = city.mesh.visible = a > 0.01;
+          for (var i = 0; i < mats.length; i++) { mats[i].opacity = a; mats[i].depthWrite = a > 0.98; }
+          city.fade(a); su.uA.value = a;
+          lampL.intensity = a * (9 - 6 * dayNow); winL.intensity = a * (3 + 5 * dayNow);
+        },
+        day: function (k, dusk) { dayNow = k; shown = -1; su.uDay.value = k; su.uDusk.value = dusk || 0; city.day(k); ledM.color.setHex(k > 0.5 ? 0x5fa8c0 : 0x00d4ff); }
+      };
+    }
     /* Manila day and night: the world's light follows the real time in
        Manila (?hour=13 in the URL previews any hour). Checked once a
        minute; day 0..1, dusk 0..1 around sunrise and sunset. */
@@ -423,7 +524,7 @@
       key.color.setHex(day > 0.5 ? 0xfff1d6 : 0xcfe6ff);
       warm.intensity = 4 + 4 * dusk;
       if (world.fog) world.fog.color.copy(NIGHT_FOG).lerp(DAY_FOG, day);
-      if (bg) bg.day(day);
+      if (bg) bg.day(day, dusk);
       var phase = day > 0.6 ? 'Day' : dusk > 0.3 ? (h < 12 ? 'Dawn' : 'Dusk') : 'Night';
       document.documentElement.setAttribute('data-manila', phase.toLowerCase());
       window.__manilaPhase = phase;
