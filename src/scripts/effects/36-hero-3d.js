@@ -326,12 +326,17 @@
        wide-shot cameras stand, so no tower ever blocks them. */
     function skyline(c, r0, r1, sink, h0, h1, count, lit, rect) {
       if (rect) count = rect.count;
-      var cv = document.createElement('canvas'); cv.width = 64; cv.height = 128;
-      var x = cv.getContext('2d'); x.fillStyle = '#05080f'; x.fillRect(0, 0, 64, 128);
-      for (var wy = 4; wy < 124; wy += 8) for (var wx = 4; wx < 60; wx += 8) {
-        if (Math.random() < lit) { x.fillStyle = Math.random() < 0.7 ? '#ffcf8a' : '#7fe3ff'; x.fillRect(wx, wy, 4, 4); }
+      /* the room's view (rect) uses fewer, bigger window cells: thin lit
+         slits on tall towers shimmered through the window as the camera
+         moved (sub-pixel aliasing, then bloom made it flicker) */
+      var cv = document.createElement('canvas'), CW = rect ? 16 : 8, CL = rect ? 9 : 4;
+      cv.width = 64; cv.height = rect ? 256 : 128;
+      var x = cv.getContext('2d'); x.fillStyle = '#05080f'; x.fillRect(0, 0, cv.width, cv.height);
+      for (var wy = CW / 2; wy < cv.height - CW / 2; wy += CW) for (var wx = CW / 2; wx < 64 - CW / 2; wx += CW) {
+        if (Math.random() < lit) { x.fillStyle = Math.random() < 0.7 ? '#ffcf8a' : '#7fe3ff'; x.fillRect(wx, wy, CL, CL); }
       }
       var tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace;
+      tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
       var mat = new THREE.MeshStandardMaterial({ color: 0x0c1830, roughness: 0.85, metalness: 0.1, emissive: 0xffffff, emissiveMap: tex, emissiveIntensity: 0.65 });
       var mesh = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), mat, count);
       var aw = Math.atan2(camBase.z - target.z, camBase.x - target.x), o = new THREE.Object3D(), n = 0;
@@ -450,10 +455,12 @@
          transom, a deep sill) all centred on the opening, plus a faint
          glass pane so it reads as a window, not a hole */
       var wc = (wx0 + wx1) / 2, ww = wx1 - wx0, wh = wy1 - wy0, fz = backZ - 0.07;
-      box(ww + 0.36, 0.08, 0.42, wc, wy0 - 0.04, backZ + 0.1, frameM);
-      box(ww + 0.24, 0.12, 0.22, wc, wy1 + 0.06, fz, frameM);
-      box(0.12, wh + 0.24, 0.22, wx0 - 0.06, (wy0 + wy1) / 2, fz, frameM);
-      box(0.12, wh + 0.24, 0.22, wx1 + 0.06, (wy0 + wy1) / 2, fz, frameM);
+      /* every frame piece reaches 2.5 cm into the opening: faces lying
+         exactly on the wall's cut faces z-fought (the window flicker) */
+      box(ww + 0.36, 0.08, 0.42, wc, wy0 - 0.015, backZ + 0.1, frameM);
+      box(ww + 0.24, 0.12, 0.22, wc, wy1 + 0.035, fz, frameM);
+      box(0.12, wh + 0.24, 0.22, wx0 - 0.035, (wy0 + wy1) / 2, fz, frameM);
+      box(0.12, wh + 0.24, 0.22, wx1 + 0.035, (wy0 + wy1) / 2, fz, frameM);
       box(0.07, wh, 0.14, wc, (wy0 + wy1) / 2, fz, frameM);
       box(ww, 0.06, 0.14, wc, wy0 + wh * 0.7, fz, frameM);
       var glassM = new THREE.MeshStandardMaterial({ color: 0x9cc8ff, roughness: 0.05, metalness: 0.6, transparent: true, opacity: 0.08, depthWrite: false });
