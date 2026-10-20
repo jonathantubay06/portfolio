@@ -49,11 +49,11 @@
 }
 .tn-text span{display:block;margin-bottom:.6rem;font-size:.28em;letter-spacing:.3em;color:var(--cyan)}
 
-/* phones, small tablets, reduced motion: one still frame, in normal flow */
+/* phones, small tablets, reduced motion: no tunnel. The still frame was
+   an empty glowing box half a screen tall, and each section already opens
+   with its own "Chapter 0x" label, so the chapters still read in order. */
 @media(max-width:900px),(prefers-reduced-motion:reduce){
-  .tunnel{--p:.2;height:46vh;margin:0}
-  .tn-pin{position:relative;height:46vh;opacity:1}
-  .tn-text{opacity:1;top:auto;bottom:8%;transform:none}
+  .tunnel{display:none}
 }
 
 /* ── content flow: every block in a chapter drifts up and in as it enters
@@ -202,3 +202,16 @@ html.world-on:not([data-theme="light"]) .world-fx{display:block}
 .wl-n{font-family:var(--font-head);font-weight:900;font-size:clamp(3rem,7vw,5.5rem);line-height:1;color:#fff;letter-spacing:.04em;font-variant-numeric:tabular-nums}
 .wl-bar{display:block;width:100%;height:2px;background:rgba(0,212,255,.15);overflow:hidden}
 .wl-bar i{display:block;height:100%;background:var(--cyan);transform:scaleX(0);transform-origin:left}
+
+/* ── phones and tablets: no endless repaint loops ──
+   The 3D, the wallpaper, smooth scroll, grain and HUD never start there.
+   What was left running forever were small decorative loops that animate
+   paint properties (text-shadow, box-shadow, filter, background-position),
+   so the phone repainted every frame even while the reader sat still:
+   about 40% of a throttled main thread at idle. They hold their resting
+   look instead; the transform/opacity ones (gear spin, hero float) stay,
+   since the GPU composites those for free. */
+@media(max-width:900px),(pointer:coarse){
+  .hero-eyebrow,.glow,.avail-dot,.tz-dot,.card-live-badge::before,
+  h2 em{animation:none!important}
+}
