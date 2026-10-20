@@ -266,11 +266,11 @@
       ];
       /* fog: the far wire shell and particles fade into the page navy */
       world.fog = new THREE.FogExp2(0x0a1628, 0.03);
-      /* the world around the desk (2026-10-20, four looks to compare on
-         port 3002): ?bg=city, ?bg=ocean, ?bg=island, or the default combo
-         (the data ocean close in, the Manila skyline on the horizon).
-         Each is one or two draw calls; all fade into the fog. */
-      var mode = (/[?&]bg=(city|ocean|island|room)/.exec(location.search) || [])[1] || 'combo';
+      /* the world around the desk (2026-10-20): the default is the room,
+         a work-from-home bedroom office with a window on the Manila
+         skyline (Jojo's pick). ?bg=combo, ?bg=city, ?bg=ocean and
+         ?bg=island still preview the other looks. */
+      var mode = (/[?&]bg=(city|ocean|island|room|combo)/.exec(location.search) || [])[1] || 'room';
       var parts = [];
       if (mode === 'ocean' || mode === 'combo') parts.push(dataOcean(target));
       if (mode === 'city') parts.push(skyline(target, 9, 26, 9, 4, 10.5, 190, 0.28));
