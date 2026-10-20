@@ -5,6 +5,8 @@
    class so it could replay on re-entry.
 ══════════════════════════════════════ */
 (function(){
+  /* phones and tablets only: the desktop redesign dropped it (html.dk) */
+  if (document.documentElement.classList.contains('dk')) return;
   const labels = document.querySelectorAll('.sec-label');
   if (!labels.length) return;
 

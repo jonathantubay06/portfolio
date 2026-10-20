@@ -11,7 +11,7 @@
 ═══════════════════════════════════════ */
 (function () {
   var tunnels = [].slice.call(document.querySelectorAll('.tunnel'));
-  if (!tunnels.length) return;
+  if (!tunnels.length || !document.documentElement.classList.contains('dk')) return;
   var gate = matchMedia('(min-width:901px) and (prefers-reduced-motion:no-preference)');
   var live = [], raf = 0, root = document.documentElement;
 

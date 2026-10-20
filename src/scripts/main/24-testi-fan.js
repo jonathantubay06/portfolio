@@ -9,7 +9,7 @@
 (function () {
   var stack = document.getElementById('fanStack');
   var rail = document.getElementById('testiRail');
-  if (!stack || !rail) return;
+  if (!stack || !rail || !document.documentElement.classList.contains('dk')) return;
   var src = [].slice.call(rail.querySelectorAll('.tq'));
   if (!src.length) return;
   var box = document.getElementById('fanCards');

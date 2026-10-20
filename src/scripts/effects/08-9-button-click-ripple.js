@@ -10,6 +10,8 @@
    hero CTAs, contact submit, back-to-top, etc.
 ══════════════════════════════════════ */
 (function(){
+  /* phones and tablets only: the desktop redesign dropped it (html.dk) */
+  if (document.documentElement.classList.contains('dk')) return;
   if (PREFERS_REDUCED_MOTION) return; // decorative motion only — nothing here carries content
   document.addEventListener('click', e => {
     const btn = e.target.closest('.btn');

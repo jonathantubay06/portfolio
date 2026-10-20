@@ -82,7 +82,7 @@
 @media(max-width:900px){.sec-dog{display:none}}
 /* where a dog sits by the heading, it takes the place of the big outlined
    section numeral instead of fighting it for the same corner */
-@media(min-width:901px){#services h2::before,#work h2::before,#experience h2::before{display:none}}
+@media(min-width:901px){html.dk #services h2::before,html.dk #work h2::before,html.dk #experience h2::before{display:none}}
 
 /* ── Chapters: the section labels read as one ops story ── */
 .sec-chapter{letter-spacing:.18em}

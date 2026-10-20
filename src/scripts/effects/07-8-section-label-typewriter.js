@@ -10,6 +10,8 @@
    and removed when done.
 ══════════════════════════════════════ */
 (function(){
+  /* phones and tablets only: the desktop redesign dropped it (html.dk) */
+  if (document.documentElement.classList.contains('dk')) return;
   if (PREFERS_REDUCED_MOTION) return; // decorative motion only — nothing here carries content
   // Phones: the label was often caught half-typed ("SOCIAL PRO") while
   // scrolling past, so they keep the static text.

@@ -13,6 +13,9 @@
   var t = localStorage.getItem('jt-theme');
   if (!t) t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
   if (t === 'light') document.documentElement.setAttribute('data-theme','light');
+  /* desktop (wide screen + mouse) gets the 3D world redesign; phones and
+     tablets keep the live site's layout (.d-only / .m-only blocks) */
+  if (matchMedia('(min-width:1024px) and (pointer:fine)').matches) document.documentElement.classList.add('dk');
   /* the 3D world's intro counter plays once per visit (27-world-hud.js) */
   try { if (sessionStorage.getItem('jt-intro')) document.documentElement.classList.add('intro-seen'); } catch (e) {}
   /* where the live 3D world will boot (dark theme, desktop), hold back the

@@ -71,7 +71,7 @@
    screens and reduced motion just scroll normally. ── */
 @supports (animation-timeline:view()){
   @media(min-width:901px) and (prefers-reduced-motion:no-preference){
-    .sec > *,.testi-inner > *{
+    html.dk .sec > *,html.dk .testi-inner > *{
       animation:flowIn linear both,flowOut linear both;
       animation-timeline:view(),view();
       /* fixed-length entry (40vh of scroll), not a share of the entry range:
@@ -85,11 +85,11 @@
     /* translate/scale, not transform: the reveal's .r.on{transform:none!important}
        and the card tilt scripts keep owning transform. The timeline replaces
        the one-shot reveal, so its transition is switched off. */
-    .sec > .r,.testi-inner > .r{transition:none}
+    html.dk .sec > .r,html.dk .testi-inner > .r{transition:none}
     /* headings rise out of a mask line (igloo's text reveal): the clip
        opens upward while the heading lifts into place, then it reads as
        plain text; the generous negative insets keep glows and descenders */
-    .sec > h2,.testi-inner > h2{
+    html.dk .sec > h2,html.dk .testi-inner > h2{
       animation:headIn linear both,flowOut linear both;
       animation-timeline:view(),view();
       animation-range:entry 0% entry 35vh,exit 40% exit 100%;
@@ -101,8 +101,8 @@
 }
 
 /* ── one continuous page: no dividers, no separate band behind the reviews ── */
-.divider{display:none}
-#testimonials.testi-bg{background:none}
+html.dk .divider{display:none}
+html.dk #testimonials.testi-bg{background:none}
 
 /* smooth scroll owns the wheel; the browser's own smoothing would fight it */
 html.smooth-wheel{scroll-behavior:auto}
@@ -115,18 +115,18 @@ html.smooth-wheel{scroll-behavior:auto}
    the single cursor policy for the whole page, overriding those scattered
    rules in one place. Text fields keep the I-beam; touch keeps native. */
 @media(hover:hover) and (pointer:fine){
-  html,html *{cursor:url('cursors/arrow.svg') 5 3,default!important}
-  html :is(a[href],button:not([disabled]),[role="button"],summary,label[for],select,
+  html.dk,html.dk *{cursor:url('cursors/arrow.svg') 5 3,default!important}
+  html.dk :is(a[href],button:not([disabled]),[role="button"],summary,label[for],select,
     .btn,.proj-card,[data-modal],.hw-proof,.fan-card:not(.is-front),.qp-btn,.ad-opt,.tl-more,.sdot),
-  html :is(a[href],button:not([disabled]),[role="button"],summary,.btn,.proj-card,[data-modal]) *{
+  html.dk :is(a[href],button:not([disabled]),[role="button"],summary,.btn,.proj-card,[data-modal]) *{
     cursor:url('cursors/pointer.svg') 5 3,pointer!important}
-  html :is(input:not([type="button"]):not([type="submit"]):not([type="checkbox"]):not([type="radio"]),textarea,[contenteditable="true"]){
+  html.dk :is(input:not([type="button"]):not([type="submit"]):not([type="checkbox"]):not([type="radio"]),textarea,[contenteditable="true"]){
     cursor:text!important}
-  html :is(button[disabled],[aria-disabled="true"]){cursor:url('cursors/arrow.svg') 5 3,not-allowed!important}
+  html.dk :is(button[disabled],[aria-disabled="true"]){cursor:url('cursors/arrow.svg') 5 3,not-allowed!important}
   /* the hero 3D sets its stage's cursor inline while you hover a clickable
      object (pointer) or are zoomed in (zoom-out); follow it, canvas included */
-  html :is([style*="cursor: pointer"],[style*="cursor: pointer"] *){cursor:url('cursors/pointer.svg') 5 3,pointer!important}
-  html :is([style*="cursor: zoom-out"],[style*="cursor: zoom-out"] *){cursor:zoom-out!important}
+  html.dk :is([style*="cursor: pointer"],[style*="cursor: pointer"] *){cursor:url('cursors/pointer.svg') 5 3,pointer!important}
+  html.dk :is([style*="cursor: zoom-out"],[style*="cursor: zoom-out"] *){cursor:zoom-out!important}
 }
 
 /* ── WORLD (igloo.inc idea): the desk is the page's fixed 3D world ──

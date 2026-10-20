@@ -153,7 +153,7 @@
        of fading the desk out. Without tunnels it is the hero canvas as before. */
     /* the world is drawn for the dark page: a light-theme visit keeps the
        hero canvas as before */
-    var WORLD = !!document.querySelector('.tunnel') && document.documentElement.getAttribute('data-theme') !== 'light';
+    var WORLD = document.documentElement.classList.contains('dk') && !!document.querySelector('.tunnel') && document.documentElement.getAttribute('data-theme') !== 'light';
     if (WORLD) {
       /* the desk is the page's menu: props fly the camera to their chapter */
       OWN.rack = { label: 'Experience', href: '#experience', hl: true };
