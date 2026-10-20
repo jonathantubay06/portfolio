@@ -197,7 +197,7 @@
     var key = new THREE.DirectionalLight(0xcfe6ff, 1.2); key.position.set(-2, 4, 3); world.add(key);
     var cyan = new THREE.PointLight(0x33ccff, 6, 6); cyan.position.set(0.2, 2.1, -0.2); world.add(cyan);
     var warm = new THREE.PointLight(0xff8a33, 4, 5); warm.position.set(1.8, 0.8, 0.8); world.add(warm);
-    var lamp = new THREE.PointLight(0xffb060, 3, 1.3); lamp.position.set(-1.42, 0.55, -0.07); world.add(lamp);
+    var lamp = new THREE.PointLight(0xffb060, 3, 1.3); lamp.position.set(-1.2, 0.34, 0.24); world.add(lamp);
 
     var composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(512, 512, { type: THREE.HalfFloatType, samples: 4 }));
     composer.addPass(new RenderPass(world, cam));
@@ -467,6 +467,43 @@
         renderer.compileAsync(obj, cam, world).then(done, done);
         renderer.setRenderTarget(rt); obj.visible = v;
       }
+      /* turns a flat object exported at an angle (the keyboard scan sits
+         tilted and diagonal) so it lies flat: the axis its vertices spread
+         least along becomes up, the longest becomes x. Up points to the side
+         with more mass (the keycaps), so it never lands upside down. */
+      function lieFlat(o, flip) {
+        o.updateMatrixWorld(true);
+        var pts = [], v = new THREE.Vector3(), c = new THREE.Vector3();
+        o.traverse(function (m) {
+          if (!m.isMesh) return;
+          var pa = m.geometry.attributes.position, step = Math.max(1, Math.floor(pa.count / 4000));
+          for (var i = 0; i < pa.count; i += step) { v.fromBufferAttribute(pa, i).applyMatrix4(m.matrixWorld); pts.push(v.clone()); c.add(v); }
+        });
+        if (pts.length < 3) return;
+        c.divideScalar(pts.length);
+        var C = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+        pts.forEach(function (p) { var d = [p.x - c.x, p.y - c.y, p.z - c.z]; for (var r = 0; r < 3; r++) for (var s = 0; s < 3; s++) C[r][s] += d[r] * d[s]; });
+        /* Jacobi eigen solve of the 3x3 covariance */
+        var V = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
+        for (var it = 0; it < 30; it++) {
+          var pq = [[0, 1], [0, 2], [1, 2]].reduce(function (b, e) { return Math.abs(C[e[0]][e[1]]) > Math.abs(C[b[0]][b[1]]) ? e : b; });
+          var P = pq[0], Q = pq[1];
+          if (Math.abs(C[P][Q]) < 1e-12) break;
+          var th = 0.5 * Math.atan2(2 * C[P][Q], C[Q][Q] - C[P][P]), cs = Math.cos(th), sn = Math.sin(th);
+          for (var k = 0; k < 3; k++) { var a = C[k][P], b2 = C[k][Q]; C[k][P] = cs * a - sn * b2; C[k][Q] = sn * a + cs * b2; }
+          for (k = 0; k < 3; k++) { a = C[P][k]; b2 = C[Q][k]; C[P][k] = cs * a - sn * b2; C[Q][k] = sn * a + cs * b2; }
+          for (k = 0; k < 3; k++) { a = V[k][P]; b2 = V[k][Q]; V[k][P] = cs * a - sn * b2; V[k][Q] = sn * a + cs * b2; }
+        }
+        var ord = [0, 1, 2].sort(function (i, j) { return C[j][j] - C[i][i]; });
+        var ax = ord.map(function (i) { return new THREE.Vector3(V[0][i], V[1][i], V[2][i]).normalize(); });
+        var X = ax[0], U = ax[2], skew = 0;
+        pts.forEach(function (p) { var t = v.subVectors(p, c).dot(U); skew += t * t * t; });
+        if (skew < 0) U.negate();
+        if (flip) U.negate();
+        var Z = new THREE.Vector3().crossVectors(X, U);
+        var basis = new THREE.Matrix4().makeBasis(X, U, Z);
+        o.quaternion.premultiply(new THREE.Quaternion().setFromRotationMatrix(basis).invert());
+      }
       function prop(file, size, x, y, z, ry, done) {
         var p = propCache[file] || (propCache[file] = new Promise(function (res) { propLoader.load('img/hero3d/room/' + file + '.glb', res, undefined, function () { res(null); }); }));
         p.then(function (g) {
@@ -484,6 +521,7 @@
             for (var key in mt) if (mt[key] && mt[key].isTexture && renderer.initTexture) renderer.initTexture(mt[key]);
           });
           if (size.rx) o.rotation.x = size.rx;
+          if (size.flat) lieFlat(o, size.flat < 0);
           var piv = new THREE.Group(), bb = new THREE.Box3(), one = new THREE.Box3(); piv.add(o); piv.rotation.y = ry || 0;
           function grow() { piv.updateMatrixWorld(true); bb.union(one.setFromObject(piv, true)); }
           /* animation only where asked (size.anim); it is fitted over its
@@ -739,14 +777,20 @@
         var hit = bedPiv && ray.intersectObject(bedPiv, true)[0];
         return hit ? hit.point.y : floorY + 0.6;
       }
+      function bedY(x, z, r) {   /* highest cover point under a prop's footprint, so it never sinks in */
+        var y = onBed(x, z);
+        for (var a = 0; a < 8; a++) y = Math.max(y, onBed(x + Math.cos(a * Math.PI / 4) * r, z + Math.sin(a * Math.PI / 4) * r), onBed(x + Math.cos(a * Math.PI / 4) * r / 2, z + Math.sin(a * Math.PI / 4) * r / 2));
+        return y;
+      }
       /* gamer corner: the desk gets an AULA F75 and a gaming chair, the bed
          an iPad with its pencil and a SNES pad, a monstera fills the gap
          between bed and desk, a film camera lies by the pillow and a neon
          sign glows on the wall under the cabinet */
       var topY = B.max.y;
       var lap = root3.getObjectByName('laptop_base'), lb = lap ? new THREE.Box3().setFromObject(lap) : null;
-      var kx = lb ? (lb.min.x + lb.max.x) / 2 : cx, kz = lb ? Math.min(lb.max.z + 0.2, B.max.z - 0.17) : B.max.z - 0.3;
-      prop('keyboard', 0.6, kx, topY, kz, 0);
+      var kx = lb ? (lb.min.x + lb.max.x) / 2 : cx, kz = lb ? B.max.z - 0.15 : B.max.z - 0.3;
+      prop('keyboard', { s: 0.6, flat: -1 },   /* mass test lands this scan upside down */
+         kx, topY, kz, 0);
       prop('chair', { h: 1.5 }, B.min.x + 0.55, floorY, B.max.z + 0.05, Math.PI + 0.6);
       prop('bed', 2.3, bx, floorY, bz, 0, function (piv) {
         bedPiv = piv; piv.updateMatrixWorld(true);
@@ -758,17 +802,19 @@
           g.fillStyle = gr; g.fillRect(0, 0, 128, 92);
           var t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
         })();
-        prop('ipad', 0.5, bx + 0.2, onBed(bx + 0.2, bz + 0.55), bz + 0.55, 0.35, function (piv, o) {
+        prop('ipad', 0.5, bx + 0.2, bedY(bx + 0.2, bz + 0.55, 0.25), bz + 0.55, 0.35, function (piv, o) {
           o.traverse(function (m) { if (m.isMesh) m.material.color.setHex(0x2b2f36); });
           var sm = new THREE.MeshBasicMaterial({ map: padScr, transparent: true, toneMapped: false }); mats.push(sm);
           var scr = new THREE.Mesh(new THREE.PlaneGeometry(0.44, 0.3), sm); scr.rotation.x = -Math.PI / 2;
-          var hold = new THREE.Group(); hold.add(scr); hold.rotation.y = 0.35; hold.position.set(bx + 0.2, onBed(bx + 0.2, bz + 0.55) + 0.013, bz + 0.55); grp.add(hold);
+          /* the screen sits on the body's top face */
+          var pb = new THREE.Box3().setFromObject(piv), pc = pb.getCenter(new THREE.Vector3());
+          var hold = new THREE.Group(); hold.add(scr); hold.rotation.y = 0.35; hold.position.set(pc.x, pb.max.y + 0.002, pc.z); grp.add(hold);
         });
-        prop('pencil', 0.32, bx + 0.55, onBed(bx + 0.55, bz + 0.6), bz + 0.6, -0.2);
-        prop('snes', 0.5, bx - 0.35, onBed(bx - 0.35, bz + 0.65), bz + 0.65, -0.5);
-        prop('camera', 0.3, bx - 0.4, onBed(bx - 0.4, bz - 0.25), bz - 0.25, 0.6);
+        prop('pencil', 0.32, bx + 0.55, bedY(bx + 0.55, bz + 0.6, 0.16), bz + 0.6, -0.2);
+        prop('snes', 0.5, bx - 0.35, bedY(bx - 0.35, bz + 0.65, 0.22), bz + 0.65, -0.5);
+        prop('camera', 0.3, bx - 0.4, bedY(bx - 0.4, bz - 0.25, 0.14), bz - 0.25, 0.6);
       });
-      prop('monstera', { h: 2.0 }, B.min.x - 0.5, floorY, backZ + 0.55, 0.4);
+      prop('monstera', { h: 2.0 }, B.max.x + 0.3, floorY, backZ + 0.3, 0.4);   /* floor, right of the desk (beside the bed it read as sitting on it) */
       prop('neon', { h: 0.95, anim: true }, cbX - cbW * 0.22, deskY - 0.3, backZ + 0.12, 0);
       /* outside: the city below the window and a sky that follows Manila */
       var city = skyline(new THREE.Vector3(cx, floorY, backZ - 18), 0, 0, 0, 0, 0, 0, 0.32, {
@@ -1034,7 +1080,7 @@
         o.userData.depth = Math.max(0.2, Math.min(1, (8.6 - d) / 3));
       });
       screens = liveScreens(THREE, g.scene);
-      gamingLaptop(g.scene);
+      gamingLaptop(g.scene); ledLamp(g.scene);
       /* zoom target: the laptop screen's centre, seen square on. The lid
          leans back 14deg, so its normal is (0, sin14, cos14). */
       g.scene.getObjectByName('laptop_screen').getWorldPosition(zc);
@@ -1134,6 +1180,36 @@
       g.fillStyle = gr; g.fillRect(0, 0, 32, 32);
       return new THREE.CanvasTexture(c);
     })();
+
+    /* desk lamp: the Blender lamp's base hung off the desk edge and its
+       shade pointed up, so it is swapped for a slim LED arm lamp standing
+       at the back-left of the desk, its light bar angled down at the
+       mug and keyboard (the warm point light and dust sit under it) */
+    function ledLamp(root) {
+      ['lamp_base', 'lamp_arm', 'lamp_head', 'lamp_bulb'].forEach(function (n) { var o = root.getObjectByName(n); if (o) o.visible = false; });
+      var body = new THREE.MeshStandardMaterial({ color: 0x4a505c, metalness: 0.7, roughness: 0.28 });
+      var g = new THREE.Group(); g.name = 'led_lamp'; root.add(g);
+      function rod(a, b, r) {
+        var d = new THREE.Vector3().subVectors(b, a), m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, d.length(), 12), body);
+        m.position.copy(a).addScaledVector(d, 0.5); m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.normalize()); g.add(m);
+        var j = new THREE.Mesh(new THREE.SphereGeometry(r * 1.6, 12, 8), body); j.position.copy(b); g.add(j);
+      }
+      var base = new THREE.Vector3(-1.56, 0.02, -0.02), elbow = new THREE.Vector3(-1.6, 0.42, -0.12), head = new THREE.Vector3(-1.34, 0.46, 0.12);
+      var foot = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.085, 0.02, 28), body); foot.position.set(base.x, 0.01, base.z); g.add(foot);
+      var ring = new THREE.Mesh(new THREE.CylinderGeometry(0.087, 0.087, 0.004, 28), new THREE.MeshBasicMaterial({ color: 0x00d4ff, toneMapped: false }));
+      ring.position.set(base.x, 0.003, base.z); g.add(ring);
+      rod(base, elbow, 0.013); rod(elbow, head, 0.012);
+      /* the head: a thin bar along the arm, tipped 20 degrees down, warm LEDs underneath */
+      var dir = new THREE.Vector3().subVectors(head, elbow).setY(0).normalize();
+      var bar = new THREE.Group(); bar.position.copy(head); bar.rotation.y = Math.atan2(-dir.z, dir.x); g.add(bar);
+      var tilt = new THREE.Group(); tilt.rotation.z = -0.35; bar.add(tilt);
+      var shell = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.026, 0.07), body); shell.position.x = 0.13; tilt.add(shell);
+      var led = new THREE.Mesh(new THREE.PlaneGeometry(0.27, 0.04), new THREE.MeshBasicMaterial({ color: 0xffd9a0, toneMapped: false }));
+      led.rotation.x = Math.PI / 2; led.position.set(0.12, -0.0115, 0); tilt.add(led);
+      /* a warm edge line so the lit bar reads from above too */
+      var edge = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.004, 0.004), led.material); edge.position.set(0.12, -0.009, 0.031); tilt.add(edge);
+      var edge2 = edge.clone(); edge2.position.z = -0.031; tilt.add(edge2);
+    }
 
     /* gaming laptop: gunmetal body and lid, a red stripe on the lid edge
        and an RGB light bar on the front edge of the base (a scrolling
@@ -1436,7 +1512,7 @@
        fixed spot in the cone and drifts slowly down it; additive warm
        points that fade at both ends (darker colour = more transparent). */
     function lampDust() {
-      var N = 36, apex = new THREE.Vector3(-1.4, 0.6, -0.05), axis = new THREE.Vector3(0.12, -1, 0.14).normalize();
+      var N = 36, apex = new THREE.Vector3(-1.22, 0.4, 0.22), axis = new THREE.Vector3(0.1, -1, 0.12).normalize();
       var a = new THREE.Vector3(1, 0, 0).cross(axis).normalize(), b = new THREE.Vector3().crossVectors(axis, a);
       var seed = new Float32Array(N * 4), pos = new Float32Array(N * 3), col = new Float32Array(N * 3);
       for (var i = 0; i < N; i++) { seed[i * 4] = Math.random(); seed[i * 4 + 1] = Math.random() * Math.PI * 2; seed[i * 4 + 2] = Math.sqrt(Math.random()); seed[i * 4 + 3] = 0.02 + Math.random() * 0.03; }
