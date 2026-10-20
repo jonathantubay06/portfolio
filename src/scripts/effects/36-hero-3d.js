@@ -471,7 +471,10 @@
         var p = propCache[file] || (propCache[file] = new Promise(function (res) { propLoader.load('img/hero3d/room/' + file + '.glb', res, undefined, function () { res(null); }); }));
         p.then(function (g) {
           if (!g) return;
-          var o = g.animations.length ? g.scene : g.scene.clone(true);
+          /* skinned models are used once and keep their bones; the rest are
+             cloned per placement (the shoe box is placed five times) */
+          var skinned = false; g.scene.traverse(function (m) { if (m.isSkinnedMesh) skinned = true; });
+          var o = skinned ? g.scene : g.scene.clone(true);
           o.traverse(function (m) {
             if (!m.isMesh) return;
             var mt = m.material = m.material.clone(); mt.transparent = true;
@@ -480,14 +483,22 @@
             /* upload its textures now, not on the frame the room appears */
             for (var key in mt) if (mt[key] && mt[key].isTexture && renderer.initTexture) renderer.initTexture(mt[key]);
           });
-          /* an animated model is measured in its pose, not its T-pose */
-          var mx = g.animations.length ? new THREE.AnimationMixer(o) : null;
-          if (mx) { mx.clipAction(g.animations[0]).play(); mx.update(0.01); mixers.push(mx); }
           if (size.rx) o.rotation.x = size.rx;
-          var piv = new THREE.Group(), bb = new THREE.Box3(); piv.add(o); piv.rotation.y = ry || 0; piv.updateMatrixWorld(true);
-          bb.setFromObject(piv, true); var sz = bb.getSize(new THREE.Vector3());
+          var piv = new THREE.Group(), bb = new THREE.Box3(), one = new THREE.Box3(); piv.add(o); piv.rotation.y = ry || 0;
+          function grow() { piv.updateMatrixWorld(true); bb.union(one.setFromObject(piv, true)); }
+          /* animation only where asked (size.anim); it is fitted over its
+             whole clip, so a moving figure never leaves its slot (the
+             spider used to climb through the cabinet glass) */
+          var mx = size.anim && g.animations.length ? new THREE.AnimationMixer(o) : null;
+          if (mx) {
+            var clip = g.animations[0]; mx.clipAction(clip).play();
+            for (var q = 0; q < 16; q++) { mx.setTime(clip.duration * q / 16); grow(); }
+            mx.setTime(0); mixers.push(mx);
+          } else grow();
+          var sz = bb.getSize(new THREE.Vector3());
           var k = size.h ? size.h / sz.y : (size.s || size) / Math.max(sz.x, sz.y, sz.z);
-          piv.scale.setScalar(k); piv.updateMatrixWorld(true); bb.setFromObject(piv, true);
+          if (size.d) k = Math.min(k, size.d / Math.max(sz.x, sz.z));
+          piv.scale.setScalar(k); bb.min.multiplyScalar(k); bb.max.multiplyScalar(k);
           var c0 = bb.getCenter(new THREE.Vector3());
           piv.position.set(x - c0.x, y - bb.min.y, z - c0.z);
           grp.add(piv);
@@ -585,95 +596,28 @@
       }
       var cabL = new THREE.PointLight(0xffe7c4, 0, 2.6); cabL.position.set(cbX, cbY0 + cbH - 0.3, backZ + cbD + 0.35); world.add(cabL);
 
-      /* ── vinyl figures ── */
-      var S = 1.3;   /* chibi: big head, short body (after the chibi hero prints) */
-      function part(geo, col, x, y, z, o) {
-        var m = new THREE.Mesh(geo, M(Object.assign({ color: col, roughness: 0.38, metalness: 0.04 }, o || {})));
-        m.position.set(x, y, z); grp.add(m); return m;
-      }
-      var CAP = function (r, l) { return new THREE.CapsuleGeometry(r * S, l * S, 6, 16); };
-      var SPH = function (r, sx, sy, sz) { var g = new THREE.SphereGeometry(r * S, 24, 18); g.scale(sx || 1, sy || 1, sz || 1); return g; };
-      var CYL = function (r0, r1, h, n) { return new THREE.CylinderGeometry(r0 * S, r1 * S, h * S, n || 24); };
-      var RBX = function (w, h, d) { return new THREE.BoxGeometry(w * S, h * S, d * S); };
-      function figure(x, y, z, f) {
-        var u = S, big = f.big || 1;
-        /* collector stand with a thin lit rim */
-        part(CYL(0.07, 0.075, 0.016), 0x0b0f17, x, y + 0.008 * u, z, { roughness: 0.3, metalness: 0.4 });
-        part(CYL(0.0755, 0.0755, 0.003), 0x7fe3ff, x, y + 0.004 * u, z, { emissive: 0x00d4ff, emissiveIntensity: 1.2 });
-        var y0 = y + 0.016 * u;
-        if (f.glb) { prop(f.glb, { h: f.h }, x, y0, z, f.ry || 0); return; }
-        /* boots and legs */
-        [-1, 1].forEach(function (s) {
-          part(CAP(0.019, 0.03), f.boots || f.legs, x + s * 0.022 * u, y0 + 0.02 * u, z + 0.006 * u);
-          part(CAP(0.017 * big, 0.03), f.legs, x + s * 0.022 * u, y0 + 0.052 * u, z);
-        });
-        /* torso, belt */
-        var tY = y0 + 0.11 * u;
-        var torso = part(CAP(0.042 * big, 0.04), f.body, x, tY, z); torso.scale.set(1, 1, 0.78);
-        if (f.belt) part(CYL(0.044 * big, 0.044 * big, 0.012), f.belt, x, tY - 0.035 * u, z, { metalness: 0.5, roughness: 0.3 }).scale.set(1, 1, 0.8);
-        /* arms out a little, round hands */
-        [-1, 1].forEach(function (s) {
-          var arm = part(CAP(0.014 * big, 0.05), f.arms || f.body, x + s * 0.056 * big * u, tY + 0.005 * u, z);
-          arm.rotation.z = s * 0.22;
-          part(SPH(0.016 * big), f.hands || f.arms || f.body, x + s * 0.066 * big * u, tY - 0.04 * u, z);
-        });
-        /* chibi head: about as tall as the whole body */
-        var hY = tY + 0.118 * u;
-        part(SPH(0.082, 1.06, 0.98, 1), f.head, x, hY, z);
-        if (f.face) f.face(x, hY, z, u);
-        if (f.extra) f.extra(x, y0, z, u, tY, hY);
-      }
-      var LENS = function (col, rim) {
-        return function (x, y, z, u) {
-          [-1, 1].forEach(function (s) {
-            if (rim) { var rm = part(SPH(0.032, 1.2, 1.05, 0.3), rim, x + s * 0.033 * u, y + 0.008 * u, z + 0.068 * u, { roughness: 0.3, metalness: 0.4 }); rm.rotation.z = s * -0.45; }
-            var l = part(SPH(0.027, 1.2, 1.05, 0.3), col, x + s * 0.033 * u, y + 0.008 * u, z + 0.073 * u, { roughness: 0.15 });
-            l.rotation.z = s * -0.45;
-          });
-        };
-      };
-      var DOTS = function (x, y, z, u) {
-        [-1, 1].forEach(function (s) {
-          part(SPH(0.013, 1, 1.2, 0.5), 0x111111, x + s * 0.028 * u, y + 0.004 * u, z + 0.076 * u, { roughness: 0.15 });
-          part(SPH(0.004, 1, 1, 0.5), 0xffffff, x + s * 0.028 * u + 0.004 * u, y + 0.012 * u, z + 0.083 * u, { roughness: 0.1 });   /* catch light */
-        });
-      };
+      /* ── collector figures (Sketchfab, CC BY 4.0): one per bay side,
+         each on a stand with a lit rim, the right one on a clear riser ── */
+      var standM = M({ color: 0x0b0f17, roughness: 0.3, metalness: 0.4 });
+      var rimM = M({ color: 0x7fe3ff, emissive: 0x00d4ff, emissiveIntensity: 1.2 });
+      var standGeo = new THREE.CylinderGeometry(0.091, 0.0975, 0.021, 24), rimGeo = new THREE.CylinderGeometry(0.098, 0.098, 0.004, 24);
       var FIGS = [
         { glb: 'ironman', h: 0.52, ry: Math.PI },   /* "Iron Man Mark 6" by Mittergen */
-        { glb: 'chibi', h: 0.46 },   /* "Chibi Spider-Man Animated" by Ysn.Aitaddi */
-        { body: 0x1e3a8a, legs: 0x1e3a8a, arms: 0x1e3a8a, hands: 0x9b1c1c, boots: 0x9b1c1c, head: 0x1e3a8a, belt: 0x6b3f1d,
-          face: function (x, y, z, u) {
-            part(SPH(0.056, 1.05, 0.6, 0.6), 0xf1c27d, x, y - 0.037 * u, z + 0.05 * u);   /* chin below the helmet */
-            DOTS(x, y, z, u);
-          },
-          extra: function (x, y0, z, u, tY) {
-            [0, 1, 2].forEach(function (i) { part(RBX(0.06, 0.006, 0.004), i % 2 ? 0xf8fafc : 0xb91c1c, x, tY - 0.012 * u - i * 0.009 * u, z + 0.034 * u); });
-            [[0.05, 0xb91c1c], [0.038, 0xf8fafc], [0.026, 0xb91c1c], [0.015, 0x1d4ed8]].forEach(function (r, i) {   /* round shield */
-              part(CYL(r[0], r[0], 0.006).rotateX(Math.PI / 2), r[1], x + 0.088 * u, tY - 0.01 * u, z + 0.03 * u + i * 0.0025, { metalness: 0.55, roughness: 0.3 });
-            });
-          } },
-        { body: 0x2f8f3a, legs: 0x5b2a86, arms: 0x2f8f3a, hands: 0x2f8f3a, boots: 0x2f8f3a, head: 0x2f8f3a, big: 1.28, face: DOTS,
-          extra: function (x, y0, z, u, tY, hY) { part(SPH(0.085, 1.08, 0.5, 1.02), 0x111111, x, hY + 0.044 * u, z - 0.005 * u, { roughness: 0.7 }); } },
-        { body: 0x15151a, legs: 0x15151a, arms: 0x15151a, hands: 0x15151a, boots: 0x15151a, head: 0x15151a, face: LENS(0xf1f5f9, 0xc0c4cc),
-          extra: function (x, y0, z, u, tY, hY) {
-            part(new THREE.TorusGeometry(0.03 * u, 0.004 * u, 8, 24, Math.PI), 0xd1d5db, x, tY + 0.03 * u, z + 0.028 * u, { metalness: 0.9, roughness: 0.2 }).rotation.z = Math.PI;
-            [-1, 1].forEach(function (s) { part(new THREE.ConeGeometry(0.012 * u, 0.026 * u, 10), 0x15151a, x + s * 0.052 * u, hY + 0.075 * u, z); });
-          } },
-        { body: 0x8b939e, legs: 0x2d3440, arms: 0x2d3440, hands: 0x2d3440, boots: 0x6b4423, head: 0xf1c27d, face: DOTS,
-          extra: function (x, y0, z, u, tY, hY) {   /* blond hair, chest discs, cape and hammer */
-            part(SPH(0.086, 1.07, 0.75, 1.03), 0xe8c26a, x, hY + 0.025 * u, z - 0.012 * u, { roughness: 0.6 });
-            [-1, 0, 1].forEach(function (i) { part(CYL(0.008, 0.008, 0.004).rotateX(Math.PI / 2), 0xe5e7eb, x + i * 0.018 * u, tY + 0.015 * u, z + 0.034 * u, { metalness: 0.9, roughness: 0.2 }); });
-            var cape = part(RBX(0.11, 0.15, 0.006), 0xa3141c, x, tY - 0.02 * u, z - 0.04 * u, { roughness: 0.6 }); cape.rotation.x = 0.12;
-            part(CYL(0.006, 0.006, 0.07), 0x5b3a1e, x + 0.07 * u, tY - 0.07 * u, z + 0.006 * u);
-            part(RBX(0.042, 0.026, 0.026), 0x9ca3af, x + 0.07 * u, tY - 0.11 * u, z + 0.006 * u, { metalness: 0.75, roughness: 0.3 });
-          } }
+        { glb: 'chibi', h: 0.46, anim: true },       /* "Chibi Spider-Man Animated" by Ysn.Aitaddi */
+        { glb: 'cap', h: 0.46 },                     /* chibi Captain America by klrxyz */
+        { glb: 'hulk', h: 0.5 },                     /* "Hulk Mini" by henriquebbarcellos */
+        { glb: 'venom', h: 0.44 },                   /* "Kawaii Venom-Inspired Chibi" by mizoohdn */
+        { glb: 'deadpool', h: 0.48 }                 /* "Deadpool-like chibi character" by tinkerlane_studio */
       ];
       var figZ = backZ + cbD * 0.55;
       FIGS.forEach(function (f, i) {
-        var bay = Math.floor(i / 2), side = i % 2 ? 1 : -1, by = cbY0 + bay * BAY + 0.008;
-        var lift = side > 0 ? 0.05 : 0;                    /* one figure per bay on a clear riser */
-        if (lift) { var rs = new THREE.Mesh(new THREE.BoxGeometry(0.2, lift, 0.16), shelfGlassM); rs.position.set(cbX + side * cbW * 0.24, by + lift / 2, figZ); grp.add(rs); }
-        figure(cbX + side * cbW * 0.24, by + lift, figZ, f);
+        var bay = Math.floor(i / 2), side = i % 2 ? 1 : -1, by = cbY0 + bay * BAY + 0.008, x = cbX + side * cbW * 0.24;
+        var lift = side > 0 ? 0.05 : 0;
+        if (lift) box(0.2, lift, 0.16, x, by + lift / 2, figZ, shelfGlassM);
+        var st = new THREE.Mesh(standGeo, standM); st.position.set(x, by + lift + 0.0105, figZ); grp.add(st);
+        var rim = new THREE.Mesh(rimGeo, rimM); rim.position.set(x, by + lift + 0.005, figZ); grp.add(rim);
+        /* the depth cap keeps every figure clear of the glass front */
+        prop(f.glb, { h: f.h, d: f.anim ? 0.32 : 0.26, anim: f.anim }, x, by + lift + 0.021, figZ, f.ry || 0);
       });
 
       /* ── high-top sneaker: a side profile with layered colour-block
@@ -787,38 +731,45 @@
         shown = -1; if (!ready) early();   /* re-apply the current fade to the new materials */
       });
       /* the bed along the left wall, between it and the desk */
-      var bz = backZ + 2.1, bx = leftX + 0.95;
-      box(1.7, 0.32, 3.1, bx, floorY + 0.16, bz, woodM);
-      box(1.6, 0.2, 3.0, bx, floorY + 0.42, bz, M({ color: 0xdfe6ee, roughness: 0.95 }));
-      box(1.62, 0.12, 1.9, bx, floorY + 0.56, bz + 0.55, M({ color: 0x0f4c6e, roughness: 0.95 }));
-      box(1.1, 0.16, 0.45, bx, floorY + 0.6, bz - 1.2, M({ color: 0xf1f5f9, roughness: 1 }));
-      box(1.7, 1.0, 0.1, bx, floorY + 0.5, bz - 1.55, woodM);
+      /* "Dark Modern Bed" by renviros, head against the back wall */
+      var bz = backZ + 1.25, bx = leftX + 1.2, bedPiv = null;
+      var ray = new THREE.Raycaster(), down = new THREE.Vector3(0, -1, 0);
+      function onBed(x, z) {   /* top of the covers under (x, z) */
+        ray.set(new THREE.Vector3(x, floorY + 3, z), down);
+        var hit = bedPiv && ray.intersectObject(bedPiv, true)[0];
+        return hit ? hit.point.y : floorY + 0.6;
+      }
       /* gamer corner: the desk gets an AULA F75 and a gaming chair, the bed
          an iPad with its pencil and a SNES pad, a monstera fills the gap
          between bed and desk, a film camera lies by the pillow and a neon
          sign glows on the wall under the cabinet */
-      var topY = B.max.y, bedTop = floorY + 0.62;
-      prop('keyboard', 0.62, B.min.x + 0.95, topY, B.max.z - 0.32, 0.12);
+      var topY = B.max.y;
+      var lap = root3.getObjectByName('laptop_base'), lb = lap ? new THREE.Box3().setFromObject(lap) : null;
+      var kx = lb ? (lb.min.x + lb.max.x) / 2 : cx, kz = lb ? Math.min(lb.max.z + 0.2, B.max.z - 0.17) : B.max.z - 0.3;
+      prop('keyboard', 0.6, kx, topY, kz, 0);
       prop('chair', { h: 1.5 }, B.min.x + 0.55, floorY, B.max.z + 0.05, Math.PI + 0.6);
-      /* the iPad model has no textures: a space-grey body plus a lit screen */
-      var padScr = (function () {
-        var c = document.createElement('canvas'); c.width = 128; c.height = 92;
-        var g = c.getContext('2d'), gr = g.createLinearGradient(0, 0, 128, 92);
-        gr.addColorStop(0, '#1e1b4b'); gr.addColorStop(0.55, '#0e7490'); gr.addColorStop(1, '#f59e0b');
-        g.fillStyle = gr; g.fillRect(0, 0, 128, 92);
-        var t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
-      })();
-      prop('ipad', 0.5, bx + 0.15, bedTop, bz + 0.2, 0.35, function (piv, o) {
-        o.traverse(function (m) { if (m.isMesh) m.material.color.setHex(0x2b2f36); });
-        var sm = new THREE.MeshBasicMaterial({ map: padScr, transparent: true, toneMapped: false }); mats.push(sm);
-        var scr = new THREE.Mesh(new THREE.PlaneGeometry(0.44, 0.3), sm); scr.rotation.x = -Math.PI / 2;
-        var hold = new THREE.Group(); hold.add(scr); hold.rotation.y = 0.35; hold.position.set(bx + 0.15, bedTop + 0.013, bz + 0.2); grp.add(hold);
+      prop('bed', 2.3, bx, floorY, bz, 0, function (piv) {
+        bedPiv = piv; piv.updateMatrixWorld(true);
+        /* the iPad model has no textures: a space-grey body plus a lit screen */
+        var padScr = (function () {
+          var c = document.createElement('canvas'); c.width = 128; c.height = 92;
+          var g = c.getContext('2d'), gr = g.createLinearGradient(0, 0, 128, 92);
+          gr.addColorStop(0, '#1e1b4b'); gr.addColorStop(0.55, '#0e7490'); gr.addColorStop(1, '#f59e0b');
+          g.fillStyle = gr; g.fillRect(0, 0, 128, 92);
+          var t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+        })();
+        prop('ipad', 0.5, bx + 0.2, onBed(bx + 0.2, bz + 0.55), bz + 0.55, 0.35, function (piv, o) {
+          o.traverse(function (m) { if (m.isMesh) m.material.color.setHex(0x2b2f36); });
+          var sm = new THREE.MeshBasicMaterial({ map: padScr, transparent: true, toneMapped: false }); mats.push(sm);
+          var scr = new THREE.Mesh(new THREE.PlaneGeometry(0.44, 0.3), sm); scr.rotation.x = -Math.PI / 2;
+          var hold = new THREE.Group(); hold.add(scr); hold.rotation.y = 0.35; hold.position.set(bx + 0.2, onBed(bx + 0.2, bz + 0.55) + 0.013, bz + 0.55); grp.add(hold);
+        });
+        prop('pencil', 0.32, bx + 0.55, onBed(bx + 0.55, bz + 0.6), bz + 0.6, -0.2);
+        prop('snes', 0.5, bx - 0.35, onBed(bx - 0.35, bz + 0.65), bz + 0.65, -0.5);
+        prop('camera', 0.3, bx - 0.4, onBed(bx - 0.4, bz - 0.25), bz - 0.25, 0.6);
       });
-      prop('pencil', 0.32, bx + 0.5, bedTop, bz + 0.25, -0.2);
-      prop('snes', 0.5, bx - 0.3, bedTop, bz + 0.85, -0.5);
       prop('monstera', { h: 2.0 }, B.min.x - 0.5, floorY, backZ + 0.55, 0.4);
-      prop('camera', 0.3, bx - 0.35, bedTop, bz - 0.55, 0.6);
-      prop('neon', { h: 0.95 }, cbX - cbW * 0.22, deskY - 0.3, backZ + 0.12, 0);
+      prop('neon', { h: 0.95, anim: true }, cbX - cbW * 0.22, deskY - 0.3, backZ + 0.12, 0);
       /* outside: the city below the window and a sky that follows Manila */
       var city = skyline(new THREE.Vector3(cx, floorY, backZ - 18), 0, 0, 0, 0, 0, 0, 0.32, {
         x0: cx - 30, x1: cx + 30, z0: backZ - 4, z1: backZ - 32, base: floorY - 12, h0: 7, h1: 17, count: 230 });
@@ -1083,6 +1034,7 @@
         o.userData.depth = Math.max(0.2, Math.min(1, (8.6 - d) / 3));
       });
       screens = liveScreens(THREE, g.scene);
+      gamingLaptop(g.scene);
       /* zoom target: the laptop screen's centre, seen square on. The lid
          leans back 14deg, so its normal is (0, sin14, cos14). */
       g.scene.getObjectByName('laptop_screen').getWorldPosition(zc);
@@ -1182,6 +1134,36 @@
       g.fillStyle = gr; g.fillRect(0, 0, 32, 32);
       return new THREE.CanvasTexture(c);
     })();
+
+    /* gaming laptop: gunmetal body and lid, a red stripe on the lid edge
+       and an RGB light bar on the front edge of the base (a scrolling
+       rainbow texture, so it costs one tiny draw) */
+    function gamingLaptop(root) {
+      var base = root.getObjectByName('laptop_base'), lid = root.getObjectByName('laptop_lid');
+      [base, lid].forEach(function (m) {
+        if (!m || !m.material || !m.material.color) return;
+        m.material = m.material.clone(); m.material.color.setHex(0x1a1d24); m.material.metalness = 0.55; m.material.roughness = 0.32;
+      });
+      if (!base || !base.geometry) return;
+      base.geometry.computeBoundingBox();
+      var bb = base.geometry.boundingBox, w = bb.max.x - bb.min.x;
+      var c = document.createElement('canvas'); c.width = 256; c.height = 4;
+      var g = c.getContext('2d'), gr = g.createLinearGradient(0, 0, 256, 0);
+      ['#ff2d55', '#ff9f0a', '#ffd60a', '#30d158', '#00d4ff', '#5e5ce6', '#bf5af2', '#ff2d55'].forEach(function (col, i) { gr.addColorStop(i / 7, col); });
+      g.fillStyle = gr; g.fillRect(0, 0, 256, 4);
+      var tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.wrapS = THREE.RepeatWrapping;
+      var bar = new THREE.Mesh(new THREE.BoxGeometry(w * 0.86, 0.006, 0.006), new THREE.MeshBasicMaterial({ map: tex, toneMapped: false }));
+      bar.position.set((bb.min.x + bb.max.x) / 2, bb.min.y + 0.006, bb.max.z + 0.002);
+      bar.onBeforeRender = function () { tex.offset.x = (performance.now() / 6000) % 1; };
+      base.add(bar);
+      if (lid && lid.geometry) {
+        lid.geometry.computeBoundingBox();
+        var lb = lid.geometry.boundingBox;
+        var stripe = new THREE.Mesh(new THREE.BoxGeometry((lb.max.x - lb.min.x) * 0.5, 0.004, 0.004), new THREE.MeshBasicMaterial({ color: 0xff2d3d, toneMapped: false }));
+        stripe.position.set((lb.min.x + lb.max.x) / 2, lb.max.y - 0.002, lb.min.z - 0.001);
+        lid.add(stripe);
+      }
+    }
 
     /* ── data flow: packets run laptop -> each cube -> the gear logo.
        Each path is sampled once into a flat array; packets interpolate
@@ -2066,6 +2048,11 @@
     var L = slot('laptop_screen', 640, 400, 1.6), T = slot('tablet_screen', 300, 410, 1.25),
         C = slot('holo_chart', 480, 300, 2), K = slot('laptop_keys', 512, 256), G = slot('holo_gauge', 256, 256, 1.5),
         D = slot('holo_code', 360, 240, 2);
+    /* gaming laptop: the key texture is also the keys' glow (RGB backlight) */
+    if (K) {
+      var km = root.getObjectByName('laptop_keys').material;
+      if (km.emissive) { km.emissive.setHex(0xffffff); km.emissiveMap = K.tex; km.emissiveIntensity = km.userData.e0 = 1.1; km.needsUpdate = true; }
+    }
     function rr(g, x, y, w, h, r, fill) { g.fillStyle = fill; g.beginPath(); g.roundRect(x, y, w, h, r); g.fill(); }
 
     /* the laptop shows a demo storefront drawn here ("Brightline
@@ -2151,12 +2138,14 @@
       /* laptop + keyboard: 8s loop */
       var lt = t % 8, press = lt < 0.35;
       if (K) {
-        var g = K.g; g.fillStyle = '#161c26'; g.fillRect(0, 0, 512, 256);
+        /* RGB wave across the keys, the pressed key flashes white */
+        var g = K.g; g.fillStyle = '#05070b'; g.fillRect(0, 0, 512, 256);
         for (var r = 0; r < 4; r++) for (var k = 0; k < 13; k++) {
           var hot = press && r === 3 && k === 11;
-          rr(g, 14 + k * 38, 14 + r * 40, 32, 32, 5, hot ? '#00d4ff' : '#222a38');
+          rr(g, 14 + k * 38, 14 + r * 40, 32, 32, 5, hot ? '#ffffff' : 'hsl(' + ((k * 22 + r * 14 - t * 70) % 360 + 360) % 360 + ',95%,52%)');
+          rr(g, 18 + k * 38, 18 + r * 40, 24, 24, 4, '#0b0f17');
         }
-        rr(g, 180, 180, 150, 64, 8, '#1e2532');
+        rr(g, 180, 180, 150, 64, 8, '#0b0f17');
         K.tex.needsUpdate = true;
       }
       if (L && photo) {
