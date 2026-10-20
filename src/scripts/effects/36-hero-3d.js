@@ -537,6 +537,8 @@
           var k = size.h ? size.h / sz.y : (size.s || size) / Math.max(sz.x, sz.y, sz.z);
           if (size.d) k = Math.min(k, size.d / Math.max(sz.x, sz.z));
           piv.scale.setScalar(k); bb.min.multiplyScalar(k); bb.max.multiplyScalar(k);
+          /* size.sz stretches the length (z) only, for a bed a 1.80 m person fits */
+          if (size.sz) { piv.scale.z *= size.sz; bb.min.z *= size.sz; bb.max.z *= size.sz; }
           var c0 = bb.getCenter(new THREE.Vector3());
           piv.position.set(x - c0.x, y - bb.min.y, z - c0.z);
           grp.add(piv);
@@ -771,7 +773,7 @@
       });
       /* the bed along the left wall, between it and the desk */
       /* "Dark Modern Bed" by renviros, head against the back wall */
-      var bz = backZ + 1.25, bx = leftX + 1.2, bedPiv = null;
+      var bz = backZ + 1.65, bx = leftX + 1.2, bedPiv = null;   /* head still at the back wall */
       var ray = new THREE.Raycaster(), down = new THREE.Vector3(0, -1, 0);
       function onBed(x, z) {   /* top of the covers under (x, z) */
         ray.set(new THREE.Vector3(x, floorY + 3, z), down);
@@ -793,7 +795,7 @@
       prop('keyboard', { s: 0.6, flat: -1 },   /* mass test lands this scan upside down */
          kx, topY, kz, 0);
       prop('chair', { h: 1.5 }, B.min.x + 0.55, floorY, B.max.z + 0.05, Math.PI + 0.6);
-      prop('bed', 2.3, bx, floorY, bz, 0, function (piv) {
+      prop('bed', { s: 2.3, sz: 1.35 }, bx, floorY, bz, 0, function (piv) {
         bedPiv = piv; piv.updateMatrixWorld(true);
         /* the iPad model has no textures: a space-grey body plus a lit screen */
         var padScr = (function () {
@@ -813,7 +815,7 @@
         });
         prop('pencil', 0.32, bx + 0.55, bedY(bx + 0.55, bz + 0.6, 0.16), bz + 0.6, -0.2);
         prop('snes', 0.5, bx - 0.35, bedY(bx - 0.35, bz + 0.65, 0.22), bz + 0.65, -0.5);
-        prop('camera', 0.3, bx - 0.4, bedY(bx - 0.4, bz - 0.25, 0.14), bz - 0.25, 0.6);
+        prop('camera', 0.3, bx - 0.4, bedY(bx - 0.4, bz - 0.65, 0.14), bz - 0.65, 0.6);
       });
       prop('monstera', { h: 2.0 }, B.max.x + 0.3, floorY, backZ + 0.3, 0.4);   /* floor, right of the desk (beside the bed it read as sitting on it) */
       prop('neon', { h: 0.95, anim: true }, cbX - cbW * 0.22, deskY - 0.3, backZ + 0.12, 0);
