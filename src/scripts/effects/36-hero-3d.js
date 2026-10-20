@@ -677,6 +677,12 @@
       /* ── sneaker wall on the left wall, above the bed ── */
       var swZ0 = backZ + 1.05, swZ1 = backZ + 3.55, swY0 = deskY + 0.35, cell = (swZ1 - swZ0) / 3, rowH = 0.62;
       box(0.025, rowH * 2 + 0.2, swZ1 - swZ0 + 0.2, leftX + 0.013, swY0 + rowH - 0.04, (swZ0 + swZ1) / 2, panelM);   /* dark panel */
+      var shoeSlots = [];
+      /* the real pair (img/hero3d/sneaker-aj1.glb: "Nike Air Jordan" by Ar41k,
+         CC BY 4.0, cut to 25k triangles) replaces each code-built placeholder
+         once it loads; one model, six colourways by turning the hue of its
+         colour panels in the shader (white and black stay as they are) */
+      var SHOE_HUE = [[3.72, 1.25], [-1.0, 1], [0, 1], [3.45, 1.1], [0, 0.04], [1.2, 1]];
       ['chicago', 'royal', 'unc', 'bred', 'shadow', 'pine'].forEach(function (k, i) {
         var col = i % 3, row = Math.floor(i / 3), zc = swZ0 + cell * (col + 0.5), y = swY0 + (1 - row) * rowH;
         var cw = cell - 0.12, ch = 0.44, cd = 0.36, xc = leftX + 0.025 + cd / 2 + 0.02;
@@ -685,7 +691,7 @@
         var lit = new THREE.Mesh(new THREE.PlaneGeometry(cd - 0.08, cw - 0.08), stripM);   /* lit panel under the lid */
         lit.rotation.x = Math.PI / 2; lit.position.set(xc, y + ch - 0.014, zc); grp.add(lit);
         glowCard(cw - 0.04, ch - 0.04, leftX + 0.03, y + ch / 2, zc, Math.PI / 2, 0.2);
-        sneaker(xc + 0.01, y + 0.012, zc, -Math.PI / 2 + 0.12, CW[k], 1.1);
+        shoeSlots.push({ ph: sneaker(xc + 0.01, y + 0.012, zc, -Math.PI / 2 + 0.12, CW[k], 1.1), x: xc, y: y + 0.006, z: zc, w: cd - 0.04, h: ch - 0.06, d: cw - 0.06, hue: SHOE_HUE[i], ry: Math.PI / 2 });
       });
       var swL = new THREE.PointLight(0xe8f1ff, 0, 3); swL.position.set(leftX + 1.1, swY0 + rowH, (swZ0 + swZ1) / 2); grp.add(swL);
 
@@ -698,8 +704,38 @@
         box(0.16, 0.07, 0.004, ox + 0.2, oy + 0.1, oz + 0.203, labM);   /* size label */
       }
       var lid = box(0.66, 0.05, 0.42, bxX + 0.03, floorY + 0.64 + 0.24, bxZ + 0.3, lidM); lid.rotation.x = -1.1;
-      sneaker(bxX - 0.12, floorY + 0.85, bxZ + 0.04, 0.1, CW.chicago, 0.95);
-      sneaker(bxX + 0.13, floorY + 0.85, bxZ + 0.08, -0.15, CW.chicago, 0.95);
+      var boxPair = new THREE.Group();
+      boxPair.add(sneaker(-0.12, 0, 0.04, 0.1, CW.chicago, 0.95), sneaker(0.13, 0, 0.08, -0.15, CW.chicago, 0.95));
+      grp.add(boxPair); boxPair.position.set(bxX, floorY + 0.85, bxZ);
+      shoeSlots.push({ ph: boxPair, x: bxX, y: floorY + 0.85, z: bxZ + 0.04, w: 0.6, h: 0.32, d: 0.5, hue: SHOE_HUE[0], ry: 0.15 });
+      var HUE_GLSL = 'vec3 hueRot(vec3 c,float a,float s){vec3 y=mat3(.299,.596,.211,.587,-.274,-.523,.114,-.322,.312)*c;' +
+        'float h=atan(y.z,y.y)+a,k=length(y.yz)*s;y.y=k*cos(h);y.z=k*sin(h);return mat3(1.,1.,1.,.956,-.272,-1.106,.621,-.647,1.703)*y;}\n';
+      var shoeLoader = new GLTFLoader(); shoeLoader.setMeshoptDecoder(MeshoptDecoder);
+      shoeLoader.load('img/hero3d/sneaker-aj1.glb', function (g) {
+        var src = g.scene, bb = new THREE.Box3();
+        shoeSlots.forEach(function (sl) {
+          var o = src.clone(true);
+          o.traverse(function (m) {
+            if (!m.isMesh) return;
+            var mt = m.material = m.material.clone(); mt.transparent = true; mats.push(mt);
+            mt.onBeforeCompile = function (sh) {
+              sh.uniforms.uHue = { value: sl.hue[0] }; sh.uniforms.uSat = { value: sl.hue[1] };
+              sh.fragmentShader = sh.fragmentShader.replace('void main() {', 'uniform float uHue,uSat;\n' + HUE_GLSL + 'void main() {')
+                .replace('#include <map_fragment>', '#include <map_fragment>\n diffuseColor.rgb = max(hueRot(diffuseColor.rgb, uHue, uSat), 0.);');
+            };
+            mt.customProgramCacheKey = function () { return 'aj-hue'; };
+          });
+          /* fit the pair inside its slot, sitting on the floor of it */
+          var piv = new THREE.Group(); piv.add(o); piv.rotation.y = sl.ry; piv.updateMatrixWorld(true);
+          bb.setFromObject(piv); var sz = bb.getSize(new THREE.Vector3());
+          var k = Math.min(sl.w / sz.x, sl.h / sz.y, sl.d / sz.z) * 0.92;
+          piv.scale.setScalar(k); piv.updateMatrixWorld(true); bb.setFromObject(piv);
+          var c0 = bb.getCenter(new THREE.Vector3());
+          piv.position.set(sl.x - c0.x, sl.y - bb.min.y, sl.z - c0.z);
+          grp.add(piv); sl.ph.visible = false;
+        });
+        shown = -1;   /* re-apply the current fade to the new materials */
+      });
       /* the bed along the left wall, between it and the desk */
       var bz = backZ + 2.1, bx = leftX + 0.95;
       box(1.7, 0.32, 3.1, bx, floorY + 0.16, bz, woodM);
