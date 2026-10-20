@@ -412,9 +412,18 @@
        two camera sides and no ceiling, like a cut-away dollhouse, so no
        chapter shot is ever blocked. */
     function room(c, root3) {
-      var B = new THREE.Box3().setFromObject(root3);
+      /* the desk slab: the widest mesh sitting at the bottom of the model.
+         The whole model's box includes floating cubes and holograms, which
+         left the desk standing far from the wall. */
+      var B = new THREE.Box3().setFromObject(root3), bb = new THREE.Box3(), best = 0;
+      root3.traverse(function (o) {
+        if (!o.isMesh) return;
+        bb.setFromObject(o);
+        var area = (bb.max.x - bb.min.x) * (bb.max.z - bb.min.z);
+        if (bb.min.y < B.min.y + 0.12 && area > best) { best = area; B = bb.clone(); }
+      });
       var cx = (B.min.x + B.max.x) / 2, deskY = B.min.y, floorY = deskY - 1.45;
-      var backZ = B.min.z - 0.7, leftX = B.min.x - 2.6, H = 6.2;
+      var backZ = B.min.z - 0.12, leftX = B.min.x - 2.6, H = 6.2;
       var grp = new THREE.Group(), mats = [];
       function M(o) { var m = new THREE.MeshStandardMaterial(o); m.transparent = true; mats.push(m); return m; }
       function box(w, h, d, x, y, z, m) { var b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); b.position.set(x, y, z); grp.add(b); return b; }
@@ -430,7 +439,7 @@
         box(0.09, deskY - floorY, 0.09, p[0], (deskY + floorY) / 2, p[1], frameM);
       });
       /* back wall with a big window cut out of it */
-      var x0 = leftX, x1 = cx + 8, wx0 = cx - 2.9, wx1 = cx + 2.9, wy0 = deskY + 0.45, wy1 = deskY + 3.4;
+      var x0 = leftX, x1 = cx + 8, wx0 = cx - 2.4, wx1 = cx + 2.9, wy0 = deskY + 0.5, wy1 = deskY + 3.4;
       var sh = new THREE.Shape(); sh.moveTo(x0, floorY); sh.lineTo(x1, floorY); sh.lineTo(x1, floorY + H); sh.lineTo(x0, floorY + H); sh.lineTo(x0, floorY);
       var hole = new THREE.Path(); hole.moveTo(wx0, wy0); hole.lineTo(wx0, wy1); hole.lineTo(wx1, wy1); hole.lineTo(wx1, wy0); hole.lineTo(wx0, wy0);
       sh.holes.push(hole);
@@ -451,6 +460,53 @@
       var ledM = new THREE.MeshBasicMaterial({ color: 0x00d4ff, transparent: true, toneMapped: false }); mats.push(ledM);
       box(x1 - x0, 0.04, 0.04, (x0 + x1) / 2, floorY + H - 0.12, backZ + 0.05, ledM);
       box(0.04, 0.04, 9, leftX + 0.05, floorY + H - 0.12, backZ + 4.5, ledM);
+      /* the collection: three floating shelves on the back wall above the
+         bed, hero figures on two, a row of high-top sneakers on the middle
+         one, and a stack of sneaker boxes on the floor right of the desk.
+         Generic low-poly shapes in the familiar colourways, no logos. */
+      var shX = (leftX + wx0) / 2, shW = Math.max(1.4, wx0 - leftX - 0.5);
+      [1.15, 1.85, 2.55].forEach(function (h) { box(shW, 0.05, 0.36, shX, deskY + h, backZ + 0.2, woodM); });
+      function figure(x, y, body, legs, head, extra) {
+        box(0.13, 0.13, 0.1, x, y + 0.065, backZ + 0.22, M({ color: legs, roughness: 0.6 }));
+        box(0.16, 0.16, 0.11, x, y + 0.2, backZ + 0.22, M({ color: body, roughness: 0.55, metalness: 0.2 }));
+        var hd = new THREE.Mesh(new THREE.SphereGeometry(0.065, 14, 10), M({ color: head, roughness: 0.5, metalness: 0.2 }));
+        hd.position.set(x, y + 0.34, backZ + 0.22); grp.add(hd);
+        if (extra) extra(x, y);
+        box(0.22, 0.02, 0.16, x, y + 0.01, backZ + 0.22, frameM);
+      }
+      var fy = deskY + 2.575, n = 0, step = shW / 5;
+      [[0xb91c1c, 0xb91c1c, 0xd4a017, null], [0xc81e1e, 0x1e40af, 0xc81e1e, null], [0x1e3a8a, 0x1e3a8a, 0x1e3a8a, function (x, y) {
+        var sh = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.02, 24), M({ color: 0xdc2626, roughness: 0.4, metalness: 0.5 }));
+        sh.rotation.x = Math.PI / 2; sh.position.set(x + 0.1, y + 0.2, backZ + 0.3); grp.add(sh);
+        var st = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.024, 16), M({ color: 0xf8fafc, roughness: 0.4 }));
+        st.rotation.x = Math.PI / 2; st.position.set(x + 0.1, y + 0.2, backZ + 0.31); grp.add(st);
+      }], [0x15803d, 0x4c1d95, 0x16a34a, null]].forEach(function (f) {
+        figure(shX - shW / 2 + step * (++n), fy, f[0], f[1], f[2], f[3]);
+      });
+      fy = deskY + 1.175; n = 0;
+      [[0x22c55e, 0x16a34a, 0xa16207, null], [0x991b1b, 0x111827, 0x991b1b, null], [0x6b7280, 0x1f2937, 0x94a3b8, null], [0x7c3aed, 0x1e1b4b, 0xc4b5fd, null]].forEach(function (f) {
+        figure(shX - shW / 2 + step * (++n), fy, f[0], f[1], f[2], f[3]);
+      });
+      /* high-tops: sole, toe box, ankle collar and a contrasting overlay */
+      function sneaker(x, y, z, a, upper, over, sole) {
+        var g = new THREE.Group();
+        var p = function (w, h, d, px, py, pz, col, r) { var b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), M({ color: col, roughness: r || 0.6 })); b.position.set(px, py, pz); g.add(b); };
+        p(0.11, 0.035, 0.3, 0, 0.0175, 0, sole, 0.8);
+        p(0.1, 0.07, 0.17, 0, 0.07, 0.06, upper);
+        p(0.105, 0.2, 0.13, 0, 0.135, -0.075, upper);
+        p(0.107, 0.06, 0.14, 0, 0.21, -0.08, over);
+        p(0.107, 0.05, 0.1, 0, 0.065, 0.1, over);
+        g.position.set(x, y, z); g.rotation.y = a; grp.add(g);
+      }
+      var sy = deskY + 1.875, sx0 = shX - shW / 2 + 0.25;
+      [[0xf8fafc, 0xb91c1c, 0xf8fafc], [0xf8fafc, 0x1d4ed8, 0xf8fafc], [0xf8fafc, 0x7dd3fc, 0xf8fafc], [0x111827, 0xb91c1c, 0xf8fafc]].forEach(function (c, i) {
+        sneaker(sx0 + i * (shW - 0.5) / 3, sy, backZ + 0.22, 0.5, c[0], c[1], c[2]);
+      });
+      /* sneaker boxes by the desk, the top one open with a pair inside */
+      var bxX = B.max.x + 0.75, bxZ = backZ + 0.6;
+      for (var k = 0; k < 4; k++) box(0.62, 0.22, 0.38, bxX + (k % 2) * 0.03, floorY + 0.11 + k * 0.225, bxZ + k * 0.02, M({ color: k % 2 ? 0x111111 : 0xf97316, roughness: 0.8 }));
+      sneaker(bxX - 0.12, floorY + 0.9 + 0.02, bxZ + 0.05, 1.57, 0xf8fafc, 0xb91c1c, 0xf8fafc);
+      sneaker(bxX + 0.14, floorY + 0.9 + 0.02, bxZ + 0.08, 1.4, 0xf8fafc, 0xb91c1c, 0xf8fafc);
       /* the bed along the left wall, between it and the desk */
       var bz = backZ + 2.1, bx = leftX + 0.95;
       box(1.7, 0.32, 3.1, bx, floorY + 0.16, bz, woodM);
@@ -1440,7 +1496,7 @@
         worldTick(t, shotS, sf);
         if (split) {
           /* a bell over the first third of each leg, nothing at rest */
-          var lf = shotS - si, amt = lf > 0.01 && lf < 0.4 ? Math.sin(lf / 0.4 * Math.PI) * 0.018 : 0;
+          var lf = shotS - si, amt = lf > 0.01 && lf < 0.4 ? Math.sin(lf / 0.4 * Math.PI) * 0.007 : 0;
           split.uniforms.amount.value = amt;
           split.enabled = amt > 0.0005;
         }
