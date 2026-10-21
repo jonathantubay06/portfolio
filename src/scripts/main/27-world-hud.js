@@ -21,15 +21,20 @@
   /* ── intro counter ── */
   if (loader && !root.classList.contains('intro-seen')) {
     var num = loader.querySelector('.wl-n'), bar = loader.querySelector('.wl-bar i');
-    var t0 = performance.now(), shown = 0, done = false;
+    /* the script owns the fade from here; the CSS 3 s fallback is only for
+       when no script runs (on a cold load it cut the count off at ~80) */
+    loader.style.animation = 'none';
+    var t0 = performance.now(), shown = 0, done = false, tDone = 0, from = 0;
     var finish = function () { done = true; };
     addEventListener('hero3d:skip', finish);
     setTimeout(finish, 2600);
     var tick = function (now) {
       if (root.classList.contains('world-on')) done = true;
-      /* on its own it slows toward 90; done runs it out to 100 */
-      var goal = done ? 100 : 90 * (1 - Math.exp(-(now - t0) / 700));
-      shown += (goal - shown) * (done ? 0.25 : 0.12);
+      if (done && !tDone) { tDone = now; from = shown; }
+      /* on its own it slows toward 90; done runs it out to 100 by the
+         clock, so a frame stall while the 3D compiles can't stop it short */
+      if (done) { var k = Math.min(1, (now - tDone) / 450); shown = from + (100 - from) * (1 - Math.pow(1 - k, 3)); }
+      else shown += (90 * (1 - Math.exp(-(now - t0) / 700)) - shown) * 0.12;
       if (done && shown > 99.4) shown = 100;
       var v = Math.round(shown);
       num.textContent = (v < 10 ? '00' : v < 100 ? '0' : '') + v;
