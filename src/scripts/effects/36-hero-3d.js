@@ -1811,11 +1811,24 @@
     /* quality governor: the median frame time of 2 s windows, after a
        3 s warm-up. The median ignores one-off hitches (an image decoding,
        a section mounting); two slow windows in a row are needed before
-       it steps down. Over 22 ms: DPR 1 and no bloom composer. Still over
-       30 ms: stop for good and keep the static plate. Only the gap after
-       a rendered frame is sampled, so the idle half-rate below does not
-       count against it. */
-    var gov = { lvl: 0, t0: 0, s: [], bad: 0, last: 0 }, govPrev = 0, lastRendered = false, skipOdd = false;
+       it steps down. Over 22 ms: DPR 1 and no bloom. Over 30 ms: DPR
+       0.75. Only over 45 ms at that setting, on a machine that never ran
+       it at full quality, does it stop for good and keep the static plate;
+       one that did is only busy for now, so it stays at the low setting. It steps back up after three fast windows
+       (under 18 ms, so a 60 Hz screen counts as fast), because a slow spell is often another app busy on
+       the GPU for a while: it used to stop the world for good on that
+       and the page fell back to the flat layout mid-visit. Only the gap
+       after a rendered frame is sampled, so the idle half-rate below does
+       not count against it. Each step back up that has to be undone
+       doubles the fast windows needed next time, so a GPU that sits on
+       the edge does not flip quality every few seconds. */
+    var gov = { lvl: 0, t0: 0, s: [], bad: 0, good: 0, need: 3, up: false, fine: false, last: 0 }, govPrev = 0, lastRendered = false, skipOdd = false;
+    var DPR = [Math.min(devicePixelRatio, 1.5), 1, 0.75], LIMIT = [22, 30, 45];
+    function govLevel(l, now, med) {
+      gov.lvl = l; bloomOn = l === 0; gov.t0 = now + 1000;
+      renderer.setPixelRatio(DPR[l]); composer.setPixelRatio(DPR[l]); size();
+      if (window.console && console.info) console.info('[hero 3D] ' + med.toFixed(1) + ' ms/frame: quality level ' + l);
+    }
     function govern(ms, now) {
       if (!gov.t0) { gov.t0 = now + 3000; return; }
       if (now < gov.t0) return;
@@ -1824,16 +1837,16 @@
       gov.s.sort(function (a, b) { return a - b; });
       var med = gov.last = gov.s[gov.s.length >> 1];
       gov.t0 = now; gov.s.length = 0;
-      var limit = gov.lvl === 0 ? 22 : 30;
-      gov.bad = med > limit ? gov.bad + 1 : 0;
+      if (gov.lvl === 0 && med <= LIMIT[0]) gov.fine = true;
+      gov.bad = med > LIMIT[gov.lvl] ? gov.bad + 1 : 0;
+      gov.good = gov.lvl > 0 && med < 18 ? gov.good + 1 : 0;
+      if (gov.good >= gov.need) { gov.good = 0; gov.up = true; govLevel(gov.lvl - 1, now, med); return; }
       if (gov.bad < 2) return;
       gov.bad = 0;
-      if (gov.lvl === 0) {
-        gov.lvl = 1; bloomOn = false; gov.t0 = now + 1000;
-        renderer.setPixelRatio(1); composer.setPixelRatio(1); size();
-        if (window.console && console.info) console.info('[hero 3D] ' + med.toFixed(1) + ' ms/frame: DPR 1, no bloom');
-      } else if (gov.lvl === 1) {
-        gov.lvl = 2; dead = true; release();
+      if (gov.up) { gov.up = false; gov.need *= 2; }
+      if (gov.lvl < 2) govLevel(gov.lvl + 1, now, med);
+      else if (!gov.fine) {
+        gov.lvl = 3; dead = true; release();
         skip(med.toFixed(1) + ' ms/frame at the lowest setting');
       }
     }
