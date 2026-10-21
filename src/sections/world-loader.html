@@ -1,12 +1,28 @@
-<!-- ══ WORLD INTRO (draft 2026-10-20, igloo.inc idea) ══
-     A short 0-100 counter while the desk's 3D loads, once per visit.
-     CSS only shows it on desktops that can run the 3D world, and fades it
-     out by itself after 3 s even if no script runs; 27-world-hud.js
-     drives the number and lifts it as soon as the world is on screen. -->
+<!-- ══ WORLD INTRO ══
+     Once per visit, desktops that can run the 3D world only. A reactor
+     ring fills with a 0-100 counter while the desk's 3D loads, boot lines
+     tick in, the number glitches at 100 and a portal opens onto the room.
+     CSS fades it out by itself after 3 s if no script runs;
+     27-world-hud.js drives it. Esc or a click skips it. -->
 <div class="d-only world-loader" aria-hidden="true">
   <div class="wl-in">
     <span class="wl-k">Booting workspace</span>
-    <span class="wl-n">000</span>
-    <span class="wl-bar"><i></i></span>
+    <div class="wl-core">
+      <svg class="wl-rings" viewBox="0 0 200 200" aria-hidden="true">
+        <circle class="wl-r1" cx="100" cy="100" r="96"/>
+        <circle class="wl-track" cx="100" cy="100" r="84"/>
+        <circle class="wl-prog" cx="100" cy="100" r="84" pathLength="100"/>
+        <circle class="wl-r3" cx="100" cy="100" r="70"/>
+        <circle class="wl-r4" cx="100" cy="100" r="58"/>
+      </svg>
+      <span class="wl-n" data-t="000">000</span>
+    </div>
+    <ul class="wl-log">
+      <li data-at="12">Loading desk</li>
+      <li data-at="38">Charging reactor</li>
+      <li data-at="66">Waking the dogs</li>
+      <li data-at="96">Systems online</li>
+    </ul>
+    <span class="wl-skip">Esc to skip</span>
   </div>
 </div>

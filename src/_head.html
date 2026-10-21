@@ -27,8 +27,8 @@
   var world = dk && !quick && !matchMedia('(prefers-reduced-motion:reduce)').matches;
   if (world) { t = 'dark'; document.documentElement.classList.add('world-lock'); }
   if (t === 'light') document.documentElement.setAttribute('data-theme','light');
-  /* the 3D world's intro counter plays once per visit (27-world-hud.js) */
-  try { if (sessionStorage.getItem('jt-intro')) document.documentElement.classList.add('intro-seen'); } catch (e) {}
+  /* the 3D world's intro plays once per visit (27-world-hud.js); ?intro replays it */
+  try { if (sessionStorage.getItem('jt-intro') && !/[?&]intro\b/.test(location.search)) document.documentElement.classList.add('intro-seen'); } catch (e) {}
   /* where the live 3D world will boot (dark theme, desktop), hold back the
      hero's still poster so the first paint is not a picture that then
      swaps for the 3D; 27-world-hud.js lifts this if the 3D is skipped */

@@ -863,7 +863,11 @@
             for (var q = 0; q < mats.length; q++) { mats[q].colorWrite = false; mats[q].depthWrite = false; }
             return;
           }
-          if (prime === 2) { prime = 3; for (var q2 = 0; q2 < mats.length; q2++) mats[q2].colorWrite = true; shown = -1; }
+          if (prime === 2) {
+            prime = 3; for (var q2 = 0; q2 < mats.length; q2++) mats[q2].colorWrite = true; shown = -1;
+            /* the priming draw is the one long frame; the intro waits for it */
+            window.__roomPrimed = true; dispatchEvent(new Event('hero3d:primed'));
+          }
           var now = performance.now(), dt = Math.min(0.1, (now - (mixT || now)) / 1000); mixT = now;
           if (a > 0.01 && !ready) {
             if (!warming) { warming = true; compileThen(grp, function () { ready = true; shown = -1; }); }
@@ -2386,15 +2390,20 @@
   }
 
   function whenIdle() { ('requestIdleCallback' in window) ? requestIdleCallback(boot, { timeout: 2500 }) : setTimeout(boot, 1200); }
+  /* while the intro plays (first visit), boot at once: the loading and
+     shader compiles happen behind it, and the portal opens onto the
+     finished room instead of the room hitching in afterwards */
+  var rush = !document.documentElement.classList.contains('intro-seen') && !!document.querySelector('.world-loader');
   function arm() {
     if (booted || !ok.matches) return;
-    booted = true; pend(); preconnect(); whenIdle();
+    booted = true; pend(); preconnect();
+    if (rush) boot(); else whenIdle();
   }
   /* Not the load event: a slow third-party beacon (the analytics pixel)
      can hold 'load' back for a minute, which kept the 3D waiting. */
   if (ok.matches) {
     pend(); preconnect();
     if (document.readyState === 'complete') arm();
-    else addEventListener('DOMContentLoaded', function () { setTimeout(arm, 1500); });
+    else addEventListener('DOMContentLoaded', function () { setTimeout(arm, rush ? 0 : 1500); });
   }
 })();

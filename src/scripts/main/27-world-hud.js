@@ -1,8 +1,10 @@
 /* ═══════════════════════════════════════
    WORLD HUD, INTRO AND GRAIN (draft 2026-10-20, igloo.inc idea)
-   - Intro: drives the counter in .world-loader (eases toward 90 on its
-     own, jumps to 100 when the 3D world turns on, gives up at 2.6 s so a
-     slow or skipped 3D never holds the page). Once per visit.
+   - Intro: drives the reactor ring and counter in .world-loader (eases
+     toward 90 on its own, runs to 100 when the 3D world turns on, gives
+     up at 4.5 s so a slow or skipped 3D never holds the page), glitches
+     at 100 and opens a portal onto the room. Esc or a click skips. Once
+     per visit.
    - HUD: small mono readouts in the bottom-left corner: chapter, its
      name, Manila coordinates and how far down the page you are.
    - Grain: a fixed film-grain and vignette layer above the 3D world and
@@ -20,29 +22,51 @@
 
   /* ── intro counter ── */
   if (loader && !root.classList.contains('intro-seen')) {
-    var num = loader.querySelector('.wl-n'), bar = loader.querySelector('.wl-bar i');
+    var num = loader.querySelector('.wl-n'), prog = loader.querySelector('.wl-prog');
+    var core = loader.querySelector('.wl-core'), lines = loader.querySelectorAll('.wl-log li');
     /* the script owns the fade from here; the CSS 3 s fallback is only for
        when no script runs (on a cold load it cut the count off at ~80) */
     loader.style.animation = 'none';
-    var t0 = performance.now(), shown = 0, done = false, tDone = 0, from = 0;
+    var t0 = performance.now(), shown = 0, done = false, tDone = 0, from = 0, ended = false;
     var finish = function () { done = true; };
     addEventListener('hero3d:skip', finish);
-    setTimeout(finish, 2600);
+    /* the 3D boots behind the intro, so wait for it a little longer than
+       before, but never past 4.5 s */
+    setTimeout(finish, 4500);
+    /* the portal: a hole opens from the ring's centre while the rings zoom
+       past, then the loader goes. Skipping (Esc or a click) jumps here. */
+    var enter = function () {
+      if (ended) return; ended = true;
+      removeEventListener('keydown', onKey);
+      try { sessionStorage.setItem('jt-intro', '1'); } catch (e) {}
+      var r = core.getBoundingClientRect();
+      loader.style.setProperty('--wl-cx', Math.round(r.left + r.width / 2) + 'px');
+      loader.style.setProperty('--wl-cy', Math.round(r.top + r.height / 2) + 'px');
+      loader.classList.add('wl-portal');
+      setTimeout(function () { loader.classList.add('wl-out'); }, 650);
+      setTimeout(function () { loader.remove(); }, 1150);
+    };
+    var onKey = function (e) { if (e.key === 'Escape') enter(); };
+    addEventListener('keydown', onKey);
+    loader.addEventListener('click', enter);
     var tick = function (now) {
-      if (root.classList.contains('world-on')) done = true;
+      if (ended) return;
+      /* done once the room's one long priming frame is behind the intro */
+      if (root.classList.contains('world-on') && window.__roomPrimed) done = true;
       if (done && !tDone) { tDone = now; from = shown; }
       /* on its own it slows toward 90; done runs it out to 100 by the
          clock, so a frame stall while the 3D compiles can't stop it short */
       if (done) { var k = Math.min(1, (now - tDone) / 450); shown = from + (100 - from) * (1 - Math.pow(1 - k, 3)); }
       else shown += (90 * (1 - Math.exp(-(now - t0) / 700)) - shown) * 0.12;
       if (done && shown > 99.4) shown = 100;
-      var v = Math.round(shown);
-      num.textContent = (v < 10 ? '00' : v < 100 ? '0' : '') + v;
-      bar.style.transform = 'scaleX(' + (shown / 100).toFixed(3) + ')';
+      var v = Math.round(shown), t = (v < 10 ? '00' : v < 100 ? '0' : '') + v;
+      num.textContent = t; num.setAttribute('data-t', t);
+      prog.style.strokeDashoffset = (100 - shown).toFixed(2);
+      for (var i = 0; i < lines.length; i++) if (v >= +lines[i].getAttribute('data-at')) lines[i].classList.add('on');
       if (shown < 100) { requestAnimationFrame(tick); return; }
-      loader.classList.add('wl-out');
-      try { sessionStorage.setItem('jt-intro', '1'); } catch (e) {}
-      setTimeout(function () { loader.remove(); }, 700);
+      /* 100: a short glitch on the number, then through the portal */
+      loader.classList.add('wl-glitch');
+      setTimeout(enter, 340);
     };
     requestAnimationFrame(tick);
   } else if (loader) loader.remove();

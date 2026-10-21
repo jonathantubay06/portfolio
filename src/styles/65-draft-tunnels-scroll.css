@@ -221,21 +221,53 @@ html.world-on:not([data-theme="light"]) .world-fx{display:block}
 /* only where the gutter left of the 1070px content column fits it */
 @media(min-width:1500px){html.world-on:not([data-theme="light"]) .world-hud{display:flex}}
 
-/* intro counter: only where the 3D world can run, once per visit; it
-   also fades itself out at 3 s if no script ever runs */
+/* intro: reactor ring + counter, once per visit, only where the 3D world
+   can run; it also fades itself out at 3 s if no script ever runs.
+   27-world-hud.js adds .wl-glitch at 100, then .wl-portal, which opens a
+   hole from the ring's centre (--wl-r, a registered length so it can
+   transition) while the rings zoom past the camera */
+@property --wl-r{syntax:'<length>';inherits:false;initial-value:0px}
 .world-loader{display:none}
 @media(min-width:1024px) and (pointer:fine) and (prefers-reduced-motion:no-preference){
   html:not(.intro-seen):not([data-theme="light"]) .world-loader{
-    display:grid;place-items:center;position:fixed;inset:0;z-index:9999;background:#060d1a;
-    animation:wlAuto .6s ease 3s forwards}
+    display:grid;place-items:center;position:fixed;inset:0;z-index:9999;background:radial-gradient(ellipse at 50% 45%,#0b1a33 0%,#060d1a 60%);
+    animation:wlAuto .6s ease 3s forwards;cursor:pointer}
 }
-.world-loader.wl-out{opacity:0;visibility:hidden;transition:opacity .6s ease,visibility 0s .6s;animation:none}
+.world-loader.wl-out{opacity:0;visibility:hidden;transition:opacity .45s ease,visibility 0s .45s;animation:none}
 @keyframes wlAuto{to{opacity:0;visibility:hidden}}
-.wl-in{display:grid;justify-items:start;gap:10px;width:min(320px,70vw)}
-.wl-k{font:500 11px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.3em;text-transform:uppercase;color:rgba(170,225,255,.7)}
-.wl-n{font-family:var(--font-head);font-weight:900;font-size:clamp(3rem,7vw,5.5rem);line-height:1;color:#fff;letter-spacing:.04em;font-variant-numeric:tabular-nums}
-.wl-bar{display:block;width:100%;height:2px;background:rgba(0,212,255,.15);overflow:hidden}
-.wl-bar i{display:block;height:100%;background:var(--cyan);transform:scaleX(0);transform-origin:left}
+.wl-in{display:grid;justify-items:center;gap:18px}
+.wl-k,.wl-log,.wl-skip{font:500 11px ui-monospace,SFMono-Regular,Consolas,monospace;letter-spacing:.3em;text-transform:uppercase;color:rgba(170,225,255,.7)}
+.wl-core{position:relative;width:260px;height:260px;display:grid;place-items:center;transition:transform .9s cubic-bezier(.7,0,.25,1),opacity .9s ease}
+.wl-rings{position:absolute;inset:0;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 0 6px rgba(0,212,255,.55))}
+.wl-rings circle{fill:none;stroke:#00d4ff;transform-origin:100px 100px}
+.wl-r1{stroke-width:1;stroke-dasharray:2 5;opacity:.6;animation:wlSpin 9s linear infinite}
+.wl-track{stroke-width:3;opacity:.14}
+.wl-prog{stroke-width:3;stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:100;transform:rotate(-90deg)}
+.wl-r3{stroke-width:2;stroke-dasharray:16 9;opacity:.45;animation:wlSpin 5s linear infinite reverse}
+.wl-r4{stroke-width:1;stroke-dasharray:1 3;opacity:.35;animation:wlSpin 14s linear infinite}
+@keyframes wlSpin{to{transform:rotate(360deg)}}
+.wl-n{position:relative;font-family:var(--font-head);font-weight:900;font-size:3.6rem;line-height:1;color:#fff;letter-spacing:.04em;font-variant-numeric:tabular-nums;text-shadow:0 0 18px rgba(0,212,255,.45)}
+.wl-log{list-style:none;margin:0;padding:0;display:grid;gap:6px;justify-items:center;min-height:5.2em;letter-spacing:.24em}
+.wl-log li{opacity:0;transform:translateY(4px);transition:opacity .25s ease,transform .25s ease}
+.wl-log li.on{opacity:1;transform:none}
+.wl-log li.on::before{content:'> ';color:#00d4ff}
+.wl-skip{font-size:10px;opacity:.4;letter-spacing:.2em}
+/* at 100: a short print-offset glitch, red and cyan halves slipping apart
+   over a halftone flash */
+.wl-glitch .wl-n::before,.wl-glitch .wl-n::after{content:attr(data-t);position:absolute;inset:0;mix-blend-mode:screen}
+.wl-glitch .wl-n::before{color:#ff2a6d;animation:wlSlipA .32s steps(2) both}
+.wl-glitch .wl-n::after{color:#00e5ff;animation:wlSlipB .32s steps(2) both}
+@keyframes wlSlipA{0%{transform:translate(-5px,1px);clip-path:inset(0 0 55% 0)}50%{transform:translate(4px,-2px);clip-path:inset(40% 0 0 0)}100%{transform:none;clip-path:inset(0 0 100% 0)}}
+@keyframes wlSlipB{0%{transform:translate(5px,-1px);clip-path:inset(50% 0 0 0)}50%{transform:translate(-4px,2px);clip-path:inset(0 0 45% 0)}100%{transform:none;clip-path:inset(100% 0 0 0)}}
+.wl-glitch .wl-core::after{content:'';position:absolute;inset:18%;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,rgba(0,229,255,.5) 1px,transparent 1.6px) 0 0/6px 6px;animation:wlDots .32s ease both}
+@keyframes wlDots{0%{opacity:0}30%{opacity:.9}100%{opacity:0}}
+/* the portal: a hole grows from the ring's centre and the rings fly past */
+.world-loader.wl-portal{--wl-r:160vmax;transition:--wl-r .9s cubic-bezier(.7,0,.25,1);
+  -webkit-mask:radial-gradient(circle at var(--wl-cx,50%) var(--wl-cy,50%),transparent var(--wl-r),#000 calc(var(--wl-r) + 1px));
+          mask:radial-gradient(circle at var(--wl-cx,50%) var(--wl-cy,50%),transparent var(--wl-r),#000 calc(var(--wl-r) + 1px))}
+.wl-portal .wl-core{transform:scale(7);opacity:0}
+.wl-portal .wl-k,.wl-portal .wl-log,.wl-portal .wl-skip{opacity:0;transition:opacity .25s ease}
 
 /* ── phones and tablets: no endless repaint loops ──
    The 3D, the wallpaper, smooth scroll, grain and HUD never start there.
