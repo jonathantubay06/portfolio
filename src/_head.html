@@ -33,6 +33,20 @@
      hero's still poster so the first paint is not a picture that then
      swaps for the 3D; 27-world-hud.js lifts this if the 3D is skipped */
   if (world) document.documentElement.classList.add('world-pending');
+  /* first visit: 36-hero-3d.js boots the 3D straight away behind the intro,
+     so start its downloads from here instead of after effects.js has
+     parsed (three.js modules from jsDelivr, the 0.7 MB scene) */
+  if (world && !document.documentElement.classList.contains('intro-seen')) {
+    var V = 'https://cdn.jsdelivr.net/npm/three@0.170.0', J = '/examples/jsm/';
+    var hint = function (rel, href, as) {
+      var l = document.createElement('link'); l.rel = rel; l.href = href; l.crossOrigin = 'anonymous';
+      if (as) { l.as = as; l.fetchPriority = 'high'; }
+      document.head.appendChild(l);
+    };
+    hint('preconnect', 'https://cdn.jsdelivr.net');
+    ['/+esm', J + 'loaders/GLTFLoader.js/+esm', J + 'libs/meshopt_decoder.module.js/+esm'].forEach(function (p) { hint('modulepreload', V + p); });
+    hint('preload', './img/hero3d/scene.glb', 'fetch');
+  }
 })();
 </script>
 
@@ -136,6 +150,14 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
 {
   "@context": "https://schema.org",
   "@graph": [
+    {
+      "@type": "ProfilePage",
+      "@id": "https://jonathantubay.com/#profile",
+      "url": "https://jonathantubay.com/",
+      "name": "Jonathan Tubay | E-Commerce Automation & AI Operations Engineer",
+      "inLanguage": "en",
+      "mainEntity": { "@id": "https://jonathantubay.com/#person" }
+    },
     {
       "@type": "Person",
       "@id": "https://jonathantubay.com/#person",

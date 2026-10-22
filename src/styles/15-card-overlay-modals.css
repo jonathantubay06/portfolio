@@ -144,3 +144,9 @@
 .proj-modal,#egg-overlay{visibility:hidden;transition:opacity .3s,visibility 0s .3s}
 .proj-modal.open,#egg-overlay.open{visibility:visible;transition:opacity .3s,visibility 0s}
 .proj-modal:not(.open) .modal-backdrop,.proj-modal:not(.open) .modal-close,#egg-overlay:not(.open){-webkit-backdrop-filter:none;backdrop-filter:none}
+/* Closed modals sit fixed over the viewport, so their lazy screenshots
+   counted as on screen and all 14 (~300 KB) loaded at high priority
+   before the first paint, which Lighthouse charged to the phone LCP
+   (2026-10-22). No box, no load: 17-project-modals.js adds .m-warm
+   after the page has loaded, on card hover/press, and on open. */
+.proj-modal:not(.m-warm) img{display:none}

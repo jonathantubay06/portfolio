@@ -64,6 +64,7 @@
      suppresses the modal's own fade so a swap or a view transition does
      not capture it half-transparent. */
   function show(modal, instant) {
+    modal.classList.add('m-warm');
     if (instant) modal.classList.add('m-instant');
     modal.classList.add('open');
     modal.removeAttribute('inert');
@@ -171,6 +172,21 @@
       e.stopPropagation();
       openModal(btn.dataset.modal, btn);
     });
+  });
+  // Closed modals keep their screenshots unloaded (15-card-overlay-modals.css)
+  // so they stay out of the first paint. They load once the page is idle
+  // after load, or as soon as a card is hovered or pressed, so the header
+  // morph has the picture ready.
+  const warm = id => { const m = id && document.getElementById(id); if (m) m.classList.add('m-warm'); };
+  const warmAll = () => document.querySelectorAll('.proj-modal').forEach(m => m.classList.add('m-warm'));
+  const idle = () => (window.requestIdleCallback ? requestIdleCallback(warmAll, { timeout: 4000 }) : setTimeout(warmAll, 1500));
+  const later = () => setTimeout(idle, 2000); // load can land before the first paint
+  if (document.readyState === 'complete') later(); else addEventListener('load', later, { once: true });
+  document.querySelectorAll('[data-modal]').forEach(el => {
+    const go = () => warm(el.dataset.modal);
+    el.addEventListener('pointerenter', go, { once: true });
+    el.addEventListener('pointerdown', go, { once: true });
+    el.addEventListener('focusin', go, { once: true });
   });
   document.querySelectorAll('.proj-card[data-modal]').forEach(card => {
     card.addEventListener('click', e => {

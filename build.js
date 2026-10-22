@@ -231,7 +231,7 @@ function rehash(markup, prefix, { require: mustExist = true } = {}) {
 }
 
 const outputs = {
-  'index.html': withBeacon(rehash(minify.html(buildHtml()), './')),
+  'index.html': withBeacon(rehash(minify.html(buildHtml()).replace(/scene.glb'/g, "scene.glb?v=" + glbV + "'"), './')),
   'sitemap.xml': buildSitemap(),
   [HASHED['style.css']]: styleCss,
   [HASHED['main.js']]: mainJs,

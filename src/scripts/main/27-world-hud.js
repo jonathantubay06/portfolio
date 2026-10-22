@@ -2,7 +2,7 @@
    WORLD HUD, INTRO AND GRAIN (draft 2026-10-20, igloo.inc idea)
    - Intro: drives the reactor ring and counter in .world-loader (eases
      toward 90 on its own, runs to 100 when the 3D world turns on, gives
-     up at 4.5 s so a slow or skipped 3D never holds the page), glitches
+     up at 3 s so a slow or skipped 3D never holds the page), glitches
      at 100 and opens a portal onto the room. Esc or a click skips. Once
      per visit.
    - HUD: small mono readouts in the bottom-left corner: chapter, its
@@ -31,8 +31,8 @@
     var finish = function () { done = true; };
     addEventListener('hero3d:skip', finish);
     /* the 3D boots behind the intro, so wait for it a little longer than
-       before, but never past 4.5 s */
-    setTimeout(finish, 4500);
+       before, but never past 3 s (a cold load took ~8 s live at 4.5) */
+    setTimeout(finish, 3000);
     /* the portal: a hole opens from the ring's centre while the rings zoom
        past, then the loader goes. Skipping (Esc or a click) jumps here. */
     var enter = function () {

@@ -56,7 +56,10 @@
 #   script  self + inline (theme bootstrap in <head>, the stylesheet
 #           onerror), jsDelivr (three.js ESM, desktop 3D only), the
 #           Cloudflare analytics beacon; 'wasm-unsafe-eval' for the meshopt
-#           decoder that unpacks scene.glb
+#           decoder that unpacks scene.glb; Google reCAPTCHA (Netlify
+#           injects api.js for the contact form's data-netlify-recaptcha;
+#           blocked until 2026-10-22, so the widget never rendered)
+#   frame   reCAPTCHA's checkbox and challenge iframes
 #   style   self + inline (style="--brand:…" attributes throughout)
 #   img     self, data: (inline SVG backgrounds), blob: (GLB textures)
 #   connect self (Netlify form post), blob:/data: (GLTFLoader reads its
@@ -68,7 +71,7 @@
 [[headers]]
   for = "/*"
   [headers.values]
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' blob: data: https://cdn.jsdelivr.net https://cloudflareinsights.com; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net https://static.cloudflareinsights.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' blob: data: https://cdn.jsdelivr.net https://cloudflareinsights.com; worker-src 'self' blob:; frame-src https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
