@@ -99,6 +99,10 @@
 .cert-group-header{display:flex;align-items:center;gap:.6rem;margin-bottom:.8rem}
 .cert-group-logo{width:20px;height:20px;object-fit:contain;filter:brightness(.9)}
 .cert-group-name{font-size:.78rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);transition:color .28s}
+/* The name wraps inside its own box, so the logo, name and count stay on
+   one row on phones; letting the header wrap (2026-10-23 and earlier) put
+   the count on a line of its own. */
+.cert-group-name{flex:1 1 auto;min-width:0}
 .cert-group-count{
   font-size:.65rem;font-weight:700;padding:.1rem .45rem;
   background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.2);

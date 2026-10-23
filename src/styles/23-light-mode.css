@@ -143,7 +143,6 @@
   .hero{padding:5rem 1.2rem 2.5rem}
   .process-inline{flex-wrap:wrap;gap:.4rem}
   .pi-arrow{display:none}
-  .cert-group-header{flex-wrap:wrap}
   /* Testimonials: shrink nav arrows on tablet */
   
   /* Timeline: tighter on tablet */
@@ -207,7 +206,6 @@
   .cert-group::before{display:none} /* hide left accent bar on mobile — no hover */
   .cbadge{font-size:.68rem;padding:.3rem .65rem}
   .cbadge:hover{transform:none;box-shadow:none} /* no scale on mobile */
-  .cert-group-header{flex-wrap:wrap}
   /* Testi dots: larger touch targets on mobile */
   
   /* Hero bottom fade: shorter on mobile */
