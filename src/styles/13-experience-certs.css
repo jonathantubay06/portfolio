@@ -116,6 +116,23 @@
 .cert-group.on:nth-child(3) .cert-group-count{animation-delay:.24s}
 .cert-group.on:nth-child(4) .cert-group-count{animation-delay:.36s}
 
+/* Featured cert (newest): certificate thumbnail beside the credential
+   details, mirroring the LinkedIn entry. Stacks on narrow cards. */
+.cert-feature-body{display:flex;gap:1rem;align-items:flex-start}
+.cert-feature-shot{flex:0 0 160px;border-radius:8px;overflow:hidden;border:1px solid var(--border2);line-height:0;transition:border-color .22s,transform .22s}
+.cert-feature-shot:hover{border-color:rgba(212,170,80,.55);transform:translateY(-1px)}
+.cert-feature-shot img{width:100%;height:auto;display:block}
+.cert-feature-info{min-width:0;display:flex;flex-direction:column;gap:.45rem}
+.cert-feature-org{font-size:.85rem;font-weight:600;color:rgba(232,244,255,.88)}
+.cert-feature-org span{font-weight:400;color:var(--muted)}
+.cert-feature-meta{font-size:.72rem;color:var(--muted);overflow-wrap:anywhere}
+.cert-feature-skills{display:flex;flex-wrap:wrap;gap:.35rem}
+.cert-feature-skills span{font-size:.68rem;padding:.15rem .55rem;border-radius:99px;background:rgba(212,170,80,.1);border:1px solid rgba(212,170,80,.28);color:#d9b867}
+.cert-feature-link{align-self:flex-start}
+@media(max-width:560px){.cert-feature-body{flex-direction:column}.cert-feature-shot{flex-basis:auto;width:100%;max-width:240px}}
+[data-theme="light"] .cert-feature-org{color:#24344a}
+[data-theme="light"] .cert-feature-skills span{color:#8a6a1f;background:rgba(180,140,40,.1);border-color:rgba(180,140,40,.3)}
+
 /* Badges */
 .certs-badges{display:flex;flex-wrap:wrap;gap:.5rem}
 .cbadge{
