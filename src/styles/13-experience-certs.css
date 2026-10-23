@@ -161,4 +161,7 @@
   background:rgba(251,191,36,.15);color:#fbbf24;
   padding:.05rem .35rem;border-radius:4px;white-space:nowrap;
 }
+/* On narrow cards the badge text wraps instead of squeezing these: as
+   flex items they used to shrink, and the year read "201" (2026-10-23). */
+.honors-tag,.cbadge-year{flex-shrink:0}
 
