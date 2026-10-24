@@ -69,6 +69,8 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=(), accelerometer=(), gyroscope=(), magnetometer=(), bluetooth=(), hid=(), serial=(), midi=(), display-capture=(), xr-spatial-tracking=(), browsing-topics=()"
     Cross-Origin-Opener-Policy = "same-origin"
+    # Whole domain is HTTPS-only (no other subdomains exist), preload-list ready.
+    Strict-Transport-Security = "max-age=63072000; includeSubDomains; preload"
     X-Frame-Options = "DENY"
 
 # Browsers ask for /favicon.ico whatever the page declares; serve the PNG
