@@ -99,3 +99,20 @@ html:not(.js) .motion-toggle{display:none}
 /* 2026-10-24: form fields drop the outline for a border tint; give keyboard
    users the same ring as everything else (.fg input beats the global rule). */
 .fg input:focus-visible,.fg textarea:focus-visible,.fg select:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+
+/* 2026-10-24 phones: the logo's auto margin pushed the name left once
+   the footer mark stacks into a column. */
+@media(max-width:600px){.jt-logo-lg+.footer-name{margin-right:0}}
+
+/* 2026-10-24 phones: back to top. Inside the sticky bar it never covers
+   content; at the contact form and footer the bar steps away, so the
+   floating ring comes back there, low in the footer's bottom padding. */
+.cta-top{display:none}
+@media(max-width:768px){
+  .mobile-cta-bar{display:flex;gap:.6rem;justify-content:center;align-items:center}
+  .mobile-cta-bar .btn{flex:1 1 auto}
+  .cta-top{display:grid;place-items:center;flex:none;width:44px;height:44px;padding:0;border-radius:50%;
+    border:1px solid var(--cyan);background:rgba(5,14,30,.92);color:var(--cyan);cursor:pointer}
+  [data-theme="light"] .cta-top{background:rgba(250,248,245,.95)}
+  html.cta-end #back-to-top{display:flex;bottom:calc(1.2rem + env(safe-area-inset-bottom,0px))}
+}

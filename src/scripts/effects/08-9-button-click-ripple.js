@@ -40,12 +40,17 @@
   // Hidden over the hero, and again once the contact form or footer is
   // on screen: the button would only cover the thing it points to.
   const seen = new Set();
+  const contact = document.getElementById('contact'), footer = document.querySelector('footer');
   const io = new IntersectionObserver(entries => {
     entries.forEach(e => e.isIntersecting ? seen.add(e.target) : seen.delete(e.target));
     bar.classList.toggle('visible', seen.size === 0);
+    // at the end of the page the bar steps away; the floating back-to-top
+    // ring takes over there (phones only, see 63-audit-fixes)
+    document.documentElement.classList.toggle('cta-end', seen.has(contact) || seen.has(footer));
   }, { threshold: 0.1 });
-  [hero, document.getElementById('contact'), document.querySelector('footer')]
-    .forEach(el => el && io.observe(el));
+  [hero, contact, footer].forEach(el => el && io.observe(el));
+  const top = document.getElementById('ctaTop');
+  if (top) top.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 })();
 
 
