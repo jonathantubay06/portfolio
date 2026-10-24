@@ -68,3 +68,30 @@
 .thanks-more[open] > summary{margin-bottom:1rem}
 [data-theme="light"] .thanks-open{color:#0a63b8}
 @media (prefers-reduced-motion:reduce){.thanks-open::after{transition:none}}
+
+/* ── 2026-10-24 edge-case audit ──────────────────────────────────── */
+/* Touch: every small control gets a 44x44 hit area without growing its
+   look. The ::after is centred on the control and can only extend it;
+   :where() keeps position at zero specificity so controls that are
+   already absolute or fixed stay that way. */
+@media (pointer:coarse){
+  :where(.copy-btn,.theme-toggle,.nav-toggle,.nav-logo,.modal-close,.modal-nav-btn,.c-opt-action,.f-links a){position:relative}
+  .copy-btn::after,.theme-toggle::after,.nav-toggle::after,.nav-logo::after,.modal-close::after,
+  .modal-nav-btn::after,.c-opt-action::after,.f-links a::after{
+    content:'';position:absolute;left:50%;top:50%;
+    width:max(100%,44px);height:max(100%,44px);transform:translate(-50%,-50%);
+  }
+}
+/* the desktop layout has its own dock: the phone's sticky bar never
+   doubles it (seen when a desktop window is narrowed or zoomed) */
+html.dk .mobile-cta-bar{display:none!important}
+/* no scripts: the theme switch and menu button cannot work, so hide them */
+html:not(.js) .theme-toggle,html:not(.js) .nav-toggle{display:none}
+/* footer "Pause animations": styled like the footer links; labels swap
+   with html.quick like the header switch */
+.motion-toggle{background:none;border:0;padding:0;font:inherit;font-size:.82rem;color:var(--muted);cursor:pointer;transition:color var(--transition-fast)}
+.motion-toggle:hover{color:var(--cyan)}
+.motion-toggle .qt-off,html.quick .motion-toggle .qt-on{display:none}
+html.quick .motion-toggle .qt-off{display:inline}
+html:not(.js) .motion-toggle{display:none}
+@media (pointer:coarse){.motion-toggle{position:relative}.motion-toggle::after{content:'';position:absolute;left:50%;top:50%;width:max(100%,44px);height:max(100%,44px);transform:translate(-50%,-50%)}}

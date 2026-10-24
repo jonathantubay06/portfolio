@@ -15,15 +15,18 @@
   var root = document.documentElement;
 
   /* ── quick view ── */
-  var qt = document.getElementById('quickToggle');
-  if (qt) {
-    var on = root.classList.contains('quick');
+  /* the footer's "Pause animations" (every device) is the same switch:
+     it is how looping motion can be stopped (WCAG 2.2.2) */
+  var on = root.classList.contains('quick');
+  ['quickToggle', 'motionToggle'].forEach(function (id) {
+    var qt = document.getElementById(id);
+    if (!qt) return;
     qt.setAttribute('aria-pressed', on ? 'true' : 'false');
     qt.addEventListener('click', function () {
       try { localStorage.setItem('jt-quick', on ? '0' : '1'); } catch (e) {}
       location.reload();
     });
-  }
+  });
 
   var desk = matchMedia('(min-width:1024px) and (pointer:fine)');
 

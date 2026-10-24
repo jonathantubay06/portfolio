@@ -130,6 +130,8 @@
   function boot() {
     if (!ok.matches) { booted = false; return; }       /* left the gate while waiting: re-arms on change */
     if (document.documentElement.classList.contains('quick')) { skip('quick view'); return; }
+    /* data saver on: skip the ~1 MB of three.js and scene downloads */
+    if (navigator.connection && navigator.connection.saveData) { skip('Save-Data'); return; }
     if (!window.__gpu3d()) { skip('software or slow WebGL'); return; }
     Promise.all([
       import(V + '/+esm'),
