@@ -116,3 +116,7 @@ html:not(.js) .motion-toggle{display:none}
   [data-theme="light"] .cta-top{background:rgba(250,248,245,.95)}
   html.cta-end #back-to-top{display:flex;bottom:calc(1.2rem + env(safe-area-inset-bottom,0px))}
 }
+
+/* 2026-10-24: build.js wraps WebP images in <picture class="av"> for an
+   AVIF source; the wrapper must not change any layout around the <img>. */
+picture.av{display:contents}

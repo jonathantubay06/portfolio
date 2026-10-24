@@ -161,6 +161,10 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
 <!-- the host-down notice below: a listener, not an onerror attribute, so
      the security policy needs no inline event handlers -->
 <script>document.querySelector('link[rel="stylesheet"]').addEventListener('error',function(){document.documentElement.classList.add('host-down')})</script>
+<!-- case studies open instantly: Chromium fetches the page when a link to
+     one is hovered or pressed (others ignore this). Its CSP hash is added
+     by build.js like every inline script. -->
+<script type="speculationrules">{"prefetch":[{"where":{"href_matches":"/case-studies/*"},"eagerness":"moderate"}]}</script>
 
 <!-- Structured Data -->
 <script type="application/ld+json">

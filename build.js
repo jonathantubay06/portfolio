@@ -235,8 +235,29 @@ function rehash(markup, prefix, { require: mustExist = true } = {}) {
   return out;
 }
 
+/**
+ * AVIF where it helps: an <img> whose WebP files all have a smaller AVIF
+ * twin (made by make-avif.py) is wrapped in <picture class="av"> with an
+ * AVIF <source>; the WebP stays as the fallback. Existing <picture>s and
+ * lazy data-src images are left alone. picture.av is display:contents,
+ * so layouts that size the <img> are unchanged.
+ */
+function withAvif(markup, prefix) {
+  const twin = f => path.join(ROOT, f.slice(prefix.length).split('?')[0].replace(/\.webp$/, '.avif'));
+  return markup.replace(/<picture\b[\s\S]*?<\/picture>|<img\b[^>]*>/g, tag => {
+    if (tag.startsWith('<picture') || /\bdata-src=/.test(tag)) return tag;
+    const src = (tag.match(/\bsrc="([^"]+)"/) || [])[1];
+    if (!src || !/\.webp(\?|$)/.test(src)) return tag;
+    const set = (tag.match(/\bsrcset="([^"]+)"/) || [])[1] || src;
+    const files = set.split(',').map(s => s.trim().split(/\s+/)[0]);
+    if (!files.every(f => f.startsWith(prefix) && /\.webp(\?|$)/.test(f) && fs.existsSync(twin(f)))) return tag;
+    const sizes = (tag.match(/\bsizes="([^"]+)"/) || [])[1];
+    return `<picture class="av"><source type="image/avif" srcset="${set.replace(/\.webp/g, '.avif')}"${sizes ? ` sizes="${sizes}"` : ''}>${tag}</picture>`;
+  });
+}
+
 const outputs = {
-  'index.html': withBeacon(rehash(stampAssets(minify.html(buildHtml())), './')),
+  'index.html': withBeacon(rehash(stampAssets(withAvif(minify.html(buildHtml()), '')), './')),
   'sitemap.xml': buildSitemap(),
   [HASHED['style.css']]: styleCss,
   [HASHED['main.js']]: mainJs,
@@ -268,7 +289,7 @@ for (const item of STATIC) copied += copy(item);
 for (const f of fs.readdirSync(path.join(DIST, 'case-studies'))) {
   if (!f.endsWith('.html')) continue;
   const p = path.join(DIST, 'case-studies', f);
-  fs.writeFileSync(p, withBeacon(rehash(minify.html(fs.readFileSync(p, 'utf8')), '../')));
+  fs.writeFileSync(p, withBeacon(rehash(withAvif(minify.html(fs.readFileSync(p, 'utf8')), '../'), '../')));
 }
 
 // The remaining standalone pages — 404.html and thanks/index.html — are

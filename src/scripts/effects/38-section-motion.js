@@ -84,7 +84,9 @@
     var ico = row.querySelector('.svc-ico-3d');
     if (!ico) return;
     var halo = el('span', 'sm-halo'), shadow = el('span', 'sm-shadow');
-    row.insertBefore(halo, ico); row.insertBefore(shadow, ico);
+    /* the icon may sit in the build's AVIF <picture> wrapper */
+    var at = ico.closest('picture.av') || ico;
+    row.insertBefore(halo, at); row.insertBefore(shadow, at);
     /* positioned once per hover from the icon's layout box (offset*
        ignores the tilt transform, which is what we want) */
     row.addEventListener('pointerenter', function () {
