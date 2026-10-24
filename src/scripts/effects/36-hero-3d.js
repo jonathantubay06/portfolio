@@ -174,8 +174,8 @@
        desktop TBT in the 2026-10-07 profile). Without them the compile
        wait stays in the GPU process. */
     renderer.debug.checkShaderErrors = false;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 0.75;
+    renderer.toneMapping = THREE.NeutralToneMapping;   /* keeps the neon saturated; ACES washed it, AgX more so (compared 2026-10-24) */
+    renderer.toneMappingExposure = 0.7;
     renderer.setClearColor(0x000000, 0);
 
     var world = new THREE.Scene();
@@ -899,7 +899,7 @@
       var h = manilaHour();
       var day = sstep(5.5, 8, h) * (1 - sstep(17, 19.5, h));
       var dusk = Math.max(1 - Math.abs(h - 18.2) / 1.3, 1 - Math.abs(h - 6.2) / 1.1, 0);
-      renderer.toneMappingExposure = 0.75 + 0.4 * day;
+      renderer.toneMappingExposure = 0.7 + 0.4 * day;
       /* intensities are set per frame with the mood (below); this only
          stores how much daylight to add */
       dayK = day; hemi.color.copy(HEMI0).lerp(HEMI_DAY, day);
@@ -1492,6 +1492,11 @@
         desk.material = desk.material.clone();
         desk.material.envMap = rt.texture; desk.material.envMapIntensity = 0.55; desk.material.roughness = 0.3;
       }
+      /* the same strips, faintly, for everything else: metal, plastic and
+         glass get something to reflect instead of rendering flat. Set here,
+         before the shaders are compiled, so no program is built twice. */
+      world.environment = rt.texture; world.environmentIntensity = 0.6;
+      contactShadows(root);
       /* glow decals: soft streak fading away from the source */
       var c = document.createElement('canvas'); c.width = 64; c.height = 128;
       var g = c.getContext('2d'), gr = g.createLinearGradient(0, 0, 0, 128);
@@ -1511,6 +1516,36 @@
           /* the bright end (texture top) sits at the source, toward -z */
           m.position.set(d[2], 0.004, d[3] + d[5] / 2); m.renderOrder = 1; rig.add(m);
         });
+    }
+
+    /* ── contact shadows: a soft dark footprint under each prop that
+       stands on the desk, so nothing looks pasted on. One shared 64 px
+       texture, no lights or shadow maps: free to draw. */
+    function contactShadows(root) {
+      var c = document.createElement('canvas'); c.width = c.height = 64;
+      var g = c.getContext('2d');
+      /* a blurred rounded footprint: the shape is drawn off canvas and
+         only its blurred shadow lands inside */
+      g.shadowColor = '#000'; g.shadowBlur = 10; g.shadowOffsetX = 200;
+      g.beginPath(); g.roundRect(14 - 200, 14, 36, 36, 10); g.fill();
+      var tex = new THREE.CanvasTexture(c), geo = new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2);
+      var mat = new THREE.MeshBasicMaterial({ map: tex, color: 0x000000, transparent: true, opacity: 0.8, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 });
+      var bb = new THREE.Box3(), p = new THREE.Vector3();
+      root.updateMatrixWorld(true);
+      ['laptop_base', 'mug', 'pot', 'lamp_base', 'book_0', 'tablet_stand', 'rack', 'parcels', 'cal'].forEach(function (n) {
+        var o = root.getObjectByName(n);
+        if (!o || !o.parent) return;
+        bb.setFromObject(o);
+        var m = new THREE.Mesh(geo, mat);
+        /* the texture's footprint fills the middle 36 of 64 px, so scale
+           up to put the solid part under the object and the fade around it */
+        p.set((bb.min.x + bb.max.x) / 2, bb.min.y + 0.002, (bb.min.z + bb.max.z) / 2);
+        o.parent.worldToLocal(p);
+        var s = o.parent.getWorldScale(new THREE.Vector3());
+        m.position.copy(p);
+        m.scale.set((bb.max.x - bb.min.x) * 1.9 / s.x, 1, (bb.max.z - bb.min.z) * 1.9 / s.z);
+        m.renderOrder = 1; o.parent.add(m);
+      });
     }
 
     /* ── dust motes drifting in the lamp's light cone. Each mote keeps a

@@ -95,3 +95,7 @@ html:not(.js) .theme-toggle,html:not(.js) .nav-toggle{display:none}
 html.quick .motion-toggle .qt-off{display:inline}
 html:not(.js) .motion-toggle{display:none}
 @media (pointer:coarse){.motion-toggle{position:relative}.motion-toggle::after{content:'';position:absolute;left:50%;top:50%;width:max(100%,44px);height:max(100%,44px);transform:translate(-50%,-50%)}}
+
+/* 2026-10-24: form fields drop the outline for a border tint; give keyboard
+   users the same ring as everything else (.fg input beats the global rule). */
+.fg input:focus-visible,.fg textarea:focus-visible,.fg select:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
