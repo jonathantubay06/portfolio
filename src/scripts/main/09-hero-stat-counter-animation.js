@@ -23,6 +23,10 @@ function animateCounter(el, target, duration) {
   }
 
   requestAnimationFrame(tick);
+  // rAF can pause mid-count while the 3D desk compiles on a refresh (seen
+  // 2026-10-24: "7+ / 7 / 6" left on screen), so a timer always lands the
+  // real value once the count should be over.
+  setTimeout(() => { el.textContent = target; }, duration + 400);
 }
 
 // #tz-time is the live clock, not a count: "2:41 PM" contains digits, so
