@@ -78,17 +78,16 @@
     if (window.console && console.info) console.info('[hero 3D] static plate kept: ' + why);
     dispatchEvent(new Event('hero3d:skip'));
   }
-  function preconnect() {
-    if (document.querySelector('link[rel="preconnect"][href="https://cdn.jsdelivr.net"]')) return;
-    var l = document.createElement('link'); l.rel = 'preconnect'; l.href = 'https://cdn.jsdelivr.net'; l.crossOrigin = 'anonymous';
-    document.head.appendChild(l);
-  }
   ok.addEventListener('change', function () {
     if (ok.matches) { if (!booted) arm(); else if (api) api.resume(); }
     else if (api) api.pause();
   });
 
-  var V = 'https://cdn.jsdelivr.net/npm/three@0.170.0';
+  /* three.js 0.170.0 and the add-ons below, bundled into one file served
+     from this site (vendor/, built in the WSL sandbox with esbuild,
+     2026-10-24). It came from jsDelivr before: a third-party script host
+     the security policy had to trust in full. */
+  var V = './vendor/three-0.170.0.bundle.js';
   /* hover labels: node name -> { label, href (click scrolls), act } */
   /* hl: tint on hover. Page hrefs navigate, #hrefs scroll, modal opens a project modal */
   var LAPTOP = { label: 'Inventory sync case study', href: 'case-studies/inventory-sync', hl: true },
@@ -133,17 +132,8 @@
     /* data saver on: skip the ~1 MB of three.js and scene downloads */
     if (navigator.connection && navigator.connection.saveData) { skip('Save-Data'); return; }
     if (!window.__gpu3d()) { skip('software or slow WebGL'); return; }
-    Promise.all([
-      import(V + '/+esm'),
-      import(V + '/examples/jsm/loaders/GLTFLoader.js/+esm'),
-      import(V + '/examples/jsm/libs/meshopt_decoder.module.js/+esm'),
-      import(V + '/examples/jsm/postprocessing/EffectComposer.js/+esm'),
-      import(V + '/examples/jsm/postprocessing/RenderPass.js/+esm'),
-      import(V + '/examples/jsm/postprocessing/UnrealBloomPass.js/+esm'),
-      import(V + '/examples/jsm/postprocessing/OutputPass.js/+esm'),
-      import(V + '/examples/jsm/postprocessing/ShaderPass.js/+esm')
-    ]).then(function (m) { start(m[0], m[1].GLTFLoader, m[2].MeshoptDecoder, m[3].EffectComposer, m[4].RenderPass, m[5].UnrealBloomPass, m[6].OutputPass, m[7].ShaderPass); })
-      .catch(function () { skip('three.js did not load (offline or blocked CDN)'); });
+    import(V).then(function (m) { start(m, m.GLTFLoader, m.MeshoptDecoder, m.EffectComposer, m.RenderPass, m.UnrealBloomPass, m.OutputPass, m.ShaderPass); })
+      .catch(function () { skip('three.js did not load (offline)'); });
   }
 
   function start(THREE, GLTFLoader, MeshoptDecoder, EffectComposer, RenderPass, UnrealBloomPass, OutputPass, ShaderPass) {
@@ -2411,13 +2401,13 @@
   var rush = !document.documentElement.classList.contains('intro-seen') && !!document.querySelector('.world-loader');
   function arm() {
     if (booted || !ok.matches) return;
-    booted = true; pend(); preconnect();
+    booted = true; pend();
     if (rush) boot(); else whenIdle();
   }
   /* Not the load event: a slow third-party beacon (the analytics pixel)
      can hold 'load' back for a minute, which kept the 3D waiting. */
   if (ok.matches) {
-    pend(); preconnect();
+    pend();
     if (document.readyState === 'complete') arm();
     else addEventListener('DOMContentLoaded', function () { setTimeout(arm, rush ? 0 : 1500); });
   }

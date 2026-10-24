@@ -42,7 +42,7 @@
   var contact = document.getElementById('contact');
   if (!contact) return;
 
-  var V = 'https://cdn.jsdelivr.net/npm/three@0.170.0';
+  var V = './vendor/three-0.170.0.bundle.js';   /* same bundle as 36-hero-3d.js */
   var BW = 1280, BH = 400;                /* shared drawing buffer, device px (wide for the pipeline strip) */
   var T = null, renderer = null, gl = null, modP = null;
   var views = [], running = false, last = 0, clock0 = performance.now(), lost = false, released = false;
@@ -52,7 +52,7 @@
   function engine() {
     if (modP) return modP;
     if (window.__gpu3d && !window.__gpu3d()) return (modP = Promise.reject(new Error('software WebGL')));
-    modP = import(V + '/+esm').then(function (m) {
+    modP = import(V).then(function (m) {
       T = m;
       gl = document.createElement('canvas');
       renderer = new T.WebGLRenderer({ canvas: gl, antialias: true, alpha: true, powerPreference: 'low-power' });
@@ -210,11 +210,8 @@
     }).then(function (g) { if (g) buildDog(g, layout); }).catch(function () {});
   }
   function ownGlb() {
-    return Promise.all([
-      import(V + '/examples/jsm/loaders/GLTFLoader.js/+esm'),
-      import(V + '/examples/jsm/libs/meshopt_decoder.module.js/+esm')
-    ]).then(function (m) {
-      var loader = new m[0].GLTFLoader(); loader.setMeshoptDecoder(m[1].MeshoptDecoder);
+    return import(V).then(function (m) {
+      var loader = new m.GLTFLoader(); loader.setMeshoptDecoder(m.MeshoptDecoder);
       return new Promise(function (res, rej) { loader.load('img/hero3d/scene.glb', res, undefined, rej); });
     });
   }

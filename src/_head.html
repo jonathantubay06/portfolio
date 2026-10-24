@@ -51,16 +51,14 @@
   if (world) document.documentElement.classList.add('world-pending');
   /* first visit: 36-hero-3d.js boots the 3D straight away behind the intro,
      so start its downloads from here instead of after effects.js has
-     parsed (three.js modules from jsDelivr, the 0.7 MB scene) */
+     parsed (the self-hosted three.js bundle, the 0.7 MB scene) */
   if (world && !document.documentElement.classList.contains('intro-seen') && !(navigator.connection && navigator.connection.saveData)) {
-    var V = 'https://cdn.jsdelivr.net/npm/three@0.170.0', J = '/examples/jsm/';
     var hint = function (rel, href, as) {
       var l = document.createElement('link'); l.rel = rel; l.href = href; l.crossOrigin = 'anonymous';
       if (as) { l.as = as; l.fetchPriority = 'high'; }
       document.head.appendChild(l);
     };
-    hint('preconnect', 'https://cdn.jsdelivr.net');
-    ['/+esm', J + 'loaders/GLTFLoader.js/+esm', J + 'libs/meshopt_decoder.module.js/+esm'].forEach(function (p) { hint('modulepreload', V + p); });
+    hint('modulepreload', './vendor/three-0.170.0.bundle.js');
     hint('preload', './img/hero3d/scene.glb', 'fetch');
   }
 })();
@@ -159,7 +157,10 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
 </style>
 
 <!-- Full stylesheet — loads after the critical inline above -->
-<link rel="stylesheet" href="./style.css" onerror="document.documentElement.classList.add('host-down')"/>
+<link rel="stylesheet" href="./style.css"/>
+<!-- the host-down notice below: a listener, not an onerror attribute, so
+     the security policy needs no inline event handlers -->
+<script>document.querySelector('link[rel="stylesheet"]').addEventListener('error',function(){document.documentElement.classList.add('host-down')})</script>
 
 <!-- Structured Data -->
 <script type="application/ld+json">
@@ -242,13 +243,14 @@ h1{font-family:var(--font-head);font-size:clamp(2rem,7vw,5rem);font-weight:900;c
     <p class="hd-h" role="heading" aria-level="2">Be right back</p>
     <p>My hosting provider is having a hiccup, so the site can't load properly right now. It usually clears up within a few minutes, and this page will reload by itself when it does.</p>
     <p>Need me now? Email <a href="mailto:jonatsbuilds@gmail.com">jonatsbuilds@gmail.com</a></p>
-    <button type="button" onclick="location.reload()">Try again</button>
+    <button type="button" id="hd-retry">Try again</button>
   </div>
 </div>
 <script>
 /* While the notice shows, re-check the stylesheet every 20s and reload the
    page the moment the host serves it again. */
-(function(){var l=document.querySelector('link[rel="stylesheet"][onerror]');if(!l)return;
+(function(){var l=document.querySelector('link[rel="stylesheet"]');if(!l)return;
+document.getElementById('hd-retry').addEventListener('click',function(){location.reload()});
 setInterval(function(){if(!document.documentElement.classList.contains('host-down'))return;
 fetch(l.href,{cache:'no-store'}).then(function(r){if(r.ok)location.reload()}).catch(function(){})},20000)})();
 </script>

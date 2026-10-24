@@ -198,8 +198,13 @@ const styleCss = minify.css(concat('styles', manifest.styles));
 const mainJs = minify.js(concat('scripts/main', manifest.main));
 // The GLB sits under img/ (cached immutable for a year), so its URL carries
 // a content hash: a rebuilt scene reaches returning visitors.
-const glbV = crypto.createHash('sha256').update(fs.readFileSync(path.join(__dirname, 'img/hero3d/scene.glb'))).digest('hex').slice(0, 8);
-const effectsJs = minify.js(concat('scripts/effects', manifest.effects)).replace(/scene.glb'/g, "scene.glb?v=" + glbV + "'");
+// The hero posters are re-rendered from the same scene, so they get the same.
+const fileV = (rel) => crypto.createHash('sha256').update(fs.readFileSync(path.join(__dirname, rel))).digest('hex').slice(0, 8);
+const glbV = fileV('img/hero3d/scene.glb');
+const stampAssets = (code) => code
+  .replace(/scene.glb'/g, "scene.glb?v=" + glbV + "'")
+  .replace(/img\/hero3d\/(hero-poster-\w+\.webp)/g, (m, f) => `${m}?v=${fileV('img/hero3d/' + f)}`);
+const effectsJs = stampAssets(minify.js(concat('scripts/effects', manifest.effects)));
 
 /** Fixed name -> hashed name, for rewriting references. */
 const HASHED = {
@@ -231,7 +236,7 @@ function rehash(markup, prefix, { require: mustExist = true } = {}) {
 }
 
 const outputs = {
-  'index.html': withBeacon(rehash(minify.html(buildHtml()).replace(/scene.glb'/g, "scene.glb?v=" + glbV + "'"), './')),
+  'index.html': withBeacon(rehash(stampAssets(minify.html(buildHtml())), './')),
   'sitemap.xml': buildSitemap(),
   [HASHED['style.css']]: styleCss,
   [HASHED['main.js']]: mainJs,
@@ -252,7 +257,7 @@ for (const [name, content] of Object.entries(outputs)) {
 const STATIC = [
   'img', 'cursors', 'case-studies', 'fonts', 'thanks',
   'favicon.png', 'og-preview.jpg', 'robots.txt',
-  'humans.txt', 'llms.txt', '404.html',
+  'humans.txt', 'llms.txt', '404.html', '.well-known', 'vendor',
 ];
 let copied = 0;
 for (const item of STATIC) copied += copy(item);
@@ -287,6 +292,53 @@ for (const f of fs.readdirSync(ROOT)) {
   if (/^google[0-9a-f]+\.html$/.test(f)) copied += copy(f);
 }
 
+// ── security policy ──────────────────────────────────────────────────
+// Content-Security-Policy, written to dist/_headers (Netlify applies it with
+// the netlify.toml headers). Scripts run only from this site, Cloudflare's
+// analytics beacon and Google reCAPTCHA, plus inline scripts whose exact
+// text is hashed below: an injected inline script has no matching hash and
+// does not run, so there is no 'unsafe-inline' for scripts. Inline event
+// handlers (onclick=...) cannot be hashed this way, so the build refuses
+// them. The rest:
+//   'wasm-unsafe-eval'  meshopt decoder that unpacks the GLB scenes
+//   style 'unsafe-inline'  style="--brand:..." attributes throughout
+//   img/connect blob: data:  GLTFLoader reads embedded textures via blob URLs
+//   frame  reCAPTCHA's checkbox and challenge iframes
+const scriptHashes = new Set();
+(function walk(dir) {
+  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+    const p = path.join(dir, e.name);
+    if (e.isDirectory()) { walk(p); continue; }
+    if (!e.name.endsWith('.html')) continue;
+    const html = fs.readFileSync(p, 'utf8');
+    for (const m of html.matchAll(/<script(\s[^>]*)?>([\s\S]*?)<\/script>/gi)) {
+      const attrs = m[1] || '';
+      if (/\bsrc\s*=/i.test(attrs) || /application\/ld\+json/i.test(attrs)) continue;
+      scriptHashes.add(`'sha256-${crypto.createHash('sha256').update(m[2], 'utf8').digest('base64')}'`);
+    }
+    const handler = html.replace(/<script[\s\S]*?<\/script>/gi, '').match(/<[a-z][^>]*\son[a-z]+\s*=/i);
+    if (handler) throw new Error(`${path.relative(DIST, p)}: inline event handler (${handler[0].slice(-40)}); use addEventListener, the CSP blocks it`);
+  }
+})(DIST);
+const CSP = [
+  "default-src 'self'",
+  `script-src 'self' 'wasm-unsafe-eval' ${[...scriptHashes].join(' ')} https://static.cloudflareinsights.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/`,
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob:",
+  "font-src 'self'",
+  "connect-src 'self' blob: data: https://cloudflareinsights.com",
+  "worker-src 'self' blob:",
+  "frame-src https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "frame-ancestors 'none'",
+  'upgrade-insecure-requests',
+].join('; ');
+fs.writeFileSync(path.join(DIST, '_headers'), `/*
+  Content-Security-Policy: ${CSP}
+`);
+
 // ── report ───────────────────────────────────────────────────────────
 const kb = n => (n / 1024).toFixed(0).padStart(4) + ' KB';
 // Partial counts are keyed off the ORIGINAL name, since the shipped one now
@@ -304,3 +356,4 @@ for (const [name, content] of Object.entries(outputs)) {
   console.log(`  ${name.padEnd(24)}${kb(Buffer.byteLength(content))}  ${from}`);
 }
 console.log(`  ${'static'.padEnd(24)}${String(copied).padStart(4)} files`);
+console.log(`  ${'_headers'.padEnd(24)}CSP with ${scriptHashes.size} inline script hashes`);

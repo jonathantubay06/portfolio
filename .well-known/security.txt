@@ -1,0 +1,5 @@
+# Owner: Jojo (personal). How to report a security problem on jonathantubay.com.
+Contact: mailto:jonatsbuilds@gmail.com
+Expires: 2027-10-24T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://jonathantubay.com/.well-known/security.txt

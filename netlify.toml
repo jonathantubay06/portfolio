@@ -28,6 +28,12 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
+# self-hosted three.js bundle: the version is in the file name
+[[headers]]
+  for = "/vendor/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
 # Fonts are versioned by filename too (the subset is baked into the name),
 # and they are the one asset a repeat visitor must never re-fetch.
 [[headers]]
@@ -50,31 +56,19 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
-# ── Security headers (2026-10-07 audit) ──────────────────────────────
-# Only HSTS was being sent. The CSP allowlist is built from what the pages
-# actually load:
-#   script  self + inline (theme bootstrap in <head>, the stylesheet
-#           onerror), jsDelivr (three.js ESM, desktop 3D only), the
-#           Cloudflare analytics beacon; 'wasm-unsafe-eval' for the meshopt
-#           decoder that unpacks scene.glb; Google reCAPTCHA (Netlify
-#           injects api.js for the contact form's data-netlify-recaptcha;
-#           blocked until 2026-10-22, so the widget never rendered)
-#   frame   reCAPTCHA's checkbox and challenge iframes
-#   style   self + inline (style="--brand:…" attributes throughout)
-#   img     self, data: (inline SVG backgrounds), blob: (GLB textures)
-#   connect self (Netlify form post), blob:/data: (GLTFLoader reads its
-#           embedded textures through blob URLs), Cloudflare RUM endpoint,
-#           jsDelivr
-# If Netlify's own Real User Monitoring is left on in the dashboard, its
-# collector is not on this list: switch it off (the audit found two RUM
-# scripts; Cloudflare's is the one this site chose) or add its host here.
+# ── Security headers (2026-10-07 audit, tightened 2026-10-24) ───────
+# The Content-Security-Policy is not here: build.js writes it to
+# dist/_headers, because it lists a sha256 hash of every inline script the
+# pages ship and those hashes change with the scripts. Netlify applies that
+# file together with the headers below. See build.js ("security policy")
+# for what each source is for.
 [[headers]]
   for = "/*"
   [headers.values]
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://cdn.jsdelivr.net https://static.cloudflareinsights.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' blob: data: https://cdn.jsdelivr.net https://cloudflareinsights.com; worker-src 'self' blob:; frame-src https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
-    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=(), accelerometer=(), gyroscope=(), magnetometer=(), bluetooth=(), hid=(), serial=(), midi=(), display-capture=(), xr-spatial-tracking=(), browsing-topics=()"
+    Cross-Origin-Opener-Policy = "same-origin"
     X-Frame-Options = "DENY"
 
 # Browsers ask for /favicon.ico whatever the page declares; serve the PNG
