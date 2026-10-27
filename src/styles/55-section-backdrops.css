@@ -60,6 +60,8 @@ html::after{
   content:'';position:absolute;z-index:-2;right:clamp(-2rem,-2vw,0rem);top:50%;
   width:clamp(11rem,22vw,17rem);aspect-ratio:1;margin-top:calc(clamp(11rem,22vw,17rem) / -2);
   background:url(img/brand/logo-ring.webp) center/contain no-repeat;
+  /* AVIF twin is 6 KB vs 9.5 KB (PageSpeed image delivery, 2026-10-27) */
+  background-image:image-set(url(img/brand/logo-ring.avif) type("image/avif"),url(img/brand/logo-ring.webp) type("image/webp"));
   opacity:.07;filter:saturate(.7);pointer-events:none;
 }
 

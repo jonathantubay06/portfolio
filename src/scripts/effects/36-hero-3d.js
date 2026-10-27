@@ -1017,6 +1017,17 @@
       return P.idle === 2 ? ik : 0;
     }
     var gx = innerWidth / 2, gy = innerHeight / 2, crc = null;
+    /* the canvas rect, measured at most twice a second: reading it every
+       frame, after that frame's style writes, forced a full layout per
+       frame (Lighthouse "forced reflow", 2026-10-27). In between, the
+       scroll offset keeps it current (the world canvas is fixed). */
+    var rectAt = -1e9, rect0 = null, rectY = 0;
+    function canvasRect() {
+      var now = performance.now();
+      if (now - rectAt > 500) { rectAt = now; rect0 = canvas.getBoundingClientRect(); rectY = scrollY; }
+      var dy = WORLD ? 0 : rectY - scrollY;
+      return { left: rect0.left, top: rect0.top + dy, width: rect0.width, height: rect0.height };
+    }
     addEventListener('pointermove', function (e) { gx = e.clientX; gy = e.clientY; }, { passive: true });
     function lookAt(o) {
       /* -1..1: where the cursor is relative to this dog on screen */
@@ -2029,7 +2040,7 @@
          (squash, up, stretch, land squash) and the tail plume wagging on
          its own empty (dog_tail, pivot at the tail base) */
       if (ctaReq && dog.root) {
-        var cr0 = canvas.getBoundingClientRect();
+        var cr0 = canvasRect();
         dog.root.getWorldPosition(v2); v2.project(cam);
         ctaDir = (ctaReq.x || 0) < cr0.left + (v2.x + 1) / 2 * cr0.width ? -1 : 1;
         ctaReq = null;
@@ -2041,7 +2052,7 @@
         }
       }
       var ck = t - ctaT, cta = ck < 0 ? 0 : ck < 0.3 ? ease(ck / 0.3) : ck < 2 ? 1 : ease(1 - (ck - 2) / 0.6);
-      crc = canvas.getBoundingClientRect();
+      crc = canvasRect();
       if (dog.body) {
         var hp = dogHop(t), br = Math.sin(t * 2.1) * 0.5 + 0.5, bs = dog.body.userData.s0;
         if (dog.idleAt === undefined) dog.idleAt = 4;

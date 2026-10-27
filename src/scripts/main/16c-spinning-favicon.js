@@ -13,8 +13,8 @@
     var link = document.querySelector('link[rel="icon"][sizes="32x32"]');
     if (!link) return;
     var ring = new Image(), dial = new Image(), loaded = 0;
-    ring.src = 'img/brand/logo-ring.webp';
-    dial.src = 'img/brand/logo-dial.webp';
+    ring.src = 'img/brand/logo-ring-64.webp'; /* 32 px favicon: the 64 px file is enough */
+    dial.src = 'img/brand/logo-dial-64.webp';
     ring.onload = dial.onload = function () { if (++loaded === 2) run(); };
     /* Each 32px frame is drawn and PNG-encoded the first time it is
        shown, then reused, so after one turn the interval only swaps
