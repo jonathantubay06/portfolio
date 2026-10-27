@@ -343,13 +343,13 @@ const scriptHashes = new Set();
 })(DIST);
 const CSP = [
   "default-src 'self'",
-  `script-src 'self' 'wasm-unsafe-eval' ${[...scriptHashes].join(' ')} https://static.cloudflareinsights.com https://www.google.com/recaptcha/ https://www.gstatic.com/recaptcha/`,
+  `script-src 'self' 'wasm-unsafe-eval' ${[...scriptHashes].join(' ')} https://static.cloudflareinsights.com`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self'",
   "connect-src 'self' blob: data: https://cloudflareinsights.com",
   "worker-src 'self' blob:",
-  "frame-src https://www.google.com/recaptcha/ https://recaptcha.google.com/recaptcha/",
+  "frame-src 'none'",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",

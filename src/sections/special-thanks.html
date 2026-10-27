@@ -89,7 +89,7 @@
      the previous inline "Message Sent" button label reset itself after
      3.5 seconds, so a visitor who looked away saw an empty form and no
      evidence anything had happened. -->
-        <form class="c-form" name="contact" method="POST" action="/thanks/" novalidate data-netlify="true" data-netlify-honeypot="bot-field" data-netlify-recaptcha="true">
+        <form class="c-form" name="contact" method="POST" action="/thanks/" novalidate data-netlify="true" data-netlify-honeypot="bot-field">
           <!-- Netlify hidden fields -->
           <input type="hidden" name="form-name" value="contact"/>
           <p style="display:none"><input name="bot-field"/></p>
@@ -153,9 +153,10 @@
                errors and the button label instead. -->
           <div class="sr-only" id="form-status" role="status" aria-live="polite" aria-atomic="true"></div>
 
-          <!-- Netlify swaps this div for the Google reCAPTCHA checkbox at deploy
-               time and checks the answer on its servers. -->
-          <div data-netlify-recaptcha="true" class="form-recaptcha"></div>
+          <!-- No reCAPTCHA since 2026-10-27: Netlify injected ~420 KB of Google
+               script on every visit. Spam is stopped by the honeypot above,
+               Netlify's built-in spam filter and the script-written
+               human-check field (bots posting directly leave it empty). -->
 
           <div class="form-submit-row">
             <button type="submit" class="btn btn-p" style="width:fit-content">Launch Project →</button>
