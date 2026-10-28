@@ -209,6 +209,24 @@ function js(src) {
       }
     }
 
+    // Spaces and tabs between tokens: dropped when either neighbour is
+    // punctuation that can't merge with the other into a different token
+    // (2026-10-27 PageSpeed "Minify JavaScript"). `+ +`, `- -` and
+    // anything touching `/` keep their space: those are the cases where
+    // joining changes meaning (`a + +b`, `a - -b`, regex vs comment).
+    if (c === ' ' || c === '\t') {
+      let j = i;
+      while (j < n && (src[j] === ' ' || src[j] === '\t')) j++;
+      const last = out[out.length - 1] || '';
+      const next = src[j] || '';
+      const P = '{}()[];,:=<>!&|?*%^~';
+      const merges = (last === '+' || last === '-') && (next === last);
+      if (!merges && last !== '/' && next !== '/' && (P.includes(last) || P.includes(next))) {
+        i = j;
+        continue;
+      }
+    }
+
     emit(c);
     i++;
   }

@@ -1,0 +1,69 @@
+/* ── TECH STACK: PIPELINE (2026-10-29, tech-stack-marquee.html) ─────
+   Three stages on one pipe, Build, Automate, Ship, with the tools as
+   chips on the same brand tiles as the hero (.built-ico, 51-hero-polish).
+   The default state is complete and readable; 43-tech-pipeline.js adds
+   .go once the band is in view, and a light runs the pipe left to right
+   (top to bottom on phones), waking each stage node as it passes. One
+   authored moment, transform and opacity only, then nothing animates.
+   .built-wrap keeps its glow lines, padding and world-mode rules. */
+.stk{padding:2rem 0 2.3rem}
+.stk .built-label{margin-bottom:1.6rem}
+.stk-body{position:relative;max-width:1120px;margin:0 auto;padding:0 2rem}
+.stk-flow{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 2.4rem;text-align:left}
+.stk-stage{position:relative;min-width:0}
+
+/* the pipe: a thin cyan line through the stage nodes; the light is a
+   full-length strip with a bright head that slides across it */
+.stk-pipe{position:absolute;left:2rem;right:2rem;top:7px;height:2px;overflow:hidden;
+  background:rgba(0,212,255,.22);transition:background-color 1.2s ease 1.9s}
+.stk-pipe i{position:absolute;inset:0;transform:translateX(-100%);
+  background:linear-gradient(90deg,transparent 55%,rgba(0,212,255,.55) 88%,#bff6ff 98%,transparent)}
+.stk.go .stk-pipe{background-color:rgba(0,212,255,.42)}
+.stk.go .stk-pipe i{animation:stkRun 2.2s cubic-bezier(.4,0,.2,1) forwards}
+@keyframes stkRun{to{transform:translateX(100%)}}
+
+.stk-node{position:relative;z-index:1;display:block;width:16px;height:16px;margin-bottom:1.1rem;border-radius:50%;
+  border:2px solid rgba(0,212,255,.6);background:#081221;transition:background-color .35s ease,box-shadow .35s ease}
+.stk.go .stk-node{background-color:#00d4ff;box-shadow:0 0 0 4px rgba(0,212,255,.14),0 0 14px rgba(0,212,255,.75)}
+.stk.go .stk-stage:nth-child(1) .stk-node{transition-delay:.2s}
+.stk.go .stk-stage:nth-child(2) .stk-node{transition-delay:.95s}
+.stk.go .stk-stage:nth-child(3) .stk-node{transition-delay:1.65s}
+
+.stk-name{margin:0 0 .3rem;font-family:var(--font-head);font-size:.95rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#fff}
+.stk-what{margin:0 0 1rem;font-size:.85rem;line-height:1.4;color:#a3c4d8}
+
+.stk-tools{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:.5rem}
+.stk-tools li{display:inline-flex;align-items:center;gap:.55rem;padding:.35rem .75rem .35rem .35rem;border-radius:11px;
+  font-size:.8rem;font-weight:600;line-height:1;color:#dcebf5;white-space:nowrap;
+  background:rgba(8,18,36,.82);border:1px solid rgba(0,212,255,.14);
+  box-shadow:0 4px 12px -6px rgba(0,0,0,.6);transition:border-color .2s ease,translate .2s ease}
+.stk-tools li:hover{border-color:color-mix(in srgb,var(--brand) 55%,transparent);translate:0 -2px}
+.stk-tools li:hover .built-ico{opacity:1}
+
+/* phones and narrow tablets: the pipe runs down the left edge */
+@media(max-width:759px){
+  .stk{padding:1.7rem 0 1.9rem}
+  .stk .built-label{margin-bottom:1.3rem}
+  .stk-body{padding:0 16px 0 calc(16px + 2.1rem)}
+  .stk-flow{grid-template-columns:1fr;row-gap:1.6rem}
+  .stk-pipe{left:calc(16px + .55rem + 7px);right:auto;top:10px;bottom:2.6rem;width:2px;height:auto}
+  .stk-pipe i{transform:translateY(-100%);background:linear-gradient(180deg,transparent 55%,rgba(0,212,255,.55) 88%,#bff6ff 98%,transparent)}
+  .stk.go .stk-pipe i{animation-name:stkRunY}
+  .stk-node{position:absolute;left:calc(-2.1rem + .55rem);top:2px;margin:0}
+  .stk-what{margin-bottom:.75rem}
+  .stk-tools li{font-size:.78rem}
+}
+@keyframes stkRunY{to{transform:translateY(100%)}}
+
+@media(prefers-reduced-motion:reduce){
+  .stk-pipe i{display:none}
+  .stk-node,.stk-pipe{transition:none}
+}
+
+[data-theme="light"] .stk-name{color:#1c2333}
+[data-theme="light"] .stk-what{color:#4a5a70}
+[data-theme="light"] .stk-node{background:#faf8f5;border-color:rgba(0,120,190,.6)}
+[data-theme="light"] .stk.go .stk-node{background-color:#0a8fd6;box-shadow:0 0 0 4px rgba(10,143,214,.15)}
+[data-theme="light"] .stk-pipe{background:rgba(0,120,190,.25)}
+[data-theme="light"] .stk.go .stk-pipe{background-color:rgba(0,120,190,.45)}
+[data-theme="light"] .stk-tools li{background:#fff;color:#1c2333;border-color:rgba(0,100,180,.16);box-shadow:0 3px 10px -6px rgba(28,35,51,.35)}

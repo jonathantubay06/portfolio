@@ -36,7 +36,8 @@
     "64-draft-how-work-dogs.css",
     "65-draft-tunnels-scroll.css",
     "66-draft-world-extras.css",
-    "67-phone-world.css"
+    "67-phone-world.css",
+    "68-tech-pipeline.css"
   ],
   "main": [
     "00-preamble.js",
@@ -85,7 +86,6 @@
     "25-18-section-label-entry-flash.js",
     "27-service-icon-tilt.js",
     "28-soft-tilt.js",
-    "29-tech-marquee-3d.js",
     "30-offscreen-animation-pause.js",
     "31-hero-hotspots.js",
     "32-automation-demo.js",
@@ -98,6 +98,7 @@
     "39-section-3d.js",
     "40-desk-extras.js",
     "41-world-extras.js",
-    "42-phone-world.js"
+    "42-phone-world.js",
+    "43-tech-pipeline.js"
   ]
 }

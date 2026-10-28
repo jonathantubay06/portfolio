@@ -212,10 +212,6 @@
   .hero::after{height:80px}
   /* Divider: keep thin line but reduce glow on mobile */
   .divider::before{width:70%;height:14px}
-  /* Built track on mobile */
-  .built-track{gap:1.5rem}
-  /* Marquee: smaller text on mobile */
-  .built-item{font-size:.7rem}
   
   /* Section label smaller */
   .sec-label{font-size:.66rem;letter-spacing:.16em}

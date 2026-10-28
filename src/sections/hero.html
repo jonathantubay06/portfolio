@@ -78,7 +78,8 @@
       <div class="hero-ambient"></div>
       <!-- Phones (under 600px) show the render under the copy, like
            tablets, but it must not compete with their first paint: the
-           first <source> hands them a 1x1 GIF at load, and
+           first <source> hands them an empty SVG at load (a 1x1 GIF was
+           flagged by Lighthouse as a low-resolution image; SVGs are exempt), and
            31-hero-hotspots.js swaps in data-phone (14 KB / 38 KB) on the
            first scroll or tap, so it never becomes the LCP. <picture> stops at the first matching source,
            so the large plate is never requested on a phone.
@@ -89,7 +90,7 @@
            WebGL fade-in changes nothing but motion. -->
       <picture>
         <source media="(max-width:599px)"
-                srcset="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+                srcset="data:image/svg+xml,%3Csvg%20xmlns=%22http://www.w3.org/2000/svg%22/%3E"
                 data-phone="img/hero3d/hero-poster-m480w.webp 1x, img/hero3d/hero-poster-m720w.webp 2x">
         <source media="(min-width:1024px)"
                 srcset="img/hero3d/hero-poster-1000w.webp 1000w, img/hero3d/hero-poster-1600w.webp 1600w"
