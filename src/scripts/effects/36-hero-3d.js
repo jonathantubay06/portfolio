@@ -2454,7 +2454,10 @@
      can hold 'load' back for a minute, which kept the 3D waiting. */
   if (ok.matches) {
     pend();
+    /* this file arrives in the desktop bundle (effects-dk.js), loaded
+       after effects.js, so DOMContentLoaded may already have fired */
     if (document.readyState === 'complete') arm();
+    else if (document.readyState === 'interactive') setTimeout(arm, rush ? 0 : 1500);
     else addEventListener('DOMContentLoaded', function () { setTimeout(arm, rush ? 0 : 1500); });
   }
 })();

@@ -69,6 +69,7 @@
   ],
   "effects": [
     "00-preamble.js",
+    "00-desktop-bundle-loader.js",
     "05-5-world-clock-cycle.js",
     "06-7-timeline-line-draw.js",
     "07-8-section-label-typewriter.js",
@@ -92,13 +93,16 @@
     "33-card-hover-scroll.js",
     "34-exp-tabs-cert-carousel.js",
     "35-swipe-dots.js",
-    "36-hero-3d.js",
-    "37-live-wallpaper.js",
     "38-section-motion.js",
-    "39-section-3d.js",
-    "40-desk-extras.js",
     "41-world-extras.js",
     "42-phone-world.js",
     "43-tech-pipeline.js"
+  ],
+  "effectsDk": [
+    "29-tech-marquee-3d.js",
+    "36-hero-3d.js",
+    "37-live-wallpaper.js",
+    "39-section-3d.js",
+    "40-desk-extras.js"
   ]
 }

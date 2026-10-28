@@ -61,6 +61,13 @@
     hint('modulepreload', './vendor/three-0.170.0.bundle.js');
     hint('preload', './img/hero3d/scene.glb', 'fetch');
   }
+  /* desktop effects bundle (00-desktop-bundle-loader.js fetches it the
+     same way, crossorigin included, so this preload is reused) */
+  if (dk) {
+    var pl = document.createElement('link'); pl.rel = 'preload'; pl.as = 'script';
+    pl.href = './effects-dk.js'; pl.crossOrigin = 'anonymous';
+    document.head.appendChild(pl);
+  }
 })();
 </script>
 

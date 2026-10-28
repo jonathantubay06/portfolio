@@ -105,4 +105,28 @@
   .hero-scene{--plate-w:min(86vw,520px)}
 }
 
+/* ── tech stack: 3D drum ──────────────────────────────────────────── */
+.built-item:hover .built-ico{opacity:1;scale:1.25;translate:0 -3px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.28),inset 0 -2px 3px rgba(0,0,0,.35),0 4px 8px rgba(0,0,0,.45),0 10px 22px -4px var(--brand)}
+.built-item:hover{color:#fff}
+
+/* Flat row, JS-driven (29-tech-marquee-3d.js). The edge fade is the
+   existing mask on .built-marquee; padding keeps the hover lift and tile
+   shadows from being clipped by its overflow:hidden. */
+.built-marquee.is-js{padding-block:.6rem}
+/* A slightly longer fade than the original 10%, so logos dissolve in
+   and out instead of appearing at a hard-ish line. */
+.built-marquee{
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);
+          mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent);
+}
+.built-marquee.is-js .built-track{animation:none;will-change:transform}
+
+/* Reduced motion: one static, centred, wrapped row; the duplicate set
+   that only exists for the loop is hidden. */
+@media(prefers-reduced-motion:reduce){
+  .built-track{animation:none!important;flex-wrap:wrap;justify-content:center;white-space:normal;row-gap:1rem}
+  .built-track>.built-item:nth-of-type(n+13){display:none}
+  .built-marquee{-webkit-mask-image:none;mask-image:none}
+}
 

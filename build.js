@@ -204,13 +204,21 @@ const glbV = fileV('img/hero3d/scene.glb');
 const stampAssets = (code) => code
   .replace(/scene.glb'/g, "scene.glb?v=" + glbV + "'")
   .replace(/img\/hero3d\/(hero-poster-\w+\.webp)/g, (m, f) => `${m}?v=${fileV('img/hero3d/' + f)}`);
-const effectsJs = stampAssets(minify.js(concat('scripts/effects', manifest.effects)));
+// Desktop-only effects (the 3D desk and friends) are their own bundle so
+// phones never download them; 00-desktop-bundle-loader.js in effects.js
+// fetches it on the dk layout, so its hashed name is written in there.
+const effectsDkJs = stampAssets(minify.js(concat('scripts/effects', manifest.effectsDk)));
+const DK_NAME = `effects-dk.${hash(effectsDkJs)}.js`;
+const effectsSrc = stampAssets(minify.js(concat('scripts/effects', manifest.effects)));
+if (!effectsSrc.includes("'./effects-dk.js'")) throw new Error('effects.js lost its effects-dk.js loader');
+const effectsJs = effectsSrc.replace("'./effects-dk.js'", `'./${DK_NAME}'`);
 
 /** Fixed name -> hashed name, for rewriting references. */
 const HASHED = {
   'style.css': `style.${hash(styleCss)}.css`,
   'main.js': `main.${hash(mainJs)}.js`,
   'effects.js': `effects.${hash(effectsJs)}.js`,
+  'effects-dk.js': DK_NAME,
 };
 
 /**
@@ -262,6 +270,7 @@ const outputs = {
   [HASHED['style.css']]: styleCss,
   [HASHED['main.js']]: mainJs,
   [HASHED['effects.js']]: effectsJs,
+  [DK_NAME]: effectsDkJs,
 };
 
 for (const [name, content] of Object.entries(outputs)) {
@@ -379,6 +388,7 @@ const PARTS = {
   [HASHED['style.css']]: ['style partials', manifest.styles.length],
   [HASHED['main.js']]: ['main partials', manifest.main.length],
   [HASHED['effects.js']]: ['effects partials', manifest.effects.length],
+  [DK_NAME]: ['desktop effects partials', manifest.effectsDk.length],
 };
 console.log('built dist/');
 for (const [name, content] of Object.entries(outputs)) {
