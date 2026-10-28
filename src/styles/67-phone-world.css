@@ -1,0 +1,41 @@
+/* ── PHONE WORLD (prototype 2026-10-29, 42-phone-world.js) ──────────
+   The desk world on phones, made of pre-rendered chapter shots instead
+   of WebGL. Fixed behind the page like the desktop world (65-draft-
+   tunnels-scroll.css); body steps aside for it. Only opacity and one
+   transform transition per chapter change: no infinite animation, no
+   blur or backdrop-filter (the costly paints on phones). */
+.pw{position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:0;transition:opacity .8s ease}
+html.pw-in .pw{opacity:1}
+.pw-shot{position:absolute;inset:-4%;background:#081221 center/cover no-repeat;opacity:0;
+  transform:scale(1.06) translate3d(0,2%,0);transition:opacity .9s ease,transform 9s cubic-bezier(.2,.6,.2,1)}
+/* the camera "arrives": a slow settle when a chapter's shot comes in */
+.pw-shot.on{opacity:1;transform:none}
+/* behind text the world is only a hint (.96 navy, so its own labels never read as words behind real text): the cards are
+   translucent and bright props would read through them. The scrim is
+   cut open only over the chapter card on screen (--a/--b, its top and
+   bottom, set by 42-phone-world.js), feathered 48 px inside the card,
+   so no section text ever sits over the bright world. */
+.pw-scrim{position:absolute;inset:0;background:rgba(8,18,36,.96);--a:-9999px;--b:-9999px;
+  -webkit-mask:linear-gradient(180deg,#000 var(--a),rgba(0,0,0,.15) calc(var(--a) + 48px),rgba(0,0,0,.15) calc(var(--b) - 48px),#000 var(--b));
+  mask:linear-gradient(180deg,#000 var(--a),rgba(0,0,0,.15) calc(var(--a) + 48px),rgba(0,0,0,.15) calc(var(--b) - 48px),#000 var(--b))}
+
+html.pw-on{background:#081221}
+html.pw-on body{background:transparent!important}
+html.pw-on main::before,html.pw-on main::after{display:none}
+html.pw-on .built-wrap{background:none!important}
+
+/* chapter cards become windows onto the world: no still, no frame, the
+   title over the live background with room to see the shot */
+/* phones hid the chapter cards (77e2554); with the world on they come
+   back as the pauses where the world shows */
+html.pw-on .tunnel.d-only{display:block!important}
+html.pw-on .tunnel{max-width:none;padding:0;margin:0}
+html.pw-on .tn-pin{background:none;border:0;border-radius:0;min-height:62svh;display:flex;align-items:flex-end}
+/* the title sits on a dark fade at the card's foot, not on bare world */
+html.pw-on .tn-pin::after{background:linear-gradient(180deg,transparent 35%,rgba(6,14,28,.9) 85%)}
+html.pw-on .tn-still{display:none}
+html.pw-on .tn-text{position:relative;left:auto;right:auto;bottom:auto;padding:0 20px 22px;
+  text-shadow:0 2px 14px rgba(0,0,0,.8)}
+
+html.quick .pw,html[data-theme="light"] .pw{display:none}
+@media(prefers-reduced-motion:reduce){.pw-shot{transform:none;transition:opacity .3s}}

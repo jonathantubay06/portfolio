@@ -35,7 +35,8 @@
     "63-audit-fixes-2026-10-07.css",
     "64-draft-how-work-dogs.css",
     "65-draft-tunnels-scroll.css",
-    "66-draft-world-extras.css"
+    "66-draft-world-extras.css",
+    "67-phone-world.css"
   ],
   "main": [
     "00-preamble.js",
@@ -96,6 +97,7 @@
     "38-section-motion.js",
     "39-section-3d.js",
     "40-desk-extras.js",
-    "41-world-extras.js"
+    "41-world-extras.js",
+    "42-phone-world.js"
   ]
 }
