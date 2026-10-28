@@ -283,6 +283,16 @@ const STATIC = [
 let copied = 0;
 for (const item of STATIC) copied += copy(item);
 
+// security.txt must carry an Expires date under a year ahead (RFC 9116), so
+// every deploy stamps a fresh one 360 days out instead of a date someone has
+// to remember to renew. The monthly security-txt workflow warns if no deploy
+// has refreshed it for so long that it nears the date.
+{
+  const p = path.join(DIST, '.well-known', 'security.txt');
+  const expires = new Date(Date.now() + 360 * 864e5).toISOString().slice(0, 10) + 'T00:00:00.000Z';
+  fs.writeFileSync(p, fs.readFileSync(p, 'utf8').replace(/^Expires: .*$/m, 'Expires: ' + expires));
+}
+
 // case-studies/*.html load ../style.css, so they need the hashed name too.
 // They are plain files copied verbatim above rather than assembled from
 // partials, so the rewrite happens here, after the copy.

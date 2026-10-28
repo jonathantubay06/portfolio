@@ -1,0 +1,31 @@
+# Owner: Jojo (personal). Monthly check that the live security.txt has not
+# expired or come close. build.js stamps a fresh Expires date (360 days out)
+# on every deploy, so this only fails if the site has gone almost a year
+# without one; a failed run emails the repo owner. Needs no checkout or
+# third-party actions, and the token can only read. .github is in the
+# Netlify ignore rule, so this file costs no Netlify build.
+name: security.txt expiry
+
+on:
+  schedule:
+    - cron: '0 2 1 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Expires is more than 45 days away
+        run: |
+          exp=$(curl -fsS https://jonathantubay.com/.well-known/security.txt | sed -n 's/^Expires: //p' | tr -d '\r')
+          echo "Expires: $exp"
+          left=$(( ( $(date -d "$exp" +%s) - $(date +%s) ) / 86400 ))
+          echo "Days left: $left"
+          if [ "$left" -lt 45 ]; then
+            echo "::error::security.txt expires in $left days. Deploy the site (any push that rebuilds it) to refresh the date."
+            exit 1
+          fi
