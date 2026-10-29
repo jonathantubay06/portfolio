@@ -65,7 +65,9 @@
     "24-testi-fan.js",
     "25-chapter-tunnels.js",
     "26-smooth-wheel.js",
-    "27-world-hud.js"
+    "27-world-hud.js",
+    "28-ask-portfolio.js",
+    "29-video-intro.js"
   ],
   "effects": [
     "00-preamble.js",
@@ -96,7 +98,8 @@
     "38-section-motion.js",
     "41-world-extras.js",
     "42-phone-world.js",
-    "43-tech-pipeline.js"
+    "43-tech-pipeline.js",
+    "44-tap-haptics.js"
   ],
   "effectsDk": [
     "29-tech-marquee-3d.js",

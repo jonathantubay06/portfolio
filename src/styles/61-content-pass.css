@@ -44,6 +44,61 @@ nav:not(.scrolled):not(.nav-drawer){background:rgba(6,14,26,.55);backdrop-filter
 
 /* hire-me pass 2026-10-29: résumé link under the hero buttons sits
    quieter than the two buttons, so it reads as an extra, not a third CTA */
-.hero-cta .hero-cv{flex-basis:100%;text-align:center;font-size:.85rem;font-weight:600;color:#a3c4d8;text-decoration:none;margin-top:-.2rem}
+.hero-cta .hero-extra{flex-basis:100%;display:flex;justify-content:center;flex-wrap:wrap;gap:.2rem .6rem;margin-top:-.2rem}
+.hero-cta .hx-sep{color:#5d7a92}
+.hero-cta .hero-cv{font-size:.85rem;font-weight:600;color:#a3c4d8;text-decoration:none;padding:.35rem 0}
 .hero-cta .hero-cv:hover,.hero-cta .hero-cv:focus-visible{color:var(--cyan)}
 /* hero stays dark in light mode, so the colour is fixed, not a theme token */
+
+/* "Ask my AI" under the FAQ (2026-10-29, 28-ask-portfolio.js). Theme
+   tokens only, so light mode follows on its own. Hidden until the script
+   un-hides it, so no-JS visitors never see a dead form. */
+.ask{max-width:760px;margin:2.5rem auto 0;padding:1.6rem;border:1px solid var(--border);border-radius:var(--radius);background:rgba(0,212,255,.035)}
+.ask[hidden]{display:none}
+.ask-title{font-family:var(--font-head);font-size:1.05rem;letter-spacing:.06em;text-transform:uppercase;color:var(--text);margin:0 0 .4rem}
+.ask-title em{font-style:normal;color:var(--cyan)}
+.ask-sub{font-size:.9rem;color:var(--muted2);margin:0 0 1rem}
+.ask-sub a{color:var(--cyan)}
+.ask-chips{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1rem}
+.ask-chip{font:inherit;font-size:.82rem;font-weight:600;color:var(--text);background:transparent;border:1px solid var(--border2);border-radius:99px;padding:.5rem .9rem;min-height:40px;cursor:pointer;transition:border-color .2s,color .2s}
+.ask-chip:hover,.ask-chip:focus-visible{border-color:var(--cyan);color:var(--cyan)}
+.ask-log{display:flex;flex-direction:column;gap:.6rem;max-height:340px;overflow-y:auto;margin-bottom:.9rem}
+.ask-log:empty{display:none}
+.ask-msg{margin:0;padding:.7rem .95rem;border-radius:10px;font-size:.92rem;line-height:1.6;max-width:90%;white-space:pre-wrap}
+.ask-q{align-self:flex-end;background:rgba(0,212,255,.12);color:var(--text)}
+.ask-a{align-self:flex-start;background:var(--surface);border:1px solid var(--border);color:var(--text)}
+.ask-wait{color:var(--muted2)}
+.ask-form{display:flex;gap:.6rem}
+.ask-form input{flex:1;min-width:0;font:inherit;font-size:.95rem;color:var(--text);background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);padding:.7rem .9rem;min-height:44px}
+.ask-form input:focus-visible{outline:2px solid var(--cyan);outline-offset:1px}
+.ask-form .btn{flex:none;width:auto!important;padding-left:1.4rem;padding-right:1.4rem}
+.ask-form .btn:disabled{opacity:.6;cursor:wait}
+@media(max-width:600px){.ask{padding:1.2rem 1rem}.ask-msg{max-width:100%}}
+
+/* ── video intro modal (29-video-intro.js) ─────────────────────────
+   16:9 box sized by whichever runs out first, width or height, with
+   room above for the close button. margin:auto restores the centring
+   the site reset removes from modal dialogs. */
+.vi-dialog{
+  width:min(1600px,calc(100vw - 2rem),calc((100dvh - 7rem) * 16 / 9));
+  padding:0;border:none;background:none;color:inherit;overflow:visible;margin:auto;
+}
+.vi-dialog::backdrop{background:rgba(2,6,16,.82);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.vi-frame{
+  position:relative;aspect-ratio:16/9;border-radius:16px;background:#050d1d;
+  border:1px solid rgba(0,212,255,.25);box-shadow:0 40px 100px rgba(0,0,0,.6),0 0 60px rgba(0,212,255,.08);
+}
+.vi-video{display:block;width:100%;height:100%;border-radius:15px;background:#000;object-fit:contain}
+.vi-close{
+  position:absolute;top:-3rem;right:0;width:40px;height:40px;border-radius:50%;
+  display:grid;place-items:center;cursor:pointer;font-size:1.4rem;line-height:1;
+  color:#e8f4ff;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);
+  transition:background .2s,border-color .2s,rotate .25s;
+}
+.vi-close:hover,.vi-close:focus-visible{background:rgba(0,212,255,.14);border-color:var(--cyan);rotate:90deg}
+@media(prefers-reduced-motion:no-preference){
+  .vi-dialog[open] .vi-frame{animation:viIn .4s cubic-bezier(.16,1,.3,1)}
+  .vi-dialog[open]::backdrop{animation:viFade .3s ease}
+  @keyframes viIn{from{opacity:0;transform:translateY(24px) scale(.96)}}
+  @keyframes viFade{from{opacity:0}}
+}

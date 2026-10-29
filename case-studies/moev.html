@@ -40,6 +40,10 @@
   .cs-dec{padding:1rem 1.2rem;background:rgba(0,212,255,.04);border:1px solid var(--border);border-left:3px solid var(--cyan);border-radius:0 var(--radius) var(--radius) 0}
   .cs-dec b{display:block;color:#fff;margin-bottom:.25rem}
   .cs-dec p{margin:0!important;font-size:.98rem!important;color:var(--muted2)!important}
+  .cs-share{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin:2.5rem 0 0;padding-top:1.5rem;border-top:1px solid var(--border)}
+  .cs-share-l{font-size:.75rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2);margin-right:.25rem}
+  .cs-sh{font:inherit;font-size:.85rem;font-weight:600;color:var(--text);background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.22);border-radius:99px;padding:.5rem 1rem;min-height:40px;display:inline-flex;align-items:center;text-decoration:none;cursor:pointer;transition:border-color .2s,color .2s}
+  .cs-sh:hover,.cs-sh:focus-visible{border-color:var(--cyan);color:var(--cyan)}
 </style>
 </head>
 <body>
@@ -130,6 +134,15 @@
       <footer style="margin-top:.8rem;font-style:normal;font-weight:600;color:var(--muted)">— Manuel Olondriz, MOEV Solutions</footer>
     </blockquote>
 
+    <!-- share (2026-10-29): links work without JS; pages.js adds copy and the phone share sheet -->
+    <div class="cs-share" role="group" aria-label="Share this page">
+      <span class="cs-share-l">Share</span>
+      <a class="cs-sh" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fjonathantubay.com%2Fcase-studies%2Fmoev" target="_blank" rel="noopener noreferrer">LinkedIn<span class="sr-only"> (opens in a new tab)</span></a>
+      <a class="cs-sh" href="https://x.com/intent/post?url=https%3A%2F%2Fjonathantubay.com%2Fcase-studies%2Fmoev" target="_blank" rel="noopener noreferrer">X<span class="sr-only"> (opens in a new tab)</span></a>
+      <button type="button" class="cs-sh" data-copy hidden>Copy link</button>
+      <button type="button" class="cs-sh" data-native hidden>More…</button>
+    </div>
+
     <p style="text-align:center;margin-top:3rem">
       <a href="https://moev.ph/" class="btn btn-p" target="_blank" rel="noopener noreferrer">Visit Live Site →</a>
       &nbsp;
@@ -145,5 +158,6 @@
   </div>
 </footer>
 <script>document.getElementById('footYear').textContent=new Date().getFullYear()</script>
+<script src="../pages.js" defer></script>
 </body>
 </html>

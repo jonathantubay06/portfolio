@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en" data-theme>
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Notes | Jonathan Tubay</title>
+<meta name="description" content="Short notes on building stores, syncs and fast websites, from real projects."/>
+<link rel="canonical" href="https://jonathantubay.com/notes/"/>
+<meta property="og:title" content="Notes | Jonathan Tubay"/>
+<meta property="og:description" content="Short notes on building stores, syncs and fast websites, from real projects."/>
+<meta property="og:url" content="https://jonathantubay.com/notes/"/>
+<meta property="og:type" content="website"/>
+<link rel="icon" type="image/png" href="../favicon.png" sizes="32x32"/>
+<!-- Fonts are self-hosted and declared in style.css; preload them here so
+     they are in flight during the parse rather than discovered by the CSS.
+     crossorigin is required even same-origin — font fetches use CORS mode. -->
+<link rel="preload" href="../fonts/orbitron-latin-var.woff2" as="font" type="font/woff2" crossorigin/>
+<link rel="preload" href="../fonts/plus-jakarta-sans-latin-var.woff2" as="font" type="font/woff2" crossorigin/>
+<link rel="stylesheet" href="../style.css"/>
+<style>
+  .cs-hero{min-height:40vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:6rem 1.5rem 3rem}
+  .cs-hero h1{font-family:var(--font-head);font-size:clamp(2rem,5vw,3.5rem);color:#fff}
+  .cs-hero .cs-tags{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin-top:1rem}
+  .cs-hero .cs-tag{font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:.3rem .8rem;border-radius:2px;border:1px solid var(--border);color:var(--muted2)}
+  .cs-body{max-width:780px;margin:0 auto;padding:2rem 1.5rem 5rem}
+  .cs-body h2{font-family:var(--font-head);font-size:1.5rem;color:var(--cyan);margin:2.5rem 0 1rem}
+  .cs-body p,.cs-body li{font-size:1.05rem;line-height:1.85;color:var(--text);margin-bottom:1rem}
+  .cs-body ul{padding-left:1.5rem}
+  .cs-body ul li::marker{color:var(--cyan)}
+  .cs-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin:2rem 0}
+  .cs-metric{text-align:center;padding:1.5rem;background:rgba(0,212,255,.04);border:1px solid var(--border);border-radius:var(--radius)}
+  .cs-metric-num{font-family:var(--font-head);font-size:1.8rem;font-weight:900;color:var(--cyan)}
+  .cs-metric-label{font-size:.85rem;color:var(--muted);margin-top:.3rem}
+  .cs-back{display:inline-flex;align-items:center;gap:.4rem;color:var(--cyan);text-decoration:none;font-weight:600;margin-bottom:2rem;transition:gap .2s}
+  .cs-back:hover{gap:.7rem}
+  .cs-tech{display:flex;flex-wrap:wrap;gap:.5rem;margin:1.5rem 0}
+  .cs-tech span{font-size:.75rem;font-weight:600;padding:.35rem .8rem;border-radius:99px;background:rgba(0,212,255,.08);color:var(--cyan);border:1px solid rgba(0,212,255,.2)}
+  @media(max-width:600px){.cs-metrics{grid-template-columns:1fr}}
+  .pg-list{list-style:none;padding:0!important;display:grid;gap:.75rem}
+  .pg-list li{padding:1rem 1.2rem;background:rgba(0,212,255,.04);border:1px solid var(--border);border-radius:var(--radius);margin:0!important}
+  .pg-list li strong{color:#fff}
+  .note{padding:1.6rem 0 .4rem;border-top:1px solid var(--border)}
+  .note:first-of-type{border-top:0}
+  .note h2{margin-top:0!important}
+  .note-meta{font-size:.8rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted2);margin-bottom:.6rem!important}
+  .cs-share{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin:2.5rem 0 0;padding-top:1.5rem;border-top:1px solid var(--border)}
+  .cs-share-l{font-size:.75rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2);margin-right:.25rem}
+  .cs-sh{font:inherit;font-size:.85rem;font-weight:600;color:var(--text);background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.22);border-radius:99px;padding:.5rem 1rem;min-height:40px;display:inline-flex;align-items:center;text-decoration:none;cursor:pointer;transition:border-color .2s,color .2s}
+  .cs-sh:hover,.cs-sh:focus-visible{border-color:var(--cyan);color:var(--cyan)}
+</style>
+</head>
+<body>
+<a href="#main" class="skip-link">Skip to main content</a>
+<div class="noise-overlay" aria-hidden="true"></div>
+
+<nav class="nav" aria-label="Main navigation">
+  <a href="../" class="nav-logo">Jonathan Tubay</a>
+  <div class="nav-links">
+    <a href="../#work">Work</a>
+    <a href="../#services">Services</a>
+    <a href="../#testimonials">Reviews</a>
+    <a href="../#experience">Experience</a>
+    <a href="../#contact" class="nav-cta">📡 Contact Me</a>
+  </div>
+</nav>
+
+<main id="main">
+  <section class="cs-hero">
+    <div>
+      <div class="cs-tags"><span class="cs-tag">Notes</span><span class="cs-tag">From real projects</span></div>
+      <h1>Notes</h1>
+      <p style="color:var(--muted);font-size:1.1rem;max-width:600px;margin:1rem auto 0">Short write-ups on how I build things, and why.</p>
+    </div>
+  </section>
+
+  <article class="cs-body">
+    <a href="../" class="cs-back">← Back to Portfolio</a>
+
+    <section class="note" id="price-sync">
+      <h2>How I push 200 price changes without breaking a store</h2>
+      <p class="note-meta">Shopify · Cin7 Core · Python</p>
+      <p>A US tools retailer got new supplier prices every week. Someone typed them into Cin7 Core and then into Shopify, across thousands of SKUs. One typo could put a product below the supplier's minimum advertised price.</p>
+      <p>So the price list became the only input. Python and Playwright scripts clean it up and apply the pricing rules, then stage a batch of about 200 SKUs in Cin7. The batch gets checked for price, MAP and shipping dimensions. Only then does it go to Shopify, and it lands as drafts, so a person signs off before customers see anything.</p>
+      <p>Small batches matter more than the scripts. When something is wrong, it is wrong in 200 rows, not 5,000, and it is caught before it is public. The team saves 10+ hours a week. <a href="../case-studies/inventory-sync" style="color:var(--cyan)">Full case study →</a></p>
+    </section>
+
+    <section class="note" id="three-weeks">
+      <h2>A business website in three weeks, solo</h2>
+      <p class="note-meta">WordPress · Discovery first</p>
+      <p>MOEV Solutions installs EV chargers in the Philippines. They had no developer and needed to be live in weeks. Three kinds of visitor mattered: fleet operators, homeowners and maintenance partners.</p>
+      <p>Before writing code I mapped their four service lines, Supply, Installation, Maintenance and Consultation, to pages, so each visitor had one clear path. The theme was custom with no page builder: less to load, and less for a team without a developer to maintain. Every page was designed phone-first, because that is where fleet managers and homeowners read it.</p>
+      <p>Most of the speed came from that first day of mapping. Once the structure was right, the build was mostly filling it in. <a href="../case-studies/moev" style="color:var(--cyan)">Full case study →</a></p>
+    </section>
+
+    <section class="note" id="phone-vs-desktop">
+      <h2>A 3D room on desktop, pictures on phones</h2>
+      <p class="note-meta">This site · Performance</p>
+      <p>This site opens on a 3D desk you can explore on a desktop. On a phone the same experience would drain the battery and load slowly, so phones get pre-rendered pictures of the same scenes behind the page instead of live WebGL.</p>
+      <p>The code is split the same way. Everything that only the desktop uses, the 3D desk, the room and the moving logo row, lives in its own file that phones never download, about 144 KB they skip. Both versions still have to pass the same readability check: every line of text at least 4.5:1 contrast, on phone and desktop, in dark and light mode.</p>
+      <p>The rule I keep coming back to: rich where the device can afford it, simple where it can't, and readable everywhere.</p>
+    </section>
+
+    <div class="cs-share" role="group" aria-label="Share this page">
+      <span class="cs-share-l">Share</span>
+      <a class="cs-sh" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fjonathantubay.com%2Fnotes%2F" target="_blank" rel="noopener noreferrer">LinkedIn<span class="sr-only"> (opens in a new tab)</span></a>
+      <a class="cs-sh" href="https://x.com/intent/post?url=https%3A%2F%2Fjonathantubay.com%2Fnotes%2F" target="_blank" rel="noopener noreferrer">X<span class="sr-only"> (opens in a new tab)</span></a>
+      <button type="button" class="cs-sh" data-copy hidden>Copy link</button>
+      <button type="button" class="cs-sh" data-native hidden>More…</button>
+    </div>
+  </article>
+</main>
+<footer>
+  <div class="foot-inner">
+    <p>© 2026 Jonathan Tubay. Built by hand.</p>
+    <p class="foot-reg">DTI Registered · BIR Registered · BMBE Certified</p>
+  </div>
+</footer>
+<script src="../pages.js" defer></script>
+</body>
+</html>

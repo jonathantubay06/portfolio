@@ -13,6 +13,26 @@
     <details class="faq-item r"><summary>Do you offer support after launch?</summary><p>Yes. I can stay on for fixes, small changes and monitoring of automations, either as needed or on a monthly arrangement.</p></details>
     <details class="faq-item r"><summary>What do you need from me?</summary><p>Admin or collaborator access to the platforms involved, your brand assets and content, and one person who can answer questions and sign off on each milestone.</p></details>
   </div>
+
+  <!-- Ask my portfolio (2026-10-29): questions go to /api/ask
+       (netlify/functions/ask), which answers only from the site's own text.
+       28-ask-portfolio.js wires it up; without JS the form is hidden and
+       the email link below it still works. -->
+  <div class="ask" id="ask" hidden>
+    <h3 class="ask-title">Still curious? <em>Ask my AI</em></h3>
+    <p class="ask-sub">It answers from this site only. For anything else, <a href="mailto:jonatsbuilds@gmail.com">email me</a>.</p>
+    <div class="ask-chips" role="group" aria-label="Example questions">
+      <button type="button" class="ask-chip">Can you sync Cin7 with Shopify?</button>
+      <button type="button" class="ask-chip">How do you price a project?</button>
+      <button type="button" class="ask-chip">What AI tools have you built?</button>
+    </div>
+    <div class="ask-log" aria-live="polite"></div>
+    <form class="ask-form">
+      <label for="ask-q" class="sr-only">Your question</label>
+      <input id="ask-q" name="q" type="text" maxlength="300" placeholder="Ask about my work, tools or availability" autocomplete="off" required/>
+      <button type="submit" class="btn btn-p">Ask</button>
+    </form>
+  </div>
 </section>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
