@@ -105,6 +105,8 @@ const PAGES = [
   { loc: '/',                     sources: ['src/sections', 'src/_head.html'] },
   { loc: '/case-studies/moev',    sources: ['case-studies/moev.html'] },
   { loc: '/case-studies/inventory-sync', sources: ['case-studies/inventory-sync.html'] },
+  { loc: '/now',                  sources: ['now/index.html'] },
+  { loc: '/uses',                 sources: ['uses/index.html'] },
 ];
 
 function buildSitemap(){
@@ -285,7 +287,7 @@ for (const [name, content] of Object.entries(outputs)) {
 // script is tooling rather than site content. Shipping either would put
 // build internals on the public site.
 const STATIC = [
-  'img', 'cursors', 'case-studies', 'fonts', 'thanks',
+  'img', 'cursors', 'case-studies', 'fonts', 'thanks', 'now', 'uses',
   'favicon.png', 'og-preview.jpg', 'robots.txt',
   'humans.txt', 'llms.txt', '404.html', '.well-known', 'vendor',
 ];
@@ -305,10 +307,13 @@ for (const item of STATIC) copied += copy(item);
 // case-studies/*.html load ../style.css, so they need the hashed name too.
 // They are plain files copied verbatim above rather than assembled from
 // partials, so the rewrite happens here, after the copy.
-for (const f of fs.readdirSync(path.join(DIST, 'case-studies'))) {
-  if (!f.endsWith('.html')) continue;
-  const p = path.join(DIST, 'case-studies', f);
-  fs.writeFileSync(p, withBeacon(rehash(withAvif(minify.html(fs.readFileSync(p, 'utf8')), '../'), '../')));
+// /now and /uses are one level deep too and share the case-study layout.
+for (const dir of ['case-studies', 'now', 'uses']) {
+  for (const f of fs.readdirSync(path.join(DIST, dir))) {
+    if (!f.endsWith('.html')) continue;
+    const p = path.join(DIST, dir, f);
+    fs.writeFileSync(p, withBeacon(rehash(withAvif(minify.html(fs.readFileSync(p, 'utf8')), '../'), '../')));
+  }
 }
 
 // The remaining standalone pages — 404.html and thanks/index.html — are

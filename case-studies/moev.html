@@ -36,6 +36,10 @@
   .cs-tech{display:flex;flex-wrap:wrap;gap:.5rem;margin:1.5rem 0}
   .cs-tech span{font-size:.75rem;font-weight:600;padding:.35rem .8rem;border-radius:99px;background:rgba(0,212,255,.08);color:var(--cyan);border:1px solid rgba(0,212,255,.2)}
   @media(max-width:600px){.cs-metrics{grid-template-columns:1fr}}
+  .cs-decisions{display:grid;gap:.75rem;margin:1.2rem 0 0}
+  .cs-dec{padding:1rem 1.2rem;background:rgba(0,212,255,.04);border:1px solid var(--border);border-left:3px solid var(--cyan);border-radius:0 var(--radius) var(--radius) 0}
+  .cs-dec b{display:block;color:#fff;margin-bottom:.25rem}
+  .cs-dec p{margin:0!important;font-size:.98rem!important;color:var(--muted2)!important}
 </style>
 </head>
 <body>
@@ -108,6 +112,13 @@
       <span>WordPress</span><span>PHP</span><span>Custom Post Types</span>
       <span>Block Theme</span><span>Forminator</span><span>GoDaddy Managed WordPress</span>
       <span>CSS3</span><span>JavaScript</span>
+    </div>
+
+    <h2>Key Decisions</h2>
+    <div class="cs-decisions">
+      <div class="cs-dec"><b>Map the service lines before any code</b><p>Supply, Installation, Maintenance and Consultation each got their own path, so fleet buyers, homeowners and partners find their page fast.</p></div>
+      <div class="cs-dec"><b>Custom theme, no page builder</b><p>Less code to load and less to maintain, which matters for a team with no in-house developer.</p></div>
+      <div class="cs-dec"><b>Phone first</b><p>Fleet managers and homeowners browse on phones, so every page was designed for the small screen first.</p></div>
     </div>
 
     <h2>The Result</h2>

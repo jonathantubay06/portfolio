@@ -86,3 +86,7 @@ html.world-dive :is(.world-hud,.world-dock,#side-dots){opacity:0;transition:opac
 .world-hud .wh-ph{font-style:normal;color:#ffd38a}
 html[data-manila="day"] .world-hud .wh-ph{color:#ffe7a3}
 html[data-manila="night"] .world-hud .wh-ph{color:#9fd8ff}
+
+/* hidden while the footer is on screen (27-world-hud.js) so it never covers the footer links */
+.world-hud{transition:opacity .25s}
+.world-hud.wh-off{opacity:0;visibility:hidden}

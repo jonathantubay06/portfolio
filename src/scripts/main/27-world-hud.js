@@ -86,6 +86,10 @@
   hud.setAttribute('aria-hidden', 'true');
   hud.innerHTML = '<span class="wh-ch"></span><span class="wh-meta">Manila <i class="wh-ph"></i> · <b class="wh-pc">000</b>%</span>';
   document.body.appendChild(hud);
+  /* the corner readout sat on top of the footer links once the page
+     reached the bottom; step aside while the footer is on screen */
+  var foot = document.querySelector('body > footer, main ~ footer');
+  if (foot) new IntersectionObserver(function (e) { hud.classList.toggle('wh-off', e[0].isIntersecting); }).observe(foot);
   var ch = hud.querySelector('.wh-ch'), pc = hud.querySelector('.wh-pc'), ph = hud.querySelector('.wh-ph');
   setInterval(queue, 30000);
   var lastCh = -1, lastPc = -1, raf = 0;

@@ -41,3 +41,9 @@ nav:not(.scrolled):not(.nav-drawer){background:rgba(6,14,26,.55);backdrop-filter
 
 .svc-case-link{display:inline-block;margin-top:.6rem;font-size:.85rem;font-weight:600;color:var(--accent,#1aa3ff);text-decoration:none}
 .svc-case-link:hover{text-decoration:underline}
+
+/* hire-me pass 2026-10-29: résumé link under the hero buttons sits
+   quieter than the two buttons, so it reads as an extra, not a third CTA */
+.hero-cta .hero-cv{flex-basis:100%;text-align:center;font-size:.85rem;font-weight:600;color:#a3c4d8;text-decoration:none;margin-top:-.2rem}
+.hero-cta .hero-cv:hover,.hero-cta .hero-cv:focus-visible{color:var(--cyan)}
+/* hero stays dark in light mode, so the colour is fixed, not a theme token */

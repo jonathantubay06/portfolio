@@ -45,6 +45,10 @@
   .cs-flow path.e{stroke:#00d4ff;stroke-width:1.6;fill:none}
   .cs-flow .m{display:none}
   @media(max-width:600px){.cs-metrics{grid-template-columns:1fr}.cs-flow .d{display:none}.cs-flow .m{display:block}.cs-flow{padding:.8rem}}
+  .cs-decisions{display:grid;gap:.75rem;margin:1.2rem 0 0}
+  .cs-dec{padding:1rem 1.2rem;background:rgba(0,212,255,.04);border:1px solid var(--border);border-left:3px solid var(--cyan);border-radius:0 var(--radius) var(--radius) 0}
+  .cs-dec b{display:block;color:#fff;margin-bottom:.25rem}
+  .cs-dec p{margin:0!important;font-size:.98rem!important;color:var(--muted2)!important}
 </style>
 </head>
 <body>
@@ -152,6 +156,14 @@
       <span>Shopify</span><span>Cin7 Core</span><span>Shopify Admin API</span>
       <span>Cin7 API</span><span>Python</span><span>Playwright</span>
       <span>Google Sheets</span>
+    </div>
+
+    <h2>Key Decisions</h2>
+    <div class="cs-decisions">
+      <div class="cs-dec"><b>Batches of about 200, not one big push</b><p>A mistake stays small and easy to find. Each batch is checked on its own before the next one goes.</p></div>
+      <div class="cs-dec"><b>Shopify drafts before live</b><p>Changes land as drafts first, so a person signs off before customers see a price.</p></div>
+      <div class="cs-dec"><b>The Google Sheet stays the input</b><p>The team keeps working in the sheet they already know. The scripts do the rest, so nobody had to learn a new tool.</p></div>
+      <div class="cs-dec"><b>MAP checked by the pipeline, not by eye</b><p>A typo below a supplier's floor is caught before it is published.</p></div>
     </div>
 
     <h2>The Result</h2>
