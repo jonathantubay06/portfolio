@@ -102,3 +102,70 @@ nav:not(.scrolled):not(.nav-drawer){background:rgba(6,14,26,.55);backdrop-filter
   @keyframes viIn{from{opacity:0;transform:translateY(24px) scale(.96)}}
   @keyframes viFade{from{opacity:0}}
 }
+
+/* ── Ask my AI: launchers and container (28-ask-portfolio.js) ──────
+   Bubble panel, a bottom sheet on phones.
+   The chat box keeps a fixed height and its log scrolls inside, so
+   nothing on the page grows as messages arrive. */
+.ask-teaser{max-width:760px;margin:2.5rem auto 0;padding:1.2rem 1.4rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;border:1px solid var(--border);border-radius:var(--radius);background:rgba(0,212,255,.035)}
+.ask-teaser p{margin:0;color:var(--muted2);font-size:.95rem}
+.ask-teaser em{font-style:normal;font-weight:700;color:var(--cyan)}
+.ask-teaser .btn{width:auto!important;flex:none}
+
+.ask-fab{
+  position:fixed;z-index:150;bottom:1.8rem;right:calc(1.8rem + 60px);
+  display:flex;align-items:center;gap:.5rem;height:48px;padding:0 1.15rem;border-radius:99px;cursor:pointer;
+  font:700 .85rem/1 var(--font-body);color:var(--text);
+  background:rgba(5,14,30,.92);border:1px solid var(--cyan);
+  box-shadow:0 10px 30px rgba(0,0,0,.35),0 0 18px rgba(0,212,255,.12);
+  transition:background .2s,transform .2s;
+}
+.ask-fab:hover,.ask-fab:focus-visible{background:rgba(0,212,255,.14);transform:translateY(-2px)}
+.ask-fab-dot{width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan)}
+html.ask-is-open .ask-fab{background:rgba(0,212,255,.18)}
+[data-theme="light"] .ask-fab{background:rgba(255,255,255,.96);color:#0a2540;border-color:#0a63b8}
+[data-theme="light"] .ask-fab-dot{background:#0a63b8;box-shadow:none}
+@media(max-width:768px){html:not(.dk) .ask-fab{display:none}}
+.cta-ask{display:none}
+@media(max-width:768px){
+  .cta-ask{display:grid;place-items:center;flex:none;height:44px;padding:0 1rem;border-radius:99px;cursor:pointer;
+    font:700 .82rem/1 var(--font-body);color:var(--cyan);background:transparent;border:1px solid rgba(0,212,255,.45)}
+  [data-theme="light"] .cta-ask{color:#0a63b8;border-color:#0a63b8}
+}
+
+/* the card both containers share */
+.ask-shell .ask{
+  max-width:none;margin:0;height:100%;display:flex;flex-direction:column;
+  padding:1.4rem 1.3rem 1.2rem;border-radius:18px;
+  background:linear-gradient(160deg,#0b1830,#050d1d);border:1px solid rgba(0,212,255,.25);
+  box-shadow:0 30px 80px rgba(0,0,0,.55),0 0 50px rgba(0,212,255,.08);
+}
+[data-theme="light"] .ask-shell .ask{background:var(--surface);border-color:rgba(10,99,184,.3);box-shadow:0 30px 80px rgba(10,37,64,.2)}
+.ask-shell .ask-title{padding-right:2.6rem}
+.ask-shell .ask-chips{margin-bottom:.8rem}
+.ask-shell .ask-log,.ask-shell .ask-log:empty{display:flex;flex:1;min-height:0;max-height:none;margin-bottom:.8rem;overscroll-behavior:contain}
+.ask-close{
+  position:absolute;top:.85rem;right:.85rem;z-index:2;width:36px;height:36px;border-radius:50%;
+  display:grid;place-items:center;cursor:pointer;font-size:1.3rem;line-height:1;
+  color:var(--text);background:rgba(255,255,255,.06);border:1px solid var(--border2);
+}
+.ask-close:hover,.ask-close:focus-visible{border-color:var(--cyan);background:rgba(0,212,255,.12)}
+
+/* bubble: panel above the launcher; bottom sheet on phones */
+.ask-scrim{display:none}
+@media(max-width:600px){html.ask-is-open .ask-scrim{display:block;position:fixed;inset:0;z-index:199;background:rgba(2,6,16,.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}}
+.ask-bubble{position:fixed;z-index:160;right:1.8rem;bottom:calc(1.8rem + 60px);width:380px;height:min(560px,calc(100dvh - 9rem))}
+.ask-bubble[hidden]{display:none}
+@media(max-width:768px){.ask-bubble{bottom:calc(5.4rem + env(safe-area-inset-bottom,0px))}}
+@media(max-width:600px){
+  .ask-bubble{left:0;right:0;bottom:0;width:auto;height:min(82dvh,640px);z-index:200}
+  .ask-bubble .ask{border-radius:18px 18px 0 0;border-bottom:none;padding-bottom:calc(1rem + env(safe-area-inset-bottom,0px))}
+}
+
+@media(prefers-reduced-motion:no-preference){
+  .ask-bubble:not([hidden]) .ask{animation:askIn .35s cubic-bezier(.16,1,.3,1);transform-origin:bottom right}
+  @keyframes askIn{from{opacity:0;transform:translateY(16px) scale(.97)}}
+}
+/* Example questions only until the first one is asked: the room goes to the conversation. */
+.ask-shell .ask-chip{font-size:.78rem;min-height:34px;padding:.4rem .8rem}
+.ask-shell .ask.ask-started .ask-chips{display:none}
