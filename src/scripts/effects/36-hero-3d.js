@@ -150,7 +150,7 @@
       /* the desk is the page's menu: props fly the camera to their chapter */
       OWN.rack = { label: 'Experience', href: '#experience', hl: true };
       OWN.holo_order = { label: 'Client reviews', href: '#testimonials' };
-      OWN.cal = { label: 'Book a call', href: '#contact', hl: true };
+      OWN.cal = { label: "Let's talk", href: '#contact', hl: true };
       OWN.cube_cart = { label: 'Selected work', href: '#work' };
       canvas.className = 'world-3d';
       document.body.insertBefore(canvas, document.body.firstChild);

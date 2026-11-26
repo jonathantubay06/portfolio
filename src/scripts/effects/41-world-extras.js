@@ -3,7 +3,7 @@
    - Quick view: header switch for a plain, fast page (no 3D, wallpaper,
      smooth scroll or motion). Saved in localStorage; flipping it reloads
      so every effect starts (or stays off) cleanly.
-   - Action dock: Work · Reviews · Book a call, bottom centre on desktop
+   - Action dock: Work · Reviews · Let's talk, bottom centre on desktop
      once the hero has gone, hidden at the contact form.
    - Chapter menu: hovering the side dots lists every chapter by name,
      with the desk still of the hovered one.
@@ -38,7 +38,7 @@
     dock.className = 'world-dock';
     dock.setAttribute('role', 'navigation');
     dock.setAttribute('aria-label', 'Quick links');
-    dock.innerHTML = '<a href="#work">Work</a><a href="#testimonials">Reviews</a><a href="#contact" class="wd-cta">Book a call</a>';
+    dock.innerHTML = '<a href="#work">Work</a><a href="#testimonials">Reviews</a><a href="#contact" class="wd-cta">Let&#39;s talk</a>';
     document.body.appendChild(dock);
     root.classList.add('has-dock');
     var contact = document.getElementById('contact'), atContact = false, raf = 0;

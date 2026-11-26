@@ -24,7 +24,7 @@
     [[72, 47, 'Selected work', '#work']],
     [[76, 15, 'Client reviews', '#testimonials'], [50, 42, 'Selected work', '#work']],
     [[52, 25, 'Services', '#services'], [13, 37, 'Client reviews', '#testimonials']],
-    [[42, 65, 'Book a call', '#contact'], [70, 42, 'Experience', '#experience']],
+    [[42, 65, "Let's talk", '#contact'], [70, 42, 'Experience', '#experience']],
     [[50, 30, 'Services', '#services']],
     [[70, 50, 'Selected work', '#work'], [70, 30, 'Services', '#services']]
   ];

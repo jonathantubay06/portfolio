@@ -169,3 +169,15 @@ html.ask-is-open .ask-fab{background:rgba(0,212,255,.18)}
 /* Example questions only until the first one is asked: the room goes to the conversation. */
 .ask-shell .ask-chip{font-size:.78rem;min-height:34px;padding:.4rem .8rem}
 .ask-shell .ask.ask-started .ask-chips{display:none}
+
+/* follow-up questions under the log, and the project-modal ask button */
+.ask-shell .ask-next{margin-bottom:.7rem}
+.ask-shell .ask.ask-started .ask-next{display:flex}
+.ask-next:empty{display:none!important}
+.ask-proj{
+  display:inline-flex;align-items:center;gap:.5rem;margin-top:1.2rem;padding:.6rem 1.1rem;min-height:44px;border-radius:99px;cursor:pointer;
+  font:700 .8rem/1 var(--font-body);color:var(--cyan);background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.35);
+  transition:background .2s,border-color .2s;
+}
+.ask-proj:hover,.ask-proj:focus-visible{background:rgba(0,212,255,.14);border-color:var(--cyan)}
+[data-theme="light"] .ask-proj{color:#0a63b8;border-color:rgba(10,99,184,.4);background:rgba(10,99,184,.05)}

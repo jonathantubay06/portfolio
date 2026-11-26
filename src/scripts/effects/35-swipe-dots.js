@@ -1,10 +1,11 @@
 /* ── 35. SWIPE DOTS ──────────────────────
-   On phones "More builds" and the toolkit are sideways swipe rows. A dot
+   On phones the freelance features, "More builds" and the toolkit are
+   sideways swipe rows. A dot
    per card under each row shows there is more and where you are; tapping
    a dot scrolls to that card. Hidden above 600px by CSS.
 ══════════════════════════════════════ */
 (function(){
-  document.querySelectorAll('.work-grid,.work-tiles').forEach(row => {
+  document.querySelectorAll('.work-grid,.work-tiles,.work-features:not(.d-only)').forEach(row => {
     const cards = [...row.children].filter(c => c.classList.contains('proj-card'));
     if (cards.length < 2) return;
     const dots = document.createElement('div');

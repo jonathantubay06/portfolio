@@ -34,7 +34,7 @@ html.quick *,html.quick *::before,html.quick *::after{
   transition-duration:.001ms!important;transition-delay:0s!important;scroll-behavior:auto!important}
 html.quick :is(.sec > *,.testi-inner > *){animation:none!important;opacity:1;translate:none;scale:none;clip-path:none}
 
-/* ── Action dock: Work · Reviews · Book a call ── */
+/* ── Action dock: Work · Reviews · Let's talk ── */
 .world-dock{position:fixed;left:50%;bottom:18px;z-index:150;display:flex;gap:4px;padding:5px;
   border-radius:99px;background:rgba(6,14,28,.78);border:1px solid rgba(0,212,255,.22);
   -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);

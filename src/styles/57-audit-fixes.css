@@ -28,3 +28,17 @@ a.stat-link:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
    17 to 19px tall. Same invisible 44px-high hit area as the swipe dots. */
 .tq-readmore,.tl-more{position:relative}
 .tq-readmore::after,.tl-more::after{content:'';position:absolute;left:0;right:0;top:50%;height:44px;transform:translateY(-50%)}
+
+/* 2026-11-26: on phones the two freelance feature cards and the three
+   stat cards were stacked (about 1,750px). They now use the same swipe
+   row as "More builds", so the Work section is about 900px shorter. */
+@media(max-width:600px){
+  .work-features,.acc-strip{
+    display:flex;gap:.85rem;overflow-x:auto;overscroll-behavior-x:contain;
+    scroll-snap-type:x mandatory;scroll-padding-inline:.9rem;
+    margin-inline:-.9rem;padding:.35rem .9rem 1rem;scrollbar-width:none;
+  }
+  .work-features::-webkit-scrollbar,.acc-strip::-webkit-scrollbar{display:none}
+  .work-features>.proj-card{flex:0 0 86%;scroll-snap-align:start}
+  .acc-strip>.acc-item{flex:0 0 70%;scroll-snap-align:start}
+}

@@ -5,7 +5,10 @@
    request at a time; on any failure it points to email instead.
 
    Reachable from anywhere: a floating "Ask my AI" button on desktop,
-   an "Ask AI" button in the phone sticky bar, and a button in the FAQ.
+   an "Ask AI" button in the phone sticky bar, a button in the FAQ, and
+   an "Ask my AI about this project" button inside each project modal.
+   After each answer it offers two follow-up questions from a fixed
+   list (no extra model call).
    The chat box (#ask, written in faq.html) is moved into a container so
    the page never grows as messages arrive; the log scrolls inside it.
    The container is a bubble panel: bottom-right on desktop, a bottom
@@ -65,7 +68,10 @@
   function isOpen() { return !shell.hidden; }
   function open(e) {
     if (isOpen()) { close(); return; }
-    opener = e.currentTarget;
+    show(e.currentTarget);
+  }
+  function show(from) {
+    opener = from;
     shell.hidden = false;
     // Phones: the sheet covers most of the screen, so lock the page.
     if (matchMedia('(max-width:600px)').matches) { document.documentElement.classList.add('modal-open'); ownsLock = true; }
@@ -101,9 +107,28 @@
     log.scrollTop = log.scrollHeight;
     return p;
   }
+  // Follow-ups: the next two questions the visitor has not asked yet.
+  var NEXT = ['Can you sync Cin7 with Shopify?', 'How do you price a project?', 'What AI tools have you built?',
+    'What hours do you work?', 'How do we get started?', 'Do you offer support after launch?', 'What did you build for MOEV?'];
+  var asked = {}, next = document.createElement('div');
+  next.className = 'ask-chips ask-next';
+  next.setAttribute('role', 'group');
+  next.setAttribute('aria-label', 'Suggested follow-up questions');
+  form.before(next);
+  function suggest() {
+    next.textContent = '';
+    NEXT.filter(function (q) { return !asked[q]; }).slice(0, 2).forEach(function (q) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'ask-chip'; b.textContent = q;
+      b.addEventListener('click', function () { ask(q); });
+      next.appendChild(b);
+    });
+    log.scrollTop = log.scrollHeight;
+  }
   function ask(q) {
     q = q.trim().slice(0, 300);
     if (!q || busy) return;
+    asked[q] = true; next.textContent = '';
     busy = true; btn.disabled = true; input.value = '';
     box.classList.add('ask-started');
     add('ask-q', q);
@@ -113,7 +138,7 @@
       .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { return { ok: r.ok, d: d }; }); })
       .then(function (res) {
         wait.classList.remove('ask-wait');
-        if (res.ok && res.d.answer) { wait.textContent = res.d.answer; turns.push({ role: 'model', text: res.d.answer }); }
+        if (res.ok && res.d.answer) { wait.textContent = res.d.answer; turns.push({ role: 'model', text: res.d.answer }); suggest(); }
         else { wait.textContent = FAIL[res.d.error] || FAIL.other; turns.pop(); }
         log.scrollTop = log.scrollHeight;
       })
@@ -121,5 +146,21 @@
       .then(function () { busy = false; btn.disabled = false; });
   }
   form.addEventListener('submit', function (e) { e.preventDefault(); ask(input.value); });
+
+  // Project modals: close the modal, open the chat and ask about that project.
+  document.querySelectorAll('.proj-modal').forEach(function (m) {
+    var title = m.querySelector('.modal-title'), content = m.querySelector('.modal-content');
+    if (!title || !content) return;
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'ask-proj';
+    b.innerHTML = '<span class="ask-fab-dot" aria-hidden="true"></span>Ask my AI about this project';
+    b.addEventListener('click', function () {
+      var name = title.textContent.trim();
+      m.querySelector('.modal-close').click();
+      if (!isOpen()) show(fab);
+      ask('Tell me more about the ' + name + ' project.');
+    });
+    content.appendChild(b);
+  });
   box.querySelectorAll('.ask-chip').forEach(function (c) { c.addEventListener('click', function () { ask(c.textContent); }); });
 })();
