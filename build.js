@@ -356,6 +356,7 @@ for (const rel of ['404.html', 'thanks']) {
     ['Case study: MOEV Solutions', main('case-studies/moev.html')],
     ['Now (current work)', main('now/index.html')],
     ['Uses (tools and gear)', main('uses/index.html')],
+    ['Notes (short write-ups)', main('notes/index.html')],
   ];
   const knowledge = parts.map(([t, b]) => `## ${t}\n${b.trim()}`).join('\n\n');
   const out = path.join(__dirname, 'netlify/functions/ask/knowledge.mjs');

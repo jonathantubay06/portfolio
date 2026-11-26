@@ -206,7 +206,7 @@ a,button,[role="button"],label,input,select,textarea,.btn,.proj-card{
 /* ═══════════════════════════════════════
    AVAILABLE FOR PROJECTS PILL
 ═══════════════════════════════════════ */
-/* Stack order from bottom: back-to-top (1.8rem) → book-pill (5.4rem) → avail-pill (8.4rem) */
+/* Stack order from bottom: back-to-top (1.8rem) → avail-pill (see 50-contact-footer-nav.css) */
 #avail-pill{
   position:fixed;bottom:8.4rem;right:1.8rem;z-index:149;
   display:flex;align-items:center;gap:.45rem;

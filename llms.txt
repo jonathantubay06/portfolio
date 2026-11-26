@@ -20,6 +20,11 @@
 - [Inventory sync case study](https://jonathantubay.com/case-studies/inventory-sync): a US tools and hardware retailer (Cin7 Core and Shopify, batch staging and validation, MAP pricing, 10+ hours a week saved)
 - [MOEV Solutions case study](https://jonathantubay.com/case-studies/moev): WordPress build for a Philippine EV charging company, launched in 3 weeks
 
+## More pages
+- [Now](https://jonathantubay.com/now/): what I am working on this month
+- [Uses](https://jonathantubay.com/uses/): tools, editor and desk setup
+- [Notes](https://jonathantubay.com/notes/): short write-ups on price sync, a three-week site build and the 3D portfolio
+
 ## Selected work
 - MOEV Solutions: freelance website build
 - Deirdre P. Malcolm: freelance website build

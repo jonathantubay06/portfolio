@@ -23,3 +23,8 @@ a.stat-link:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
   .auto-demo.ad-open .ad-toggle::after{transform:rotate(-135deg) translateY(-2px)}
   .auto-demo:not(.ad-open) > :not(.ad-head){display:none}
 }
+
+/* 2026-11-26 audit: "Read full review" and the timeline "More" pill are
+   17 to 19px tall. Same invisible 44px-high hit area as the swipe dots. */
+.tq-readmore,.tl-more{position:relative}
+.tq-readmore::after,.tl-more::after{content:'';position:absolute;left:0;right:0;top:50%;height:44px;transform:translateY(-50%)}

@@ -39,6 +39,8 @@ function allowedOrigin(origin) {
 function limited(ip) {
   const now = Date.now(), list = (hits.get(ip) || []).filter(t => now - t < WINDOW_MS);
   list.push(now); hits.set(ip, list);
+  // a warm instance can live for hours: drop IPs whose window has passed
+  if (hits.size > 500) for (const [k, v] of hits) if (now - v[v.length - 1] > WINDOW_MS) hits.delete(k);
   return list.length > LIMIT;
 }
 
@@ -70,13 +72,18 @@ export default async (req, context) => {
       signal: AbortSignal.timeout(15000),
     });
     if (r.status === 429) return json({ error: 'busy' }, 429);
-    if (!r.ok) return json({ error: 'upstream' }, 502);
+    if (!r.ok) {
+      // status only (never the body or the key): shows in the Netlify function log
+      console.error('ask: upstream', r.status, MODEL);
+      return json({ error: 'upstream' }, 502);
+    }
     const data = await r.json();
     const answer = ((data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) || [])
       .map(p => p.text || '').join('').trim();
     if (!answer) return json({ error: 'empty' }, 502);
     return json({ answer: answer.slice(0, 1200) });
-  } catch {
+  } catch (e) {
+    console.error('ask: upstream', e && e.name);
     return json({ error: 'upstream' }, 502);
   }
 };

@@ -10,7 +10,8 @@
      Runs synchronously so style.css's [data-theme="light"] rules apply with zero flash. -->
 <script>
 (function(){
-  var t = localStorage.getItem('jt-theme');
+  var t = null;
+  try { t = localStorage.getItem('jt-theme'); } catch (e) {}
   if (!t) t = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
   /* desktop (wide screen + mouse) gets the 3D world redesign; phones and
      tablets keep the live site's layout (.d-only / .m-only blocks) */

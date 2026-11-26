@@ -64,7 +64,8 @@ function handleSubmit(e) {
   fetch('/', {
     method:  'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body:    new URLSearchParams(formData).toString()
+    body:    new URLSearchParams(formData).toString(),
+    signal:  AbortSignal.timeout ? AbortSignal.timeout(15000) : undefined // dead connection: fail into the email fallback
   })
   .then(res => {
     if (!res.ok) throw new Error('Network response was not ok');

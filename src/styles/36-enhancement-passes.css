@@ -371,44 +371,6 @@ body,nav,.proj-card,.svc-row,.ci-row,footer,.modal-inner,.cert-group,.cbadge,.te
 /* 2.70:1 on #faf8f5 — see the .sec-label note in 23-light-mode.css. */
 
 
-/* ── 10. Book-a-call pill ───────────────────────────────────────
-   Second floating pill below #avail-pill.
-   Same slide-in pattern — hidden until 800px scroll (JS).
-   Teal/green accent to distinguish from cyan Available pill.
-──────────────────────────────────────────────────────────────── */
-/* Sits between back-to-top and avail-pill — same right edge as both */
-#book-pill{
-  position:fixed;bottom:5.4rem;right:1.8rem;z-index:149;
-  display:flex;align-items:center;gap:.45rem;
-  background:rgba(6,14,26,.94);
-  border:1px solid rgba(52,211,153,.35);
-  border-radius:99px;padding:.45rem 1rem;
-  font-size:.72rem;font-weight:600;letter-spacing:.03em;
-  color:#34d399;text-decoration:none;
-  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-  box-shadow:0 4px 20px rgba(52,211,153,.12);
-  opacity:0;pointer-events:none;
-  transform:translateX(120%);
-  transition:opacity .4s ease,
-             transform .4s cubic-bezier(.25,.8,.25,1),
-             box-shadow .25s ease,
-             background .25s ease;
-  z-index:149;white-space:nowrap;
-}
-#book-pill.visible{opacity:1;transform:translateX(0);pointer-events:auto}
-#book-pill:hover{
-  background:rgba(52,211,153,.12);
-  box-shadow:0 4px 24px rgba(52,211,153,.22);
-}
-/* Hide both pills on mobile — avoid cluttering small screens */
-@media(max-width:600px){#book-pill{display:none}}
-[data-theme="light"] #book-pill{
-  background:rgba(255,255,255,.92);
-  border-color:rgba(22,163,74,.3);
-  color:#16a34a;
-  box-shadow:0 4px 20px rgba(22,163,74,.1);
-}
-
 /* ── 11. Live project badge ──────────────────────────────────────
    Small "● LIVE" pill in the top-left of project card thumbnails.
    Green dot pulses via avail-pulse animation (already defined).
