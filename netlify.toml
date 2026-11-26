@@ -6,7 +6,10 @@
   publish = "dist"
   # 2026-10-18 (no wasted rebuilds): skip the Netlify build (exit 0) when a
   # push only touches files the site never serves.
-  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ':(exclude)docs' ':(exclude)history' ':(exclude)README.md' ':(exclude).gitignore' ':(exclude).github' ':(exclude).lighthouserc.json'"
+  # 2026-11-26: after about a month with no deploy the build cache expires and
+  # Netlify sets CACHED_COMMIT_REF to the current commit, so the diff came back
+  # empty and a real change was skipped. Equal refs now always build.
+  ignore = "[ \"$CACHED_COMMIT_REF\" != \"$COMMIT_REF\" ] && git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- . ':(exclude)docs' ':(exclude)history' ':(exclude)README.md' ':(exclude).gitignore' ':(exclude).github' ':(exclude).lighthouserc.json'"
 
 # ── Caching ──────────────────────────────────────────────
 # Netlify's default for static files is `max-age=0,must-revalidate`, which
