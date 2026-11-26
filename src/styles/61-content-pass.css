@@ -181,3 +181,60 @@ html.ask-is-open .ask-fab{background:rgba(0,212,255,.18)}
 }
 .ask-proj:hover,.ask-proj:focus-visible{background:rgba(0,212,255,.14);border-color:var(--cyan)}
 [data-theme="light"] .ask-proj{color:#0a63b8;border-color:rgba(10,99,184,.4);background:rgba(10,99,184,.05)}
+
+/* ── 2026-11-26: one press feel, and a hover ring for the mouse ──────
+   The main buttons already lift 2px on hover and sink on press
+   (53-round4.css). The newer pills (chat launcher, chips, project ask,
+   phone "Ask AI") now answer the same way, on the same .16s curve.
+   Styles only: transform and outline, nothing that repaints layout. */
+.ask-fab,.ask-proj,.ask-chip,.cta-ask{
+  transition:transform .16s cubic-bezier(.3,.7,.4,1.4),background .2s,border-color .2s,color .2s,outline-color .15s,outline-offset .15s;
+}
+@media(hover:hover){
+  .ask-proj:hover,.ask-chip:hover{transform:translateY(-2px)}
+}
+.ask-fab:active,.ask-proj:active,.ask-chip:active,.cta-ask:active{transform:translateY(1px) scale(.97)}
+
+/* Hover ring, desktop mouse only: the custom cursor stays as it is and
+   the pill under it lights up. An outline, so it never shifts layout.
+   Flat pills only: the main buttons already lift and glow, and a ring
+   would cut across their 3D bottom edge. Keyboard focus keeps its own
+   ring (24-ui-details.css), so :focus-visible is left out. */
+@media(hover:hover) and (pointer:fine){
+  :is(.ask-fab,.ask-proj,.ask-chip,.exp-tab,.tl-more):not(:focus-visible){
+    outline:2px solid rgba(0,212,255,0);outline-offset:1px;
+  }
+  :is(.ask-fab,.ask-proj,.ask-chip,.exp-tab,.tl-more):hover:not(:focus-visible){
+    outline-color:rgba(0,212,255,.45);outline-offset:4px;
+  }
+  [data-theme="light"] :is(.ask-fab,.ask-proj,.ask-chip,.exp-tab,.tl-more):hover:not(:focus-visible){outline-color:rgba(10,99,184,.45)}
+}
+
+/* ── 2026-11-26: main button moments (styles only) ───────────────────
+   Primary (.btn-p): a light sweep crosses once on hover and the arrow
+   nudges right. Secondary (.btn-g): a bright line runs once around the
+   border. The lift and press from 53-round4.css stay underneath. Mouse
+   only, and off under reduced motion. */
+@property --btn-trace{syntax:'<angle>';inherits:false;initial-value:0deg}
+.btn-arr{display:inline-block;transition:transform .2s cubic-bezier(.3,.7,.4,1.4)}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){
+  .btn-p::before{
+    content:'';position:absolute;top:0;bottom:0;left:0;width:45%;pointer-events:none;
+    background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);
+    transform:translateX(-130%) skewX(-18deg);
+  }
+  .btn-p:hover::before{transform:translateX(330%) skewX(-18deg);transition:transform .7s cubic-bezier(.45,0,.3,1)}
+  .btn-p:hover .btn-arr{transform:translateX(4px)}
+
+  /* The trace: a conic gradient shows only in the 1px border ring (the
+     mask cuts out the middle), and its start angle turns one full lap.
+     Browsers without @property simply skip it. */
+  .btn-g::after{
+    content:'';position:absolute;inset:0;border-radius:inherit;padding:1.5px;pointer-events:none;opacity:0;
+    background:conic-gradient(from var(--btn-trace),transparent 0 78%,#7df3ff 92%,transparent 100%);
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor;mask-composite:exclude;
+  }
+  .btn-g:hover::after{opacity:1;animation:btnTrace .9s cubic-bezier(.4,0,.2,1) 1 forwards}
+  @keyframes btnTrace{from{--btn-trace:0deg}85%{opacity:1}to{--btn-trace:360deg;opacity:0}}
+}
